@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcryptjs = require('bcrypt')
+const jwt = require("jsonwebtoken");
 
+// User Schema
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -54,29 +56,93 @@ const userSchema = new mongoose.Schema({
         enum: ["admin", "user", "pharmacist"],
         default: "user",
         trim: true,
-    }
+    },
+    tokens: [
+    {
+      token: String,
+      deviceInfo: String,
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+      expiresAt: Date,
+    },
+  ],
 }, { timestamps: true })
 
 
-// hash password 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
+// hash password before save
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
   this.password = await bcryptjs.hash(this.password, 10);
-  next();
 });
 
+
+// // Login
+
+userSchema.statics.findByCredentials = async (email, password) => {
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    throw new Error("Unable to login");
+  }
+
+  const isMatch = await bcryptjs.compare(password, user.password);
+
+  if (!isMatch) {
+    throw new Error("Unable to login");
+  }
+  return user;
+};
+
 // compare password 
-userSchema.method.comparePassword = async function (password){
+userSchema.methods.comparePassword = async function (password){
     return await bcryptjs.compare(password , this.password)
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+userSchema.methods.generateToken = async function (deviceInfo) {
+  const user = this;
+
+  await user.cleanExpiredTokens();
+
+  const MAX_DEVICES = 3;
+
+if (user.tokens.length >= MAX_DEVICES) {
+  user.tokens = user.tokens.slice(-MAX_DEVICES + 1);
+}
+
+  const accessToken = jwt.sign(
+    { _id: user._id.toString() },
+    process.env.ACCESS_TOKEN_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  const now = new Date();
+  const accessExpiry = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  user.tokens.push({
+    token: accessToken,
+    deviceInfo,
+    createdAt: now,
+    expiresAt: accessExpiry,
+  });
+
+  await user.save();
+
+  return accessToken;
+};
+
+userSchema.methods.cleanExpiredTokens = async function () {
+  const user = this;
+  const now = new Date();
+  user.tokens = user.tokens.filter((t) => t.expiresAt > now);
+};
 
 //  hide sensetive data
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
-
   delete user.password;
-
   return user;
 };
 
