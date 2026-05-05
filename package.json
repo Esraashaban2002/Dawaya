@@ -1,0 +1,27 @@
+{
+  "name": "dawaya",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "build": "react-scripts build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Esraashaban2002/Dawaya.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Esraashaban2002/Dawaya/issues"
+  },
+  "homepage": "https://github.com/Esraashaban2002/Dawaya#readme",
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}
