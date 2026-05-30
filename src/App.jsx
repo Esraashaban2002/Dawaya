@@ -15,14 +15,14 @@ import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 
 // Profile components and services
-import UserProfile from './components/UserProfile';
-import Toast from './components/Toast';
-import { api } from './services/api';
+import UserProfile from './Components/UserProfile';
+import Toast from './Components/Toast';
+import { api } from './Services/api';
 import {
   EditProfileModal,
   ChangePasswordModal,
   LocationModal
-} from './components/Modals';
+} from './Components/Modals';
 
 // Default initial state for fallback/new users
 const INITIAL_PROFILE = {
