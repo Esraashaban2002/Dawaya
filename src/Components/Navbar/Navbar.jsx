@@ -34,7 +34,7 @@ export default function Navbar() {
 
             <Link to="/" className="nb-logo">
               <img
-                src="/public/imges/logo.png"
+                src="../public/imges/logo.png"
                 alt="Dawaa Logo"
                 style={{ width: "100px", height: "90px" }}
               />
