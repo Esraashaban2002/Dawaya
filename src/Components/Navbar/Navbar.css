@@ -245,3 +245,8 @@
   color: #2c7da0;
   margin-top: 5px;
 }
+.nb-auth-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

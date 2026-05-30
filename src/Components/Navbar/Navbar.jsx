@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useContext } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FaSearch,
   FaShoppingCart,
@@ -9,19 +9,21 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import "./Navbar.css";
-import logo from "/public/imges/logo.png"
+import logo from "/public/imges/logo.png";
+import { UserContext } from "../../Context/UserContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { pathname } = useLocation();
+  const { userLogin, setUserLogin } = useContext(UserContext);
+  const navigate = useNavigate();
 
-  // const [cartCount, setCartCount] = useState(0);
-
-  // Backend هتربط القيم دي بعدين
-  const isLoggedIn = false;
-  const userName = "اسم المستخدم";
-  const userImage = "/images/user.jpg";
+  function logout() {
+    localStorage.removeItem("userToken");
+    setUserLogin(null);
+    navigate("/");
+  }
 
   return (
     <>
@@ -80,34 +82,31 @@ export default function Navbar() {
                 <FaGlobe />
               </button>
 
-              <button
-                className="nb-icon-btn"
-                style={{ position: "relative" }}
-              >
+              <button className="nb-icon-btn" style={{ position: "relative" }}>
                 <FaShoppingCart />
-
-                {/* {cartCount > 0 && (
-                  <span className="nb-badge">
-                    {cartCount}
-                  </span>
-                )} */}
               </button>
             </div>
 
-            {isLoggedIn ? (
-              <div className="nb-user">
-                <img
-                  src={userImage}
-                  alt="User"
-                  className="nb-user-img"
-                />
-                <span>{userName}</span>
+            {/* Auth Section */}
+            {userLogin == null ? (
+              <div className="nb-auth-links">
+                <NavLink to="/register" className="nb-link">
+                  إنشاء حساب
+                </NavLink>
+                <NavLink to="/login" className="nb-login">
+                  <FaUser />
+                  دخول
+                </NavLink>
               </div>
             ) : (
-              <Link to="/login" className="nb-login">
-                <FaUser />
-                دخول
-              </Link>
+              <div className="nb-auth-links">
+                <NavLink to="/profile" className="nb-link">
+                  الملف الشخصي
+                </NavLink>
+                <span onClick={logout} className="nb-login" style={{ cursor: "pointer" }}>
+                  تسجيل الخروج
+                </span>
+              </div>
             )}
 
             <button
@@ -118,33 +117,30 @@ export default function Navbar() {
             </button>
           </div>
 
+          {/* Mobile Menu */}
           {menuOpen && (
             <div className="nb-mobile-menu">
-              <Link to="/" className="nb-mobile-link">
-                الرئيسية
-              </Link>
+              <Link to="/" className="nb-mobile-link">الرئيسية</Link>
+              <Link to="/products" className="nb-mobile-link">المنتجات</Link>
+              <Link to="/pharmacies" className="nb-mobile-link">الصيدليات</Link>
 
-              <Link to="/products" className="nb-mobile-link">
-                المنتجات
-              </Link>
-
-              <Link to="/pharmacies" className="nb-mobile-link">
-                الصيدليات
-              </Link>
-
-              <Link to="/login" className="nb-mobile-login">
-                تسجيل دخول
-              </Link>
+              {userLogin == null ? (
+                <>
+                  <Link to="/register" className="nb-mobile-link">إنشاء حساب</Link>
+                  <Link to="/login" className="nb-mobile-login">تسجيل دخول</Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/profile" className="nb-mobile-link">الملف الشخصي</Link>
+                  <span onClick={logout} className="nb-mobile-login" style={{ cursor: "pointer" }}>
+                    تسجيل الخروج
+                  </span>
+                </>
+              )}
             </div>
           )}
         </nav>
       </div>
-
-      {/* <button
-        onClick={() => setCartCount((prev) => prev + 1)}
-        style={{ margin: "20px" }}
-      >
-      </button> */}
     </>
   );
 }
