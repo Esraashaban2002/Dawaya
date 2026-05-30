@@ -9,6 +9,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import "./Navbar.css";
+import logo from "/public/imges/logo.png"
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function Navbar() {
 
             <Link to="/" className="nb-logo">
               <img
-                src="../public/imges/logo.png"
+                src={logo}
                 alt="Dawaa Logo"
                 style={{ width: "100px", height: "90px" }}
               />
