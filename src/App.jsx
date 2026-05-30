@@ -17,7 +17,7 @@ import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 // Profile components and services
 import UserProfile from './Components/UserProfile';
 import Toast from './Components/Toast';
-import { api } from './Services/api';
+import { api } from './services/api';
 import {
   EditProfileModal,
   ChangePasswordModal,
