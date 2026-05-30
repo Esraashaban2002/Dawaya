@@ -14,7 +14,7 @@ import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 
-import UserProfile from './components/UserProfile';
+import UserProfile from './Components/UserProfile';
 
 function App() {
   let router = createBrowserRouter([
@@ -24,11 +24,7 @@ function App() {
       children: [
         {
           index: true,
-          element: (
-            <ProtectedRoure>
-              <Home />
-            </ProtectedRoure>
-          ),
+          element: <Home />
         },
         {
           path: "/about",
