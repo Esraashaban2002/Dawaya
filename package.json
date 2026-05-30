@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "gp",
+=======
+  "name": "dawaya-profile",
+>>>>>>> 0fae21a (Add user profile code)
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,6 +18,10 @@
     "axios": "^1.16.0",
     "flowbite": "^4.0.2",
     "formik": "^2.4.9",
+<<<<<<< HEAD
+=======
+    "lucide-react": "^1.16.0",
+>>>>>>> 0fae21a (Add user profile code)
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-i18next": "^17.0.8",

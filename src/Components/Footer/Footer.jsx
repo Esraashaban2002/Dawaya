@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { NavLink } from "react-router-dom";
 import logo from '../../assets/logo.png'
 export default function Footer() {
@@ -79,4 +80,8 @@ export default function Footer() {
 
 
     </>
+=======
+export default function Footer() {
+  return <>Foooooooter</>;
+>>>>>>> 0fae21a (Add user profile code)
 }

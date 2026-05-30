@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 export default function Home() {
     return (
@@ -51,4 +52,8 @@ export default function Home() {
             </form>
         </div>
     )
+=======
+export default function Home() {
+  return <div>Hooooooooome</div>;
+>>>>>>> 0fae21a (Add user profile code)
 }
