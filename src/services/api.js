@@ -43,6 +43,8 @@ export const api = {
       }
       throw new Error(errorData.message || 'فشل في تحميل بيانات الملف الشخصي من الخادم السحابي.');
     }
+  console.log(response);
+  
 
     return response.json();
   },
