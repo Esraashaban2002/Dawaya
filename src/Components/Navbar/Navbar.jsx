@@ -42,8 +42,8 @@ export default function Navbar() {
 
             <div className="nb-links">
               <Link
-                to="/Home"
-                className={`nb-link${pathname === "/Home" ? " active" : ""}`}
+                to="/"
+                className={`nb-link${pathname === "/" ? " active" : ""}`}
               >
                 الرئيسية
               </Link>
@@ -119,7 +119,7 @@ export default function Navbar() {
 
           {menuOpen && (
             <div className="nb-mobile-menu">
-              <Link to="/Home" className="nb-mobile-link">
+              <Link to="/" className="nb-mobile-link">
                 الرئيسية
               </Link>
 
