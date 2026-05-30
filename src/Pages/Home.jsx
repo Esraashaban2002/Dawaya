@@ -66,7 +66,7 @@ const products = [
     price: "$45.00",
     oldPrice: null,
     tag: null,
-    image: "https://images.unsplash.com/photo-1588776814546-ec7e1a4bfb3d?w=400&q=80",
+    image: "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=1400&q=85",
     route: ROUTES.products,
   },
   {
