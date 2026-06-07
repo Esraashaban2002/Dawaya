@@ -5,13 +5,12 @@ import {
   Edit3, Trash2
 } from 'lucide-react';
 
-import { UserContext } from '../Context/UserContext';
+import { UserContext } from '../../Context/UserContext';
 import Toast from './Toast';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import {
   EditProfileModal,
-  ChangePasswordModal,
-  LocationModal
+  ChangePasswordModal
 } from './Modals';
 
 const INITIAL_PROFILE = {
@@ -27,16 +26,12 @@ const INITIAL_PROFILE = {
 export default function UserProfile() {
   const { userLogin } = useContext(UserContext);
   const [profile, setProfile] = useState(INITIAL_PROFILE);
-  const [locations, setLocations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [activeModal, setActiveModal] = useState(null);
-  const [editingLocation, setEditingLocation] = useState(null);
 
   const [toasts, setToasts] = useState([]);
 
-  const [activeLocationMenu, setActiveLocationMenu] = useState(null);
-  
   const [isChangePasswordExpanded, setIsChangePasswordExpanded] = useState(false);
   const [passwords, setPasswords] = useState({
     current: '',
@@ -70,18 +65,13 @@ export default function UserProfile() {
       const localEmail = localStorage.getItem("dawaya_current_email") || apiUser.email || '';
       const localPassword = localStorage.getItem("dawaya_current_password") || '';
 
-      if (localEmail) {
-        const storedLocations = JSON.parse(localStorage.getItem(`dawaya_locations_${localEmail.toLowerCase()}`) || '[]');
-        setLocations(storedLocations);
-      }
-
       setProfile({
         fullName: apiUser.username || 'عضو داوايا',
         username: apiUser.username || 'user',
         email: localEmail,
         password: localPassword,
         phone: apiUser.phone || '',
-        age: apiUser.age || 30,
+        age: apiUser.age || "18",
         gender: apiUser.gender === 'male' || apiUser.gender === 'ذكر' ? 'ذكر' : 'أنثى'
       });
     } catch (err) {
@@ -91,16 +81,13 @@ export default function UserProfile() {
         const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
         const matchedUser = users.find(u => u.email.toLowerCase() === localEmail.toLowerCase());
         if (matchedUser) {
-          const storedLocations = JSON.parse(localStorage.getItem(`dawaya_locations_${localEmail.toLowerCase()}`) || '[]');
-          setLocations(storedLocations);
-
           setProfile({
-            fullName: matchedUser.username || 'عضو داوايا',
-            username: matchedUser.username || 'user',
+            fullName: matchedUser.username || 'عضو دوايا',
+            username: matchedUser.username || 'New user',
             email: matchedUser.email,
             password: matchedUser.password,
-            phone: matchedUser.phone || '01012345678',
-            age: matchedUser.age || 25,
+            phone: matchedUser.phone || '01*********',
+            age: matchedUser.age || "-",
             gender: matchedUser.gender === 'female' ? 'أنثى' : 'ذكر'
           });
           return;
@@ -211,62 +198,7 @@ export default function UserProfile() {
     }
   };
 
-  const handleSaveLocation = (locData) => {
-    let updatedLocations;
-    if (locData.id) {
-      updatedLocations = locations.map((l) => (l.id === locData.id ? locData : l));
-      showToast('تم تحديث الموقع بنجاح!');
-    } else {
-      const newLoc = {
-        ...locData,
-        id: Date.now()
-      };
-      updatedLocations = [...locations, newLoc];
-      showToast('تمت إضافة الموقع بنجاح!');
-    }
-    setLocations(updatedLocations);
 
-    const email = profile.email || localStorage.getItem("dawaya_current_email");
-    if (email) {
-      localStorage.setItem(`dawaya_locations_${email.toLowerCase()}`, JSON.stringify(updatedLocations));
-    }
-
-    setActiveModal(null);
-    setEditingLocation(null);
-  };
-
-  const handleDeleteLocation = (id) => {
-    const updatedLocations = locations.filter((l) => l.id !== id);
-    setLocations(updatedLocations);
-
-    const email = profile.email || localStorage.getItem("dawaya_current_email");
-    if (email) {
-      localStorage.setItem(`dawaya_locations_${email.toLowerCase()}`, JSON.stringify(updatedLocations));
-    }
-
-    showToast('تم حذف الموقع بنجاح!', 'error');
-  };
-
-  const triggerEditLocation = (location) => {
-    setEditingLocation(location);
-    setActiveModal('location');
-  };
-
-  const triggerAddLocation = () => {
-    setEditingLocation(null);
-    setActiveModal('location');
-  };
-
-  const toggleLocationMenu = (id, e) => {
-    e.stopPropagation();
-    setActiveLocationMenu(activeLocationMenu === id ? null : id);
-  };
-
-  useEffect(() => {
-    const closeMenu = () => setActiveLocationMenu(null);
-    document.addEventListener('click', closeMenu);
-    return () => document.removeEventListener('click', closeMenu);
-  }, []);
 
   useEffect(() => {
     if (profile.password && passwords.newPass === profile.password) {
@@ -297,7 +229,7 @@ export default function UserProfile() {
   } else if (strengthCount === 3) {
     strengthPercent = 100;
     strengthText = 'قوية جداً';
-    strengthColor = '#0284c7';
+    strengthColor = '#1ab5ea';
   }
 
   const handleUpdatePassword = async (e) => {
@@ -348,7 +280,7 @@ export default function UserProfile() {
       height: '14px',
       borderRadius: '50%',
       border: checked ? 'none' : '1px solid #cbd5e1',
-      backgroundColor: checked ? '#0284c7' : 'transparent',
+      backgroundColor: checked ? 'var(--color-brand)' : 'transparent',
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -369,10 +301,9 @@ export default function UserProfile() {
             <span style={{ fontSize: '15px', color: 'var(--color-text-muted)', fontWeight: '600' }}>جاري تحميل الملف الشخصي...</span>
           </div>
         ) : (
-          <div className="container" style={{ margin: "5px" }}>
-            <div className="app-grid" style={{ margin: "10px" }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                
+          <div className="container" style={{ margin: "15px auto", maxWidth: "800px" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
                 <div className="card animate-fade-in" style={{
                   padding: 0,
                   overflow: 'hidden',
@@ -381,72 +312,31 @@ export default function UserProfile() {
                   boxShadow: 'var(--shadow-md)',
                   backgroundColor: '#ffffff'
                 }}>
-                  <div style={{
-                    height: '30px',
-                    background: 'linear-gradient(135deg, #e0f2fe 0%, #faf7fb 100%)',
-                    position: 'relative'
-                  }}>
-                    <div style={{ position: 'absolute', top: '10%', right: '8%', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(2, 132, 199, 0.04)', filter: 'blur(8px)' }} />
-                    <div style={{ position: 'absolute', bottom: '-20%', left: '12%', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(2, 132, 199, 0.03)', filter: 'blur(6px)' }} />
+                  <div className="profile-cover-banner">
+                    <div className="profile-cover-circle-1" />
+                    <div className="profile-cover-circle-2" />
                   </div>
 
-                  <div style={{
-                    padding: '24px 32px 32px 32px',
-                    marginTop: '-25px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '24px'
-                  }}>
-                    <div style={{ position: 'relative', zIndex: 10 }}>
-                      <div style={{
-                        marginTop: '15px',
-                        width: '110px',
-                        height: '110px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #0284c7 0%, #3b82f6 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '4px solid #ffffff',
-                        boxShadow: '0 8px 24px rgba(2, 132, 199, 0.15)',
-                        color: '#ffffff',
-                        fontSize: '44px',
-                        fontWeight: '800',
-                        fontFamily: 'Cairo, sans-serif'
-                      }}>
-                        {profile.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+                  <div className="profile-header-content">
+                    <div className="profile-user-info">
+                      <div className="profile-avatar-wrapper">
+                        <div className="profile-avatar-badge">
+                          {profile.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                      </div>
+                      <div className="profile-user-details">
+                        <h2 className="profile-user-name">{profile.fullName}</h2>
+                        <p className="profile-user-role">عضو منصة دوايا الصحية</p>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                        <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-text-main)', margin: 0 }}>{profile.fullName}</h2>
-                      </div>
-
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => setActiveModal('edit-profile')}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          borderRadius: '12px',
-                          padding: '10px 20px',
-                          fontSize: '13px',
-                          fontWeight: '700',
-                          backgroundColor: '#0284c7',
-                          border: 'none',
-                          color: '#ffffff',
-                          boxShadow: '0 4px 12px rgba(2, 132, 199, 0.15)',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          marginTop: '6px'
-                        }}
-                      >
-                        <Edit3 size={15} />
-                        <span>تعديل الملف الشخصي</span>
-                      </button>
-                    </div>
+                    <button
+                      className="profile-edit-btn"
+                      onClick={() => setActiveModal('edit-profile')}
+                    >
+                      <Edit3 size={15} />
+                      <span>تعديل الملف الشخصي</span>
+                    </button>
                   </div>
                 </div>
 
@@ -456,49 +346,59 @@ export default function UserProfile() {
                     <h3 style={{ fontSize: '18px', fontWeight: '700' }}>المعلومات الشخصية</h3>
                   </div>
 
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    columnGap: '40px',
-                    rowGap: '32px'
-                  }}>
-                    <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-                      <span className="form-label" style={{ marginBottom: '8px', display: 'block' }}>اسم المستخدم</span>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--color-text-main)' }}>{profile.username}</span>
-                        <span style={{ color: 'var(--color-text-light)', fontSize: '14px', fontWeight: '700' }}>@</span>
+                  <div className="profile-info-grid">
+                    {/* Username */}
+                    <div className="profile-info-card">
+                      <div className="profile-info-icon-wrapper icon-wrapper-username">
+                        <User size={20} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="profile-info-label">اسم المستخدم</span>
+                        <span className="profile-info-value" style={{ fontFamily: 'monospace' }}>{profile.username}</span>
                       </div>
                     </div>
 
-                    <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-                      <span className="form-label" style={{ marginBottom: '8px', display: 'block' }}>رقم الهاتف</span>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', direction: 'ltr' }}>{profile.phone}</span>
-                        <Phone size={16} style={{ color: 'var(--color-text-light)' }} />
+                    {/* Phone */}
+                    <div className="profile-info-card">
+                      <div className="profile-info-icon-wrapper icon-wrapper-phone">
+                        <Phone size={20} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="profile-info-label">رقم الهاتف</span>
+                        <span className="profile-info-value" style={{ direction: 'ltr', display: 'inline-block' }}>{profile.phone}</span>
                       </div>
                     </div>
 
-                    <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-                      <span className="form-label" style={{ marginBottom: '8px', display: 'block' }}>البريد الإلكتروني</span>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--color-text-main)' }}>{profile.email}</span>
-                        <Mail size={16} style={{ color: 'var(--color-text-light)' }} />
+                    {/* Gender */}
+                    <div className="profile-info-card">
+                      <div className="profile-info-icon-wrapper icon-wrapper-gender">
+                        <User size={20} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="profile-info-label">الجنس</span>
+                        <span className="profile-info-value">{profile.gender}</span>
                       </div>
                     </div>
 
-                    <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-                      <span className="form-label" style={{ marginBottom: '8px', display: 'block' }}>الجنس</span>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text-main)' }}>{profile.gender}</span>
-                        <User size={16} style={{ color: 'var(--color-text-light)' }} />
+                    {/* Age */}
+                    <div className="profile-info-card">
+                      <div className="profile-info-icon-wrapper icon-wrapper-age">
+                        <Cake size={20} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="profile-info-label">العمر</span>
+                        <span className="profile-info-value">{profile.age} سنة</span>
                       </div>
                     </div>
 
-                    <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
-                      <span className="form-label" style={{ marginBottom: '8px', display: 'block' }}>العمر</span>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text-main)' }}>{profile.age}</span>
-                        <Cake size={16} style={{ color: 'var(--color-text-light)' }} />
+                    {/* Email */}
+                    <div className="profile-info-card full-width">
+                      <div className="profile-info-icon-wrapper icon-wrapper-email">
+                        <Mail size={20} />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className="profile-info-label">البريد الإلكتروني</span>
+                        <span className="profile-info-value" style={{ fontFamily: 'monospace' }}>{profile.email}</span>
                       </div>
                     </div>
                   </div>
@@ -524,8 +424,8 @@ export default function UserProfile() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '6px',
-                          backgroundColor: '#fee2e2',
-                          color: '#ef4444',
+                          backgroundColor: 'var(--color-danger-light)',
+                          color: 'var(--color-danger)',
                           border: 'none',
                           padding: '8px 14px',
                           borderRadius: '12px',
@@ -688,7 +588,7 @@ export default function UserProfile() {
                           onClick={handleUpdatePassword}
                           style={{
                             width: '100%',
-                            backgroundColor: '#0284c7',
+                            backgroundColor: 'var(--color-brand)',
                             color: '#ffffff',
                             border: 'none',
                             borderRadius: '12px',
@@ -697,7 +597,7 @@ export default function UserProfile() {
                             fontSize: '13px',
                             cursor: 'pointer',
                             marginTop: 'auto',
-                            boxShadow: '0 4px 10px rgba(2, 132, 199, 0.15)',
+                            boxShadow: '0 4px 10px rgba(9, 119, 230, 0.15)',
                             transition: 'all 0.2s ease'
                           }}
                           className="hover-action-btn"
@@ -710,138 +610,9 @@ export default function UserProfile() {
                 </div>
 
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div className="card" style={{ padding: '24px', borderRadius: '24px', boxShadow: 'var(--shadow-md)', backgroundColor: '#ffffff' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '700' }}>المواقع المحفوظة</span>
-                    <button
-                      className="btn-icon"
-                      style={{ width: '28px', height: '28px' }}
-                      onClick={triggerAddLocation}
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {locations.map((loc) => (
-                      <div
-                        key={loc.id}
-                        style={{
-                          border: '1px solid var(--color-border)',
-                          borderRadius: 'var(--radius-md)',
-                          padding: '14px',
-                          position: 'relative',
-                          backgroundColor: '#f8fafc',
-                          display: 'flex',
-                          gap: '12px'
-                        }}
-                      >
-                        <div style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          backgroundColor: '#ffffff',
-                          color: 'var(--color-text-muted)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: '1px solid var(--color-border)'
-                        }}>
-                          {loc.type === 'home' ? <Home size={14} /> : <Briefcase size={14} />}
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, paddingLeft: '20px' }}>
-                          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-main)' }}>{loc.title}</span>
-                          <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>{loc.address}</p>
-                        </div>
-
-                        <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
-                          <button
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: 'var(--color-text-light)',
-                              cursor: 'pointer',
-                              padding: '4px',
-                              display: 'flex',
-                              alignItems: 'center'
-                            }}
-                            onClick={(e) => toggleLocationMenu(loc.id, e)}
-                          >
-                            <MoreVertical size={14} />
-                          </button>
-
-                          {activeLocationMenu === loc.id && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '100%',
-                              left: 0,
-                              backgroundColor: '#ffffff',
-                              border: '1px solid var(--color-border)',
-                              borderRadius: 'var(--radius-sm)',
-                              boxShadow: 'var(--shadow-md)',
-                              zIndex: 10,
-                              minWidth: '100px',
-                              padding: '4px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '2px'
-                            }}>
-                              <button
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  padding: '6px 10px',
-                                  background: 'none',
-                                  border: 'none',
-                                  fontSize: '11px',
-                                  cursor: 'pointer',
-                                  color: 'var(--color-text-main)',
-                                  width: '100%',
-                                  textAlign: 'right'
-                                }}
-                                className="hover-menu-item"
-                                onClick={() => triggerEditLocation(loc)}
-                              >
-                                <Edit3 size={10} />
-                                <span>تعديل</span>
-                              </button>
-
-                              <button
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  padding: '6px 10px',
-                                  background: 'none',
-                                  border: 'none',
-                                  fontSize: '11px',
-                                  cursor: 'pointer',
-                                  color: 'var(--color-danger)',
-                                  width: '100%',
-                                  textAlign: 'right'
-                                }}
-                                className="hover-menu-item-danger"
-                                onClick={() => handleDeleteLocation(loc.id)}
-                              >
-                                <Trash2 size={10} />
-                                <span>حذف</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
 
       {activeModal === 'edit-profile' && (
         <EditProfileModal
@@ -856,14 +627,6 @@ export default function UserProfile() {
           storedPassword={profile.password}
           onSave={handleChangePassword}
           onClose={() => setActiveModal(null)}
-        />
-      )}
-
-      {activeModal === 'location' && (
-        <LocationModal
-          location={editingLocation}
-          onSave={handleSaveLocation}
-          onClose={() => { setActiveModal(null); setEditingLocation(null); }}
         />
       )}
 

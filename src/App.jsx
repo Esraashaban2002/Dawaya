@@ -14,7 +14,8 @@ import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 
-import UserProfile from './Components/UserProfile';
+import UserProfile from './Components/UserProfile/UserProfile';
+import ProductDetails from './Components/ProductDetails/ProductDetails';
 
 function App() {
   let router = createBrowserRouter([
@@ -25,6 +26,10 @@ function App() {
         {
           index: true,
           element: <Home />
+        },
+        {
+          path: "/product/:id",
+          element: <ProductDetails />
         },
         {
           path: "/about",
