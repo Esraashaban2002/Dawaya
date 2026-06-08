@@ -9,7 +9,6 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import "./Navbar.css";
-import logo from "/public/imges/logo.png";
 import { UserContext } from "../../Context/UserContext";
 
 export default function Navbar() {
@@ -37,7 +36,7 @@ export default function Navbar() {
 
             <Link to="/" className="nb-logo">
               <img
-                src={logo}
+                src="/imges/logo.png"
                 alt="Dawaa Logo"
                 style={{ width: "100px", height: "90px" }}
               />
