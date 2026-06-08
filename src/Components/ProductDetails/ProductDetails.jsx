@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Clock, Store, ShieldCheck, Plus, Minus, 
   Share2, Heart, ShoppingCart, Check, ChevronLeft
 } from 'lucide-react';
+import { CartContext } from '../../Context/CartContext';
 
 const PRODUCT_DATA = {
   id: "1",
@@ -62,6 +63,7 @@ const PRODUCT_DATA = {
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const { cartItems, addToCart } = useContext(CartContext);
   const [activeImage, setActiveImage] = useState(PRODUCT_DATA.images[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'specs'
@@ -69,12 +71,29 @@ export default function ProductDetails() {
   const [showToast, setShowToast] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
 
+  // Sync details page quantity stepper with cartItems
+  useEffect(() => {
+    const existing = cartItems.find((item) => item.id === PRODUCT_DATA.id);
+    if (existing) {
+      setQuantity(existing.quantity);
+    } else {
+      setQuantity(1);
+    }
+  }, [cartItems]);
+
   const handleQtyChange = (val) => {
     if (val < 1) return;
     setQuantity(val);
   };
 
   const handleAddToCart = () => {
+    addToCart({
+      id: PRODUCT_DATA.id,
+      name: PRODUCT_DATA.name,
+      price: PRODUCT_DATA.price,
+      brand: PRODUCT_DATA.brand,
+      image: PRODUCT_DATA.images[0]
+    }, quantity);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
@@ -159,25 +178,6 @@ export default function ProductDetails() {
               <span className="price-value">{PRODUCT_DATA.price} جنيه</span>
             </div>
 
-            {/* Shipping, Seller & Return Information Box */}
-            <div className="product-info-box">
-              <div className="info-row">
-                <Clock className="info-icon text-primary-color" size={18} />
-                <span className="info-label-text">زمن التوصيل:</span>
-                <span className="info-value-text text-bold">خلال 30-60 دقيقة</span>
-              </div>
-              <div className="info-row">
-                <Store className="info-icon text-primary-color" size={18} />
-                <span className="info-label-text">يُباع بواسطة:</span>
-                <span className="info-value-text text-bold">{PRODUCT_DATA.sellerName}</span>
-              </div>
-              <div className="info-row">
-                <ShieldCheck className="info-icon text-primary-color" size={18} />
-                <span className="info-value-text">
-                  يمكنك استبدال أو استرجاع هذا المنتج <Link to="/about" className="learn-more-link">أعرف أكثر</Link>
-                </span>
-              </div>
-            </div>
 
             {/* Interactive Buy & Quantity Row */}
             <div className="product-purchase-row">

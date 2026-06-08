@@ -10,12 +10,14 @@ import {
 } from "react-icons/fa";
 import "./Navbar.css";
 import { UserContext } from "../../Context/UserContext";
+import { CartContext } from "../../Context/CartContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { pathname } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
+  const { cartCount } = useContext(CartContext);
   const navigate = useNavigate();
 
   function logout() {
@@ -81,9 +83,10 @@ export default function Navbar() {
                 <FaGlobe />
               </button>
 
-              <button className="nb-icon-btn" style={{ position: "relative" }}>
+              <Link to="/cart" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
                 <FaShoppingCart />
-              </button>
+                {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
+              </Link>
             </div>
 
             {/* Auth Section */}
