@@ -116,3 +116,40 @@ export const api = {
     return !!localStorage.getItem('userToken');
   }
 };
+
+//  Adman Dashoard
+
+// ─── USERS ───
+export const getUsers = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+
+  const res = await fetch(
+    `${BASE_URL}/api/admin/users?${query}`,
+    { headers: getHeaders() }
+  );
+  const text = await res.text();
+
+  return JSON.parse(text);
+};
+
+export const getUserById = async (id) => {
+  const res = await fetch(`${BASE_URL}/api/admin/users/${id}`, { headers: getHeaders()});
+  return res.json();
+};
+
+export const updateUserRole = async (id, role) => {
+  const res = await fetch(`${BASE_URL}/api/admin/users/${id}/role`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ role })
+  });
+  return res.json();
+};
+
+export const deleteUser = async (id) => {
+  const res = await fetch(`${BASE_URL}/api/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  return res.json();
+};

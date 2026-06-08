@@ -16,6 +16,7 @@ import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 
 import UserProfile from './Components/UserProfile/UserProfile';
 import ProductDetails from './Components/ProductDetails/ProductDetails';
+import Users from './Pages/Adman/User';
 
 function App() {
   let router = createBrowserRouter([
@@ -79,6 +80,7 @@ function App() {
           path: "*",
           element: <NotFound />,
         },
+       { path:"/admin/users", element : (<ProtectedRoure><Users /></ProtectedRoure>) ,},
       ],
     },
   ]);
