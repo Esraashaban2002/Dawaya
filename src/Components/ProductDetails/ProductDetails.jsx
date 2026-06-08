@@ -162,17 +162,17 @@ export default function ProductDetails() {
             {/* Shipping, Seller & Return Information Box */}
             <div className="product-info-box">
               <div className="info-row">
-                <Clock className="info-icon text-teal" size={18} />
+                <Clock className="info-icon text-primary-color" size={18} />
                 <span className="info-label-text">زمن التوصيل:</span>
                 <span className="info-value-text text-bold">خلال 30-60 دقيقة</span>
               </div>
               <div className="info-row">
-                <Store className="info-icon text-teal" size={18} />
+                <Store className="info-icon text-primary-color" size={18} />
                 <span className="info-label-text">يُباع بواسطة:</span>
                 <span className="info-value-text text-bold">{PRODUCT_DATA.sellerName}</span>
               </div>
               <div className="info-row">
-                <ShieldCheck className="info-icon text-teal" size={18} />
+                <ShieldCheck className="info-icon text-primary-color" size={18} />
                 <span className="info-value-text">
                   يمكنك استبدال أو استرجاع هذا المنتج <Link to="/about" className="learn-more-link">أعرف أكثر</Link>
                 </span>
@@ -202,7 +202,7 @@ export default function ProductDetails() {
               {/* Add To Cart Button */}
               <button 
                 onClick={handleAddToCart}
-                className="add-to-cart-btn-green"
+                className="add-to-cart-btn"
               >
                 <ShoppingCart size={18} />
                 <span>أضف إلى العربة</span>
