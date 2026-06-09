@@ -12,7 +12,7 @@ import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
-import UserProfile from "./Components/UserProfile";
+import UserProfile from "./Components/UserProfile/UserProfile";
 import AccountType from "./Components/AccountType/AccountType";
 import PharmacistRegister from "./Components/pharmacistRegister/pharmacistRegister";
 import ThankYou from "./Components/ThankYou/ThankYou";
