@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Clock, Store, ShieldCheck, Plus, Minus, 
-  Share2, Heart, ShoppingCart, Check, ChevronLeft
+  Share2, Heart, ShoppingCart, Check, ChevronLeft, Trash2
 } from 'lucide-react';
+import { CartContext } from '../../Context/CartContext';
+import { FavoritesContext } from '../../Context/FavoritesContext';
 
 const PRODUCT_DATA = {
   id: "1",
@@ -62,21 +64,58 @@ const PRODUCT_DATA = {
 
 export default function ProductDetails() {
   const { id } = useParams();
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
+  const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
   const [activeImage, setActiveImage] = useState(PRODUCT_DATA.images[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'specs'
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
+
+  // Sync details page quantity stepper with cartItems
+  useEffect(() => {
+    const existing = cartItems.find((item) => item.id === PRODUCT_DATA.id);
+    if (existing) {
+      setQuantity(existing.quantity);
+    } else {
+      setQuantity(1);
+    }
+  }, [cartItems]);
 
   const handleQtyChange = (val) => {
     if (val < 1) return;
     setQuantity(val);
+
+    // Automatically sync with cart and update navbar count if already added
+    const existing = cartItems.find((item) => item.id === PRODUCT_DATA.id);
+    if (existing) {
+      addToCart({
+        id: PRODUCT_DATA.id,
+        name: PRODUCT_DATA.name,
+        price: PRODUCT_DATA.price,
+        brand: PRODUCT_DATA.brand,
+        image: PRODUCT_DATA.images[0]
+      }, val);
+    }
   };
 
   const handleAddToCart = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    const isAdded = cartItems.some((item) => item.id === PRODUCT_DATA.id);
+    if (isAdded) {
+      removeFromCart(PRODUCT_DATA.id);
+      setToastMessage("تم إزالة المنتج من سلة المشتريات.");
+      setTimeout(() => setToastMessage(null), 3000);
+    } else {
+      addToCart({
+        id: PRODUCT_DATA.id,
+        name: PRODUCT_DATA.name,
+        price: PRODUCT_DATA.price,
+        brand: PRODUCT_DATA.brand,
+        image: PRODUCT_DATA.images[0]
+      }, quantity);
+      setToastMessage(`تم إضافة ${quantity} من المنتج إلى سلة المشتريات بنجاح!`);
+      setTimeout(() => setToastMessage(null), 3000);
+    }
   };
 
   const handleShare = () => {
@@ -141,11 +180,21 @@ export default function ProductDetails() {
                   <Share2 size={18} />
                 </button>
                 <button 
-                  onClick={() => setIsWishlisted(!isWishlisted)} 
-                  className={`action-icon-btn ${isWishlisted ? 'wishlisted' : ''}`}
+                  onClick={() => toggleFavorite({
+                    id: String(PRODUCT_DATA.id),
+                    name: PRODUCT_DATA.name,
+                    price: PRODUCT_DATA.price,
+                    brand: PRODUCT_DATA.brand,
+                    image: PRODUCT_DATA.images[0]
+                  })} 
+                  className={`action-icon-btn ${isFavorite(PRODUCT_DATA.id) ? 'wishlisted' : ''}`}
                   title="إضافة للمفضلة"
                 >
-                  <Heart size={18} fill={isWishlisted ? "var(--color-danger)" : "none"} />
+                  <Heart 
+                    size={18} 
+                    fill={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "none"} 
+                    color={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "currentColor"}
+                  />
                 </button>
               </div>
             </div>
@@ -159,25 +208,6 @@ export default function ProductDetails() {
               <span className="price-value">{PRODUCT_DATA.price} جنيه</span>
             </div>
 
-            {/* Shipping, Seller & Return Information Box */}
-            <div className="product-info-box">
-              <div className="info-row">
-                <Clock className="info-icon text-primary-color" size={18} />
-                <span className="info-label-text">زمن التوصيل:</span>
-                <span className="info-value-text text-bold">خلال 30-60 دقيقة</span>
-              </div>
-              <div className="info-row">
-                <Store className="info-icon text-primary-color" size={18} />
-                <span className="info-label-text">يُباع بواسطة:</span>
-                <span className="info-value-text text-bold">{PRODUCT_DATA.sellerName}</span>
-              </div>
-              <div className="info-row">
-                <ShieldCheck className="info-icon text-primary-color" size={18} />
-                <span className="info-value-text">
-                  يمكنك استبدال أو استرجاع هذا المنتج <Link to="/about" className="learn-more-link">أعرف أكثر</Link>
-                </span>
-              </div>
-            </div>
 
             {/* Interactive Buy & Quantity Row */}
             <div className="product-purchase-row">
@@ -202,10 +232,19 @@ export default function ProductDetails() {
               {/* Add To Cart Button */}
               <button 
                 onClick={handleAddToCart}
-                className="add-to-cart-btn"
+                className={`add-to-cart-btn ${cartItems.some((item) => item.id === PRODUCT_DATA.id) ? 'added' : ''}`}
               >
-                <ShoppingCart size={18} />
-                <span>أضف إلى العربة</span>
+                {cartItems.some((item) => item.id === PRODUCT_DATA.id) ? (
+                  <>
+                    <Trash2 size={18} />
+                    <span>إزالة من العربة</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    <span>أضف إلى العربة</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -291,11 +330,11 @@ export default function ProductDetails() {
 
       </div>
 
-      {/* Cart Addition Feedback Toast */}
-      {showToast && (
-        <div className="product-toast-notification success animate-fade-in">
-          <Check size={16} />
-          <span>تم إضافة {quantity} من المنتج إلى سلة المشتريات بنجاح!</span>
+      {/* Cart Feedback Toast */}
+      {toastMessage && (
+        <div className="product-toast-notification success animate-fade-in" style={{ background: toastMessage.includes('إزالة') ? '#ef4444' : '', borderColor: toastMessage.includes('إزالة') ? '#dc2626' : '' }}>
+          {toastMessage.includes('إزالة') ? <Trash2 size={16} /> : <Check size={16} />}
+          <span>{toastMessage}</span>
         </div>
       )}
 

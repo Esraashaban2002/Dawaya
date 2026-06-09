@@ -8,6 +8,8 @@ import Register from "./Components/Register/Register";
 import Login from "./Components/Login/Login";
 import VerifyOTP from "./Components/VerifyOTP/VerifyOTP";
 import UserContextProvider from "./Context/UserContext";
+import CartContextProvider from "./Context/CartContext";
+import FavoritesContextProvider from "./Context/FavoritesContext";
 import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
@@ -17,6 +19,8 @@ import AccountType from "./Components/AccountType/AccountType";
 import PharmacistRegister from "./Components/pharmacistRegister/pharmacistRegister";
 import ThankYou from "./Components/ThankYou/ThankYou";
 import ProductDetails from './Components/ProductDetails/ProductDetails';
+import Cart from './Pages/Cart';
+import Favorites from './Pages/Favorites';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
@@ -34,6 +38,14 @@ function App() {
         {
           path: "/product/:id",
           element: <ProductDetails />
+        },
+        {
+          path: "/cart",
+          element: <Cart />
+        },
+        {
+          path: "/favorites",
+          element: <Favorites />
         },
         {
           path: "/about",
@@ -115,9 +127,13 @@ function App() {
 
   return (
     <UserContextProvider>
-      <div dir="rtl">
-        <RouterProvider router={router}></RouterProvider>
-      </div>
+      <CartContextProvider>
+        <FavoritesContextProvider>
+          <div dir="rtl">
+            <RouterProvider router={router}></RouterProvider>
+          </div>
+        </FavoritesContextProvider>
+      </CartContextProvider>
     </UserContextProvider>
   );
 }
