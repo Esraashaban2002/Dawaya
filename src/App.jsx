@@ -16,8 +16,6 @@ import UserProfile from "./Components/UserProfile";
 import AccountType from "./Components/AccountType/AccountType";
 import PharmacistRegister from "./Components/pharmacistRegister/pharmacistRegister";
 import ThankYou from "./Components/ThankYou/ThankYou";
-
-import UserProfile from './Components/UserProfile/UserProfile';
 import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
