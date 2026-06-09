@@ -32,13 +32,10 @@ export default function Navbar() {
   return (
     <>
       <div className="nb">
-        <div className="nb-top">
-          احنا معاك ف بيتك احنا دواك..
-        </div>
+        <div className="nb-top">احنا معاك ف بيتك احنا دواك..</div>
 
         <nav className="nb-main">
           <div className="nb-inner">
-
             <Link to="/" className="nb-logo">
               <img
                 src="/imges/logo.png"
@@ -107,7 +104,7 @@ export default function Navbar() {
             {/* Auth Section */}
             {userLogin == null ? (
               <div className="nb-auth-links">
-                <NavLink to="/register" className="nb-link">
+                <NavLink to="/AccountType" className="nb-link">
                   إنشاء حساب
                 </NavLink>
                 <NavLink to="/login" className="nb-login">
@@ -120,7 +117,11 @@ export default function Navbar() {
                 <NavLink to="/profile" className="nb-link">
                   الملف الشخصي
                 </NavLink>
-                <span onClick={logout} className="nb-login" style={{ cursor: "pointer" }}>
+                <span
+                  onClick={logout}
+                  className="nb-login"
+                  style={{ cursor: "pointer" }}
+                >
                   تسجيل الخروج
                 </span>
               </div>
@@ -144,13 +145,23 @@ export default function Navbar() {
 
               {userLogin == null ? (
                 <>
-                  <Link to="/register" className="nb-mobile-link">إنشاء حساب</Link>
-                  <Link to="/login" className="nb-mobile-login">تسجيل دخول</Link>
+                  <Link to="/register" className="nb-mobile-link">
+                    إنشاء حساب
+                  </Link>
+                  <Link to="/login" className="nb-mobile-login">
+                    تسجيل دخول
+                  </Link>
                 </>
               ) : (
                 <>
-                  <Link to="/profile" className="nb-mobile-link">الملف الشخصي</Link>
-                  <span onClick={logout} className="nb-mobile-login" style={{ cursor: "pointer" }}>
+                  <Link to="/profile" className="nb-mobile-link">
+                    الملف الشخصي
+                  </Link>
+                  <span
+                    onClick={logout}
+                    className="nb-mobile-login"
+                    style={{ cursor: "pointer" }}
+                  >
                     تسجيل الخروج
                   </span>
                 </>

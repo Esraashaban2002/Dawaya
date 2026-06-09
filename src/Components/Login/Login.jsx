@@ -87,9 +87,15 @@ export default function Login() {
     onSubmit: handelLogin,
   });
 
+
+  const handleGoogleLogin = () => {
+    window.location.href = "https://dawaya-back-end.vercel.app/api/auth/google?action=login";
+  }
+
+
   return (
 
-    <div className="w-[90%] lg:w-[80%] mx-auto min-h-[85vh] flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-2xl border border-sky-100 bg-white">
+    <div className="w-[90%] lg:w-[80%] mx-auto min-h-screen flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-2xl border border-sky-100 bg-white my-15">
 
       <div className="flex-1 bg-[#faf7fb] flex items-center justify-center px-6 py-10 lg:px-14">
         <div className="w-full max-w-md">
@@ -180,6 +186,15 @@ export default function Login() {
                 إنشاء حساب
               </NavLink>
             </p>
+
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full py-3 mt-5 rounded-xl bg-white border border-gray-300 font-semibold flex items-center justify-center hover:opacity-100 gap-3 hover:bg-gray-50 transition cursor-pointer" >
+              <i className="fa-brands fa-google"></i> تسجيل الدخول عبر Google
+            </button>
+
+
+
           </form>
         </div>
       </div>

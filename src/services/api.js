@@ -1,4 +1,4 @@
-const BASE_URL = 'https://dawaya-back-end.vercel.app';
+const BASE_URL = 'https://dawaya-back-end.vercel.app/api';
 
 // Helper to check if a token is a valid JWT format
 function isValidJWT(token) {
@@ -99,7 +99,7 @@ export const api = {
     const headers = getHeaders();
     console.log('Fetching profile with headers:', headers);
 
-    const response = await fetch(`${BASE_URL}/api/user/profile`, {
+    const response = await fetch(`${BASE_URL}/user/profile`, {
       method: 'GET',
       headers: headers,
     });
@@ -142,16 +142,7 @@ export const api = {
   },
   // Update Profile
   async updateProfile(profileData) {
-    const bodyToSend = {
-      username: profileData.username,
-      phone: String(profileData.phone),
-      gender: profileData.gender
-    };
-    if (profileData.age !== undefined && profileData.age !== null && profileData.age !== '') {
-      bodyToSend.age = Number(profileData.age);
-    }
-
-    const response = await fetch(`${BASE_URL}/api/user/profile`, {
+    const response = await fetch(`${BASE_URL}/user/profile`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(bodyToSend),
@@ -177,7 +168,7 @@ export const api = {
 
   // Change Password
   async changePassword(oldPassword, newPassword) {
-    const response = await fetch(`${BASE_URL}/api/user/changepassword`, {
+    const response = await fetch(`${BASE_URL}/user/changepassword`, {
       method: 'PATCH',
       headers: getHeaders(),
       body: JSON.stringify({ oldPassword, newPassword }),
@@ -210,4 +201,105 @@ export const api = {
   isLoggedIn() {
     return !!localStorage.getItem('userToken');
   }
+};
+
+//  Adman Dashoard
+
+// ─── STATS ───
+export const getStats = async () => {
+  const res = await fetch(`${BASE_URL}/admin/stats`, {headers: getHeaders() });
+  return res.json();
+};
+
+// ─── USERS ───
+export const getUsers = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+
+  const res = await fetch(
+    `${BASE_URL}/admin/users?${query}`,
+    { headers: getHeaders() }
+  );
+  const text = await res.text();
+
+  return JSON.parse(text);
+};
+
+export const getUserById = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/users/${id}`, { headers: getHeaders()});
+  return res.json();
+};
+
+export const updateUserRole = async (id, role) => {
+  const res = await fetch(`${BASE_URL}/admin/users/${id}/role`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ role })
+  });
+  return res.json();
+};
+
+export const deleteUser = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/users/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  return res.json();
+};
+
+
+// ─── PHARMACIES ───
+export const getPharmacies = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE_URL}/pharmacies?${query}`, { headers: getHeaders() });
+  return res.json();
+};
+
+export const createPharmacy = async (data) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacies`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(data)
+  });
+  return res.json();
+};
+
+export const updatePharmacy = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data)
+  });
+  return res.json();
+};
+
+export const deletePharmacy = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders()
+  });
+  return res.json();
+};
+
+export const togglePharmacy = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}/toggle`, {
+    method: 'PATCH',
+    headers: getHeaders()
+  });
+  return res.json();
+};
+
+// ─── ORDERS ───
+export const getOrders = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, {headers: getHeaders() });
+  return res.json();
+};
+
+export const updateOrderStatus = async (id, status) => {
+  const res = await fetch(`${BASE_URL}/admin/orders/${id}/status`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ status })
+  });
+  return res.json();
 };
