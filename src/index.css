@@ -956,6 +956,16 @@
     box-shadow: 0 6px 16px rgba(26, 181, 234, 0.35);
   }
 
+  .add-to-cart-btn.added {
+    background: #ef4444;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  }
+
+  .add-to-cart-btn.added:hover {
+    background: #dc2626;
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+  }
+
   /* Details & Specs Tabs Card */
   .product-details-tabs-card {
     background: #ffffff;

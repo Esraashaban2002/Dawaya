@@ -10,7 +10,7 @@ import { UserContext } from '../Context/UserContext';
 
 export default function Favorites() {
   const { favorites, removeFromFavorites } = useContext(FavoritesContext);
-  const { addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
   const { userLogin } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -26,17 +26,23 @@ export default function Favorites() {
   const handleAddToCart = (e, item) => {
     e.stopPropagation();
     if (!userLogin) {
-      triggerToast('يرجى تسجيل الدخول أولاً لإضافة المنتجات إلى السلة!', 'error');
+      triggerToast('يرجى تسجيل الدخول أولاً لإدارة السلة!', 'error');
       return;
     }
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      brand: item.brand,
-      image: item.image
-    }, 1);
-    triggerToast(`تم إضافة ${item.name.substring(0, 20)}... إلى سلة المشتريات بنجاح!`, 'success');
+    const isAdded = cartItems.some((cItem) => String(cItem.id) === String(item.id));
+    if (isAdded) {
+      removeFromCart(item.id);
+      triggerToast(`تم إزالة ${item.name.substring(0, 20)}... من سلة المشتريات.`, 'info');
+    } else {
+      addToCart({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        brand: item.brand,
+        image: item.image
+      }, 1);
+      triggerToast(`تم إضافة ${item.name.substring(0, 20)}... إلى سلة المشتريات بنجاح!`, 'success');
+    }
   };
 
   return (
@@ -198,9 +204,9 @@ export default function Favorites() {
                       style={{
                         width: '100%',
                         padding: '10px 0',
-                        background: 'transparent',
-                        color: 'var(--color-text-main)',
-                        border: '2px solid var(--color-text-main)',
+                        background: cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? '#ef4444' : 'transparent',
+                        color: cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? '#ffffff' : 'var(--color-text-main)',
+                        border: `2px solid ${cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? '#ef4444' : 'var(--color-text-main)'}`,
                         borderRadius: '10px',
                         fontWeight: '700',
                         fontSize: '12px',
@@ -213,16 +219,29 @@ export default function Favorites() {
                         fontFamily: 'Cairo, sans-serif'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'var(--color-text-main)';
-                        e.currentTarget.style.color = '#ffffff';
+                        if (!cartItems.some((cItem) => String(cItem.id) === String(item.id))) {
+                          e.currentTarget.style.background = 'var(--color-text-main)';
+                          e.currentTarget.style.color = '#ffffff';
+                        }
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = 'var(--color-text-main)';
+                        if (!cartItems.some((cItem) => String(cItem.id) === String(item.id))) {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = 'var(--color-text-main)';
+                        }
                       }}
                     >
-                      <ShoppingCart size={14} />
-                      <span>أضف للسلة</span>
+                      {cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? (
+                        <>
+                          <Trash2 size={14} />
+                          <span>إزالة من السلة</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart size={14} />
+                          <span>أضف للسلة</span>
+                        </>
+                      )}
                     </button>
                   </div>
 

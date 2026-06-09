@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Clock, Store, ShieldCheck, Plus, Minus, 
-  Share2, Heart, ShoppingCart, Check, ChevronLeft
+  Share2, Heart, ShoppingCart, Check, ChevronLeft, Trash2
 } from 'lucide-react';
 import { CartContext } from '../../Context/CartContext';
 import { FavoritesContext } from '../../Context/FavoritesContext';
@@ -64,12 +64,12 @@ const PRODUCT_DATA = {
 
 export default function ProductDetails() {
   const { id } = useParams();
-  const { cartItems, addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
   const [activeImage, setActiveImage] = useState(PRODUCT_DATA.images[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'specs'
-  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
 
   // Sync details page quantity stepper with cartItems
@@ -100,15 +100,22 @@ export default function ProductDetails() {
   };
 
   const handleAddToCart = () => {
-    addToCart({
-      id: PRODUCT_DATA.id,
-      name: PRODUCT_DATA.name,
-      price: PRODUCT_DATA.price,
-      brand: PRODUCT_DATA.brand,
-      image: PRODUCT_DATA.images[0]
-    }, quantity);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    const isAdded = cartItems.some((item) => item.id === PRODUCT_DATA.id);
+    if (isAdded) {
+      removeFromCart(PRODUCT_DATA.id);
+      setToastMessage("تم إزالة المنتج من سلة المشتريات.");
+      setTimeout(() => setToastMessage(null), 3000);
+    } else {
+      addToCart({
+        id: PRODUCT_DATA.id,
+        name: PRODUCT_DATA.name,
+        price: PRODUCT_DATA.price,
+        brand: PRODUCT_DATA.brand,
+        image: PRODUCT_DATA.images[0]
+      }, quantity);
+      setToastMessage(`تم إضافة ${quantity} من المنتج إلى سلة المشتريات بنجاح!`);
+      setTimeout(() => setToastMessage(null), 3000);
+    }
   };
 
   const handleShare = () => {
@@ -225,10 +232,19 @@ export default function ProductDetails() {
               {/* Add To Cart Button */}
               <button 
                 onClick={handleAddToCart}
-                className="add-to-cart-btn"
+                className={`add-to-cart-btn ${cartItems.some((item) => item.id === PRODUCT_DATA.id) ? 'added' : ''}`}
               >
-                <ShoppingCart size={18} />
-                <span>أضف إلى العربة</span>
+                {cartItems.some((item) => item.id === PRODUCT_DATA.id) ? (
+                  <>
+                    <Trash2 size={18} />
+                    <span>إزالة من العربة</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    <span>أضف إلى العربة</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -314,11 +330,11 @@ export default function ProductDetails() {
 
       </div>
 
-      {/* Cart Addition Feedback Toast */}
-      {showToast && (
-        <div className="product-toast-notification success animate-fade-in">
-          <Check size={16} />
-          <span>تم إضافة {quantity} من المنتج إلى سلة المشتريات بنجاح!</span>
+      {/* Cart Feedback Toast */}
+      {toastMessage && (
+        <div className="product-toast-notification success animate-fade-in" style={{ background: toastMessage.includes('إزالة') ? '#ef4444' : '', borderColor: toastMessage.includes('إزالة') ? '#dc2626' : '' }}>
+          {toastMessage.includes('إزالة') ? <Trash2 size={16} /> : <Check size={16} />}
+          <span>{toastMessage}</span>
         </div>
       )}
 

@@ -198,7 +198,7 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
   const navigate = useNavigate();
-  const { addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
 
   const goTo = (i) => {
@@ -657,23 +657,30 @@ export default function Home() {
                     <button
                       onClick={(e) => { 
                         e.stopPropagation(); 
-                        addToCart({
-                          id: String(p.id),
-                          name: p.name,
-                          price: parseFloat(p.price.replace(" جنيه", "")),
-                          brand: "بانادول",
-                          image: p.image
-                        }, 1);
+                        const isAdded = cartItems.some((item) => item.id === String(p.id));
+                        if (isAdded) {
+                          removeFromCart(String(p.id));
+                        } else {
+                          addToCart({
+                            id: String(p.id),
+                            name: p.name,
+                            price: parseFloat(p.price.replace(" جنيه", "")),
+                            brand: "بانادول",
+                            image: p.image
+                          }, 1);
+                        }
                       }}
                       style={{
                         width: "100%", padding: "9px 0",
-                        background: hov ? dark : "transparent",
-                        color: hov ? "#fff" : dark,
-                        border: `2px solid ${dark}`, borderRadius: 10,
+                        background: cartItems.some((item) => item.id === String(p.id)) ? "#ef4444" : (hov ? dark : "transparent"),
+                        color: cartItems.some((item) => item.id === String(p.id)) ? "#fff" : (hov ? "#fff" : dark),
+                        border: `2px solid ${cartItems.some((item) => item.id === String(p.id)) ? "#ef4444" : dark}`, borderRadius: 10,
                         fontWeight: 700, fontSize: 13, cursor: "pointer",
                         transition: "all 0.22s ease", fontFamily: font,
                       }}
-                    >أضف للسلة</button>
+                    >
+                      {cartItems.some((item) => item.id === String(p.id)) ? "إزالة من السلة" : "أضف للسلة"}
+                    </button>
                   </div>
                 </div>
               );
