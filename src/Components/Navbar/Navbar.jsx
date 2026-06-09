@@ -7,15 +7,20 @@ import {
   FaGlobe,
   FaBars,
   FaTimes,
+  FaHeart,
 } from "react-icons/fa";
 import "./Navbar.css";
 import { UserContext } from "../../Context/UserContext";
+import { CartContext } from "../../Context/CartContext";
+import { FavoritesContext } from "../../Context/FavoritesContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { pathname } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
+  const { cartCount } = useContext(CartContext);
+  const { favorites } = useContext(FavoritesContext);
   const navigate = useNavigate();
 
   function logout() {
@@ -60,6 +65,13 @@ export default function Navbar() {
               >
                 الصيدليات
               </Link>
+
+              <Link
+                to="/favorites"
+                className={`nb-link${pathname === "/favorites" ? " active" : ""}`}
+              >
+                المفضلة
+              </Link>
             </div>
 
             <div className="nb-search">
@@ -78,9 +90,15 @@ export default function Navbar() {
                 <FaGlobe />
               </button>
 
-              <button className="nb-icon-btn" style={{ position: "relative" }}>
+              <Link to="/favorites" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
+                <FaHeart style={{ color: "#e53935" }} />
+                {favorites.length > 0 && <span className="nb-badge" style={{ backgroundColor: "#e53935" }}>{favorites.length}</span>}
+              </Link>
+
+              <Link to="/cart" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
                 <FaShoppingCart />
-              </button>
+                {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
+              </Link>
             </div>
 
             {/* Auth Section */}
@@ -120,15 +138,10 @@ export default function Navbar() {
           {/* Mobile Menu */}
           {menuOpen && (
             <div className="nb-mobile-menu">
-              <Link to="/" className="nb-mobile-link">
-                الرئيسية
-              </Link>
-              <Link to="/products" className="nb-mobile-link">
-                المنتجات
-              </Link>
-              <Link to="/pharmacies" className="nb-mobile-link">
-                الصيدليات
-              </Link>
+              <Link to="/" className="nb-mobile-link">الرئيسية</Link>
+              <Link to="/products" className="nb-mobile-link">المنتجات</Link>
+              <Link to="/pharmacies" className="nb-mobile-link">الصيدليات</Link>
+              <Link to="/favorites" className="nb-mobile-link">المفضلة</Link>
 
               {userLogin == null ? (
                 <>
