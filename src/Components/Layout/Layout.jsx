@@ -6,7 +6,7 @@ import Footer from "../Footer/Footer";
 export default function Layout() {
     return <>
         <Navbar />
-        <div className="container-custom py-40">
+        <div className="container-custom">
             <Outlet></Outlet>
         </div>
         <Footer />

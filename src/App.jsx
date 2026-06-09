@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
@@ -13,8 +12,10 @@ import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
-
-import UserProfile from './Components/UserProfile';
+import UserProfile from "./Components/UserProfile";
+import AccountType from "./Components/AccountType/AccountType";
+import PharmacistRegister from "./Components/pharmacistRegister/pharmacistRegister";
+import ThankYou from "./Components/ThankYou/ThankYou";
 
 function App() {
   let router = createBrowserRouter([
@@ -24,7 +25,7 @@ function App() {
       children: [
         {
           index: true,
-          element: <Home />
+          element: <Home />,
         },
         {
           path: "/about",
@@ -43,8 +44,16 @@ function App() {
           ),
         },
         {
+          path: "/accountType",
+          element: <AccountType />,
+        },
+        {
           path: "/login",
           element: <Login />,
+        },
+        {
+          path: "/pharmacistRegister",
+          element: <PharmacistRegister />,
         },
         {
           path: "/register",
@@ -53,6 +62,10 @@ function App() {
         {
           path: "/regester",
           element: <Register />,
+        },
+        {
+          path: "/thankyou",
+          element: <ThankYou />,
         },
         {
           path: "/verifyotp",
