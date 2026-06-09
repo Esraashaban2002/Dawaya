@@ -59,7 +59,7 @@ export default function Login() {
             users[index].token = token;
           } else {
             users.push({
-              username: formValues.email.split('@')[0],
+              username: formValues.email.split('@')[0].slice(0, 12),
               email: formValues.email,
               password: formValues.password,
               phone: '01012345678',
