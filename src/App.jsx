@@ -10,6 +10,7 @@ import Login from "./Components/Login/Login";
 import VerifyOTP from "./Components/VerifyOTP/VerifyOTP";
 import UserContextProvider from "./Context/UserContext";
 import CartContextProvider from "./Context/CartContext";
+import FavoritesContextProvider from "./Context/FavoritesContext";
 import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
@@ -18,6 +19,7 @@ import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 import UserProfile from './Components/UserProfile/UserProfile';
 import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Cart from './Pages/Cart';
+import Favorites from './Pages/Favorites';
 
 function App() {
   let router = createBrowserRouter([
@@ -36,6 +38,10 @@ function App() {
         {
           path: "/cart",
           element: <Cart />
+        },
+        {
+          path: "/favorites",
+          element: <Favorites />
         },
         {
           path: "/about",
@@ -92,9 +98,11 @@ function App() {
   return (
     <UserContextProvider>
       <CartContextProvider>
-        <div dir="rtl">
-          <RouterProvider router={router}></RouterProvider>
-        </div>
+        <FavoritesContextProvider>
+          <div dir="rtl">
+            <RouterProvider router={router}></RouterProvider>
+          </div>
+        </FavoritesContextProvider>
       </CartContextProvider>
     </UserContextProvider>
   );

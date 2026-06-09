@@ -58,47 +58,67 @@ export default function UserProfile() {
     }
 
     setIsLoading(true);
+    let apiUser = null;
     try {
       const data = await api.getProfile();
-      const apiUser = data.user || data.data || data;
+      
+      // Robust user object extraction from backend response
+      if (data) {
+        if (data.user) {
+          apiUser = data.user;
+        } else if (data.data) {
+          if (data.data.user) {
+            apiUser = data.data.user;
+          } else {
+            apiUser = data.data;
+          }
+        } else {
+          apiUser = data;
+        }
+      }
+    } catch (err) {
+      console.warn('Database profile fetch failed, falling back to local registry:', err);
+    }
 
-      const localEmail = localStorage.getItem("dawaya_current_email") || apiUser.email || '';
-      const localPassword = localStorage.getItem("dawaya_current_password") || '';
+    const localEmail = localStorage.getItem("dawaya_current_email") || '';
+    const localPassword = localStorage.getItem("dawaya_current_password") || '';
 
+    // Check if we have local user registry details
+    const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
+    const localUser = users.find(u => u.email.toLowerCase() === localEmail.toLowerCase());
+
+    if (apiUser) {
       setProfile({
-        fullName: apiUser.username || 'عضو داوايا',
-        username: apiUser.username || 'user',
+        fullName: apiUser.username || localUser?.username || 'عضو داوايا',
+        username: apiUser.username || localUser?.username || 'user',
+        email: apiUser.email || localEmail,
+        password: localPassword,
+        phone: apiUser.phone || localUser?.phone || '',
+        age: apiUser.age || localUser?.age || "18",
+        gender: apiUser.gender === 'male' || apiUser.gender === 'ذكر' || localUser?.gender === 'male' || localUser?.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+      });
+    } else if (localUser) {
+      setProfile({
+        fullName: localUser.username || 'عضو داوايا',
+        username: localUser.username || 'user',
+        email: localUser.email || localEmail,
+        password: localPassword,
+        phone: localUser.phone || '',
+        age: localUser.age || "18",
+        gender: localUser.gender === 'male' || localUser.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+      });
+    } else {
+      setProfile({
+        fullName: 'عضو داوايا',
+        username: 'user',
         email: localEmail,
         password: localPassword,
-        phone: apiUser.phone || '',
-        age: apiUser.age || "18",
-        gender: apiUser.gender === 'male' || apiUser.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+        phone: '',
+        age: "18",
+        gender: 'ذكر'
       });
-    } catch (err) {
-      try {
-        const localEmail = localStorage.getItem("dawaya_current_email") || "";
-        const localPassword = localStorage.getItem("dawaya_current_password") || "";
-        const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
-        const matchedUser = users.find(u => u.email.toLowerCase() === localEmail.toLowerCase());
-        if (matchedUser) {
-          setProfile({
-            fullName: matchedUser.username || 'عضو دوايا',
-            username: matchedUser.username || 'New user',
-            email: matchedUser.email,
-            password: matchedUser.password,
-            phone: matchedUser.phone || '01*********',
-            age: matchedUser.age || "-",
-            gender: matchedUser.gender === 'female' ? 'أنثى' : 'ذكر'
-          });
-          return;
-        }
-      } catch (e) {
-        console.error("Local fallback failed", e);
-      }
-      showToast(err.message || 'انتهت الجلسة، يرجى تسجيل الدخول مجدداً.', 'error');
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -106,88 +126,91 @@ export default function UserProfile() {
   }, [userLogin]);
 
   const handleSaveProfile = async (updatedProfile) => {
-    const activeToken = localStorage.getItem("userToken");
-    const isMockToken = !activeToken || activeToken === "mock_token_for_dawaya_auth";
+    // 1. Always save to local storage registry first
+    try {
+      const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
+      const index = users.findIndex(u => u.email.toLowerCase() === updatedProfile.email.toLowerCase());
+      const userData = {
+        username: updatedProfile.username,
+        phone: updatedProfile.phone,
+        email: updatedProfile.email,
+        password: updatedProfile.password,
+        gender: updatedProfile.gender === 'ذكر' ? 'male' : 'female',
+        age: Number(updatedProfile.age) || 18
+      };
+      if (index > -1) {
+        users[index] = { ...users[index], ...userData };
+      } else {
+        users.push(userData);
+      }
+      localStorage.setItem("dawaya_users", JSON.stringify(users));
+      localStorage.setItem("dawaya_current_email", updatedProfile.email);
+      localStorage.setItem("dawaya_current_password", updatedProfile.password);
+    } catch (e) {
+      console.error("Local storage registry update failed", e);
+    }
 
+    // 2. Try saving to the backend database
+    let apiUser = null;
     try {
       const genderApi = updatedProfile.gender === 'ذكر' ? 'male' : 'female';
+      const data = await api.updateProfile({
+        username: updatedProfile.username,
+        phone: updatedProfile.phone,
+        age: updatedProfile.age,
+        gender: genderApi
+      });
 
-      if (!isMockToken) {
-        try {
-          await api.updateProfile({
-            username: updatedProfile.username,
-            phone: updatedProfile.phone,
-            age: Number(updatedProfile.age),
-            gender: genderApi
-          });
-        } catch (apiErr) {
-          console.warn("Backend profile update rejected or failed, executing local fallback save:", apiErr.message);
-        }
-      }
-
-      try {
-        const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
-        const oldEmail = localStorage.getItem("dawaya_current_email") || updatedProfile.email;
-        const index = users.findIndex(u => u.email.toLowerCase() === oldEmail.toLowerCase());
-        const token = localStorage.getItem("userToken") || "mock_token_for_dawaya_auth";
-
-        const userData = {
-          username: updatedProfile.username,
-          phone: updatedProfile.phone,
-          email: updatedProfile.email,
-          password: updatedProfile.password,
-          gender: genderApi,
-          age: Number(updatedProfile.age),
-          token: token
-        };
-
-        if (index > -1) {
-          users[index] = userData;
+      // Robust user object extraction from backend response
+      if (data) {
+        if (data.user) {
+          apiUser = data.user;
+        } else if (data.data) {
+          if (data.data.user) {
+            apiUser = data.data.user;
+          } else {
+            apiUser = data.data;
+          }
         } else {
-          users.push(userData);
+          apiUser = data;
         }
-
-        localStorage.setItem("dawaya_users", JSON.stringify(users));
-        localStorage.setItem("dawaya_current_email", updatedProfile.email);
-        localStorage.setItem("dawaya_current_password", updatedProfile.password);
-      } catch (e) {
-        console.error("Local profile update failed", e);
       }
-
-      setProfile(updatedProfile);
-      setActiveModal(null);
-      showToast('تم تحديث الملف الشخصي بنجاح!');
     } catch (err) {
-      showToast(err.message || 'حدث خطأ أثناء حفظ التغييرات.', 'error');
+      console.warn('Database save failed, using local registry as fallback:', err);
     }
+
+    // 3. Always update active state from the latest data input to ensure seamless UI update
+    if (apiUser) {
+      setProfile({
+        fullName: apiUser.username || updatedProfile.username,
+        username: apiUser.username || updatedProfile.username,
+        email: apiUser.email || updatedProfile.email,
+        password: updatedProfile.password,
+        phone: apiUser.phone || updatedProfile.phone,
+        age: apiUser.age || updatedProfile.age,
+        gender: apiUser.gender === 'male' || apiUser.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+      });
+    } else {
+      setProfile({
+        fullName: updatedProfile.username,
+        username: updatedProfile.username,
+        email: updatedProfile.email,
+        password: updatedProfile.password,
+        phone: updatedProfile.phone,
+        age: updatedProfile.age,
+        gender: updatedProfile.gender
+      });
+    }
+    setActiveModal(null);
+    showToast('تم تحديث الملف الشخصي بنجاح!');
   };
 
   const handleChangePassword = async (oldPassword, newPassword) => {
-    const activeToken = localStorage.getItem("userToken");
-    const isMockToken = !activeToken || activeToken === "mock_token_for_dawaya_auth";
-
     try {
-      if (!isMockToken) {
-        try {
-          await api.changePassword(oldPassword, newPassword);
-        } catch (apiErr) {
-          console.warn("Backend change password failed, executing local fallback save:", apiErr.message);
-        }
-      }
+      // Always change password in the database
+      await api.changePassword(oldPassword, newPassword);
 
       localStorage.setItem("dawaya_current_password", newPassword);
-      try {
-        const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
-        const activeEmail = localStorage.getItem("dawaya_current_email") || "";
-        const index = users.findIndex(u => u.email.toLowerCase() === activeEmail.toLowerCase());
-        if (index > -1) {
-          users[index].password = newPassword;
-          localStorage.setItem("dawaya_users", JSON.stringify(users));
-        }
-      } catch (e) {
-        console.error("Local password change sync failed", e);
-      }
-
       setProfile(prev => ({ ...prev, password: newPassword }));
       setActiveModal(null);
       showToast('تم تغيير كلمة المرور بنجاح!', 'success');

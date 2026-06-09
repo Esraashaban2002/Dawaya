@@ -5,6 +5,7 @@ import {
   Share2, Heart, ShoppingCart, Check, ChevronLeft
 } from 'lucide-react';
 import { CartContext } from '../../Context/CartContext';
+import { FavoritesContext } from '../../Context/FavoritesContext';
 
 const PRODUCT_DATA = {
   id: "1",
@@ -64,10 +65,10 @@ const PRODUCT_DATA = {
 export default function ProductDetails() {
   const { id } = useParams();
   const { cartItems, addToCart } = useContext(CartContext);
+  const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
   const [activeImage, setActiveImage] = useState(PRODUCT_DATA.images[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'specs'
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
 
@@ -84,6 +85,18 @@ export default function ProductDetails() {
   const handleQtyChange = (val) => {
     if (val < 1) return;
     setQuantity(val);
+
+    // Automatically sync with cart and update navbar count if already added
+    const existing = cartItems.find((item) => item.id === PRODUCT_DATA.id);
+    if (existing) {
+      addToCart({
+        id: PRODUCT_DATA.id,
+        name: PRODUCT_DATA.name,
+        price: PRODUCT_DATA.price,
+        brand: PRODUCT_DATA.brand,
+        image: PRODUCT_DATA.images[0]
+      }, val);
+    }
   };
 
   const handleAddToCart = () => {
@@ -160,11 +173,21 @@ export default function ProductDetails() {
                   <Share2 size={18} />
                 </button>
                 <button 
-                  onClick={() => setIsWishlisted(!isWishlisted)} 
-                  className={`action-icon-btn ${isWishlisted ? 'wishlisted' : ''}`}
+                  onClick={() => toggleFavorite({
+                    id: String(PRODUCT_DATA.id),
+                    name: PRODUCT_DATA.name,
+                    price: PRODUCT_DATA.price,
+                    brand: PRODUCT_DATA.brand,
+                    image: PRODUCT_DATA.images[0]
+                  })} 
+                  className={`action-icon-btn ${isFavorite(PRODUCT_DATA.id) ? 'wishlisted' : ''}`}
                   title="إضافة للمفضلة"
                 >
-                  <Heart size={18} fill={isWishlisted ? "var(--color-danger)" : "none"} />
+                  <Heart 
+                    size={18} 
+                    fill={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "none"} 
+                    color={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "currentColor"}
+                  />
                 </button>
               </div>
             </div>

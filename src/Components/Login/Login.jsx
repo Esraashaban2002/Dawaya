@@ -17,24 +17,6 @@ export default function Login() {
   async function handelLogin(formValues) {
     setIsLoading(true);
 
-    // 1. Check local registry first to support updated credentials
-    try {
-      const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
-      const matchedUser = users.find(u => u.email.toLowerCase() === formValues.email.toLowerCase());
-      if (matchedUser && matchedUser.password === formValues.password) {
-        const activeToken = matchedUser.token || localStorage.getItem("userToken") || "mock_token_for_dawaya_auth";
-        localStorage.setItem("userToken", activeToken);
-        setUserLogin(activeToken);
-        localStorage.setItem("dawaya_current_email", matchedUser.email);
-        localStorage.setItem("dawaya_current_password", matchedUser.password);
-        setIsLoading(false);
-        navigate("/");
-        return;
-      }
-    } catch (e) {
-      console.error("Local login intercept failed", e);
-    }
-
     // 2. Fallback to server API if no local match is found
     try {
       let { data } = await axios.post(

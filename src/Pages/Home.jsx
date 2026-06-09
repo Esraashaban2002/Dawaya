@@ -1,5 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CartContext } from "../Context/CartContext";
+import { FavoritesContext } from "../Context/FavoritesContext";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 // ─── ROUTES ──────────────────────────────────────────────────
 const ROUTES = {
@@ -195,6 +198,8 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
   const navigate = useNavigate();
+  const { addToCart } = useContext(CartContext);
+  const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
 
   const goTo = (i) => {
     if (i === slide) return;
@@ -593,6 +598,44 @@ export default function Home() {
                       fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20,
                     }}>{p.tag}</div>
                   )}
+                  {/* Heart Toggle Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite({
+                        id: String(p.id),
+                        name: p.name,
+                        price: parseFloat(p.price.replace(" جنيه", "")),
+                        brand: "بانادول",
+                        image: p.image
+                      });
+                    }}
+                    style={{
+                      position: "absolute",
+                      top: 12,
+                      right: 12,
+                      zIndex: 10,
+                      background: "rgba(255, 255, 255, 0.9)",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 34,
+                      height: 34,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                      transition: "transform 0.2s ease, background 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+                  >
+                    {isFavorite(p.id) ? (
+                      <FaHeart style={{ color: "#e53935", fontSize: 16 }} />
+                    ) : (
+                      <FaRegHeart style={{ color: "#7f8c8d", fontSize: 16 }} />
+                    )}
+                  </button>
                   <div style={{ height: 190, overflow: "hidden", background: "#f0f4f8" }}>
                     <img
                       src={p.image} alt={p.name}
@@ -612,7 +655,16 @@ export default function Home() {
                       )}
                     </div>
                     <button
-                      onClick={(e) => { e.stopPropagation(); navigate(ROUTES.cart); }}
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        addToCart({
+                          id: String(p.id),
+                          name: p.name,
+                          price: parseFloat(p.price.replace(" جنيه", "")),
+                          brand: "بانادول",
+                          image: p.image
+                        }, 1);
+                      }}
                       style={{
                         width: "100%", padding: "9px 0",
                         background: hov ? dark : "transparent",

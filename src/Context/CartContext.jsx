@@ -1,22 +1,37 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
+import { UserContext } from "./UserContext";
 
 export const CartContext = createContext();
 
 export default function CartContextProvider({ children }) {
+  const { userLogin } = useContext(UserContext);
+
   const [cartItems, setCartItems] = useState(() => {
     const saved = localStorage.getItem("cartItems");
-    return saved ? JSON.parse(saved) : [];
+    const token = localStorage.getItem("userToken");
+    return saved && token ? JSON.parse(saved) : [];
   });
 
   const [cartCount, setCartCount] = useState(0);
 
+  // Clear cart if user is not logged in
   useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    if (!userLogin) {
+      setCartItems([]);
+      localStorage.removeItem("cartItems");
+    }
+  }, [userLogin]);
+
+  useEffect(() => {
+    if (userLogin) {
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    }
     const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
     setCartCount(totalCount);
-  }, [cartItems]);
+  }, [cartItems, userLogin]);
 
   const addToCart = (product, quantity) => {
+    if (!userLogin) return;
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex((item) => item.id === product.id);
       if (existingItemIndex > -1) {
@@ -34,7 +49,7 @@ export default function CartContextProvider({ children }) {
   };
 
   const updateQuantity = (productId, quantity) => {
-    if (quantity < 1) return;
+    if (!userLogin || quantity < 1) return;
     setCartItems((prevItems) =>
       prevItems.map((item) =>
         item.id === productId ? { ...item, quantity } : item
