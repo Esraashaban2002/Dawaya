@@ -110,7 +110,7 @@ export default function Register() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-[#f6f7fb] py-10 px-4">
+      <div className="min-h-screen flex items-start justify-center bg-[#f6f7fb] py-15 px-4">
         <div className="w-full max-w-6xl bg-white rounded-[32px] overflow-hidden shadow-2xl flex flex-col lg:flex-row">
           <div
             className="hidden lg:flex flex-1 relative bg-cover bg-center min-h-[750px]"
