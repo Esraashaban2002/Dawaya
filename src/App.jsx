@@ -14,7 +14,7 @@ import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 import UserProfile from "./Components/UserProfile";
 import AccountType from "./Components/AccountType/AccountType";
-import PharmacistRegister from "./Components/pharmacistRegister/pharmacistRegister";
+import PharmacistRegister from "./Components/PharmacistRegister/PharmacistRegister";
 import ThankYou from "./Components/ThankYou/ThankYou";
 import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Users from './Pages/Adman/User';
