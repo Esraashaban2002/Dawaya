@@ -17,6 +17,8 @@ import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
 import UserProfile from './Components/UserProfile/UserProfile';
 import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Users from './Pages/Adman/User';
+import Dashboard from './Pages/Adman/Dashboard';
+import AdminLayout from './Pages/Adman/AdminLayout';
 
 function App() {
   let router = createBrowserRouter([
@@ -80,9 +82,22 @@ function App() {
           path: "*",
           element: <NotFound />,
         },
-       { path:"/admin/users", element : (<ProtectedRoure><Users /></ProtectedRoure>) ,},
       ],
     },
+
+    // ─── الـ Admin Dashboard — 
+    {
+      path: "/admin",
+      element: (
+        <ProtectedRoure>
+          <AdminLayout />
+        </ProtectedRoure>
+      ),
+      children: [
+        { index: true, element: <Dashboard /> },
+        { path: "users", element: <Users /> },
+      ]
+    }
   ]);
 
   return (

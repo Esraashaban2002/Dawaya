@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { getUsers, updateUserRole, deleteUser } from "../../services/api";
+import { useEffect, useState } from 'react';
+import { getUsers, updateUserRole, deleteUser } from '../../services/api';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -14,7 +14,6 @@ export default function Users() {
     const params = { page, limit: 10 };
     if (roleFilter) params.role = roleFilter;
     const data = await getUsers(params);
-     console.log(data)
     setUsers(data.data?.data || []);
     setTotal(data.data?.total || 0);
     setLoading(false);
@@ -38,29 +37,44 @@ export default function Users() {
     u.email?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const roleBadge = (role) => {
+    const styles = {
+      admin: { background: 'rgba(99,102,241,0.1)', color: '#6366f1' },
+      pharmacist: { background: 'rgba(26,181,234,0.1)', color: '#1ab5ea' },
+      user: { background: 'rgba(16,185,129,0.1)', color: '#10b981' },
+    };
+    return styles[role] || styles.user;
+  };
+
   return (
-    <div className="p-6">
+    <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">المستخدمين</h1>
-          <p className="text-sm text-gray-500 mt-1">إجمالي: {total} مستخدم</p>
+          <h1 className="text-2xl font-extrabold" style={{ color: 'var(--color-text-main)' }}>
+            المستخدمين
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+            إجمالي: {total} مستخدم
+          </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 flex-wrap">
         <input
           type="text"
           placeholder="بحث باسم أو إيميل..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="border border-gray-200 rounded-lg px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="form-input"
+          style={{ width: '260px' }}
         />
         <select
           value={roleFilter}
           onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
-          className="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="form-input"
+          style={{ width: 'auto' }}
         >
           <option value="">كل الأدوار</option>
           <option value="user">User</option>
@@ -70,50 +84,56 @@ export default function Users() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-right px-4 py-3 text-gray-500 font-medium">المستخدم</th>
-              <th className="text-right px-4 py-3 text-gray-500 font-medium">الإيميل</th>
-              <th className="text-right px-4 py-3 text-gray-500 font-medium">الدور</th>
-              <th className="text-right px-4 py-3 text-gray-500 font-medium">تاريخ التسجيل</th>
-              <th className="text-right px-4 py-3 text-gray-500 font-medium">إجراءات</th>
+          <thead>
+            <tr style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--color-border)' }}>
+              {['المستخدم', 'الإيميل', 'الدور', 'تاريخ التسجيل', 'إجراءات'].map(h => (
+                <th key={h} className="text-right px-4 py-3 font-bold text-xs"
+                  style={{ color: 'var(--color-text-muted)' }}>
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={5} className="text-center py-12 text-gray-400">جاري التحميل...</td>
-              </tr>
+              <tr><td colSpan={5} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
+                <i className="fas fa-spinner fa-spin ml-2"></i> جاري التحميل...
+              </td></tr>
             ) : filtered.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-12 text-gray-400">مفيش مستخدمين</td>
-              </tr>
-            ) : filtered.map(user => (
-              <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+              <tr><td colSpan={5} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
+                مفيش مستخدمين
+              </td></tr>
+            ) : filtered.map((user, i) => (
+              <tr key={user._id}
+                style={{ borderBottom: '1px solid var(--color-border)', background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)' }}>
+
                 {/* Avatar + Name */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-medium text-sm">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white"
+                      style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, #0ea5e9 100%)' }}>
                       {user.username?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="font-medium text-gray-800">{user.username}</span>
+                    <span className="font-semibold" style={{ color: 'var(--color-text-main)' }}>
+                      {user.username}
+                    </span>
                   </div>
                 </td>
 
                 {/* Email */}
-                <td className="px-4 py-3 text-gray-500">{user.email}</td>
+                <td className="px-4 py-3" style={{ color: 'var(--color-text-muted)' }}>
+                  {user.email}
+                </td>
 
-                {/* Role */}
+                {/* Role Select */}
                 <td className="px-4 py-3">
                   <select
                     value={user.role}
                     onChange={e => handleRoleChange(user._id, e.target.value)}
-                    className={`text-xs px-2 py-1 rounded-full border font-medium focus:outline-none
-                      ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                        user.role === 'pharmacist' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                        'bg-green-50 text-green-700 border-green-200'}`}
+                    className="text-xs px-3 py-1 rounded-full font-bold border-0 outline-none cursor-pointer"
+                    style={roleBadge(user.role)}
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
@@ -122,15 +142,17 @@ export default function Users() {
                 </td>
 
                 {/* Date */}
-                <td className="px-4 py-3 text-gray-400 text-xs">
+                <td className="px-4 py-3 text-xs" style={{ color: 'var(--color-text-light)' }}>
                   {new Date(user.createdAt).toLocaleDateString('ar-EG')}
                 </td>
 
-                {/* Actions */}
+                {/* Delete */}
                 <td className="px-4 py-3">
-                  <button
-                    onClick={() => handleDelete(user._id)}
-                    className="text-red-500 hover:text-red-700 text-xs px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
+                  <button onClick={() => handleDelete(user._id)}
+                    className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
+                    style={{ color: 'var(--color-danger)', background: 'var(--color-danger-light)' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                   >
                     حذف
                   </button>
@@ -143,22 +165,18 @@ export default function Users() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-gray-400">
-          صفحة {page} من {Math.ceil(total / 10)}
+        <p className="text-xs" style={{ color: 'var(--color-text-light)' }}>
+          صفحة {page} من {Math.ceil(total / 10) || 1}
         </p>
         <div className="flex gap-2">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
-          >
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+            className="px-4 py-1.5 text-sm rounded-lg font-semibold transition-all disabled:opacity-40"
+            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', background: 'var(--bg-card)' }}>
             السابق
           </button>
-          <button
-            onClick={() => setPage(p => p + 1)}
-            disabled={page >= Math.ceil(total / 10)}
-            className="px-3 py-1 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
-          >
+          <button onClick={() => setPage(p => p + 1)} disabled={page >= Math.ceil(total / 10)}
+            className="px-4 py-1.5 text-sm rounded-lg font-semibold transition-all disabled:opacity-40"
+            style={{ background: 'var(--color-primary)', color: 'white' }}>
             التالي
           </button>
         </div>
