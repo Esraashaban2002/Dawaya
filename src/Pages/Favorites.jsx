@@ -207,7 +207,6 @@ export default function Favorites() {
                     <button
                       onClick={(e) => handleAddToCart(e, item)}
                       className={`add-to-cart-btn ${cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? 'added' : ''}`}
-                      style={{ width: '100%', height: '40px', fontSize: '13px' }}
                     >
                       {cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? (
                         <>

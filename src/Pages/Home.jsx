@@ -350,7 +350,6 @@ function ProductCard({ p, cartItems, addToCart, removeFromCart, isFavorite, togg
             }
           }}
           className={`add-to-cart-btn ${isAdded ? "added" : ""}`}
-          style={{ width: "100%", height: "40px", fontSize: "13px" }}
         >
           {isAdded ? (
             <>

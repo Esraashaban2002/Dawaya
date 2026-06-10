@@ -932,6 +932,7 @@
   }
 
   .add-to-cart-btn {
+    width: 100%;
     flex: 1;
     height: 48px;
     border-radius: 12px;
