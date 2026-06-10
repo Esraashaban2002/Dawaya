@@ -10,10 +10,10 @@ export default function Cart() {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
 
   // Calculations
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const subtotal = Math.round((cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0) + Number.EPSILON) * 100) / 100;
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const tax = Math.round(subtotal * 0.05); // 5% tax
-  const total = subtotal + deliveryFee + tax;
+  const total = Math.round((subtotal + deliveryFee + tax + Number.EPSILON) * 100) / 100;
 
   return (
     <div className="cart-page">
@@ -156,10 +156,10 @@ export default function Cart() {
               </div>
 
 
-              <button className="checkout-btn" style={{ marginTop: '8px' }}>
+              <Link to="/checkout" className="checkout-btn" style={{ marginTop: '8px', textDecoration: 'none' }}>
                 <CreditCard size={18} />
                 <span>إتمام عملية الشراء</span>
-              </button>
+              </Link>
             </div>
 
           </div>
