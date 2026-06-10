@@ -21,6 +21,7 @@ import ThankYou from "./Components/ThankYou/ThankYou";
 import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Cart from './Pages/Cart';
 import Favorites from './Pages/Favorites';
+import Checkout from './Pages/Checkout';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
@@ -42,6 +43,14 @@ function App() {
         {
           path: "/cart",
           element: <Cart />
+        },
+        {
+          path: "/checkout",
+          element: (
+            <ProtectedRoure>
+              <Checkout />
+            </ProtectedRoure>
+          )
         },
         {
           path: "/favorites",
