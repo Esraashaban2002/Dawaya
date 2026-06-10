@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FaSearch,
@@ -15,9 +15,14 @@ import { UserContext } from "../../Context/UserContext";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { pathname } = useLocation();
+  const { pathname, search: urlSearch } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const query = new URLSearchParams(urlSearch).get("search") || "";
+    setSearch(query);
+  }, [urlSearch]);
 
   function logout() {
     localStorage.removeItem("userToken");
@@ -66,16 +71,29 @@ export default function Navbar() {
               </Link>
             </div>
 
-            <div className="nb-search">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigate(`/products?search=${search}`);
+              }} 
+              className="nb-search"
+            >
               <input
-                placeholder="ابحث..."
+                placeholder="إبحث باسم الدواء"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  navigate(`/products?search=${e.target.value}`);
+                }}
               />
-              <span className="nb-search-icon">
+              <span 
+                className="nb-search-icon"
+                onClick={() => navigate(`/products?search=${search}`)}
+                style={{ cursor: "pointer" }}
+              >
                 <FaSearch />
               </span>
-            </div>
+            </form>
 
             <div className="nb-actions">
               <button className="nb-icon-btn">
