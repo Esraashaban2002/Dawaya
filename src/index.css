@@ -1136,6 +1136,8 @@
     position: fixed;
     bottom: 24px;
     left: 24px;
+    max-width: 450px;
+    width: calc(100% - 48px);
     display: flex;
     align-items: center;
     gap: 12px;

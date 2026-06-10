@@ -37,9 +37,14 @@ export default function Favorites() {
       addToCart({
         id: item.id,
         name: item.name,
+        genericName: item.genericName || "",
+        category: item.category || "",
+        description: item.description || "",
         price: item.price,
-        brand: item.brand,
-        image: item.image
+        quantity: item.quantity || 150,
+        requiresPrescription: item.requiresPrescription || false,
+        image: item.image,
+        manufacturer: item.manufacturer || ""
       }, 1);
       triggerToast(`تم إضافة ${item.name.substring(0, 20)}... إلى سلة المشتريات بنجاح!`, 'success');
     }
@@ -201,44 +206,17 @@ export default function Favorites() {
                   <div style={{ padding: '0 16px 16px' }}>
                     <button
                       onClick={(e) => handleAddToCart(e, item)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 0',
-                        background: cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? '#ef4444' : 'transparent',
-                        color: cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? '#ffffff' : 'var(--color-text-main)',
-                        border: `2px solid ${cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? '#ef4444' : 'var(--color-text-main)'}`,
-                        borderRadius: '10px',
-                        fontWeight: '700',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        transition: 'all 0.22s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        fontFamily: 'Cairo, sans-serif'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!cartItems.some((cItem) => String(cItem.id) === String(item.id))) {
-                          e.currentTarget.style.background = 'var(--color-text-main)';
-                          e.currentTarget.style.color = '#ffffff';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!cartItems.some((cItem) => String(cItem.id) === String(item.id))) {
-                          e.currentTarget.style.background = 'transparent';
-                          e.currentTarget.style.color = 'var(--color-text-main)';
-                        }
-                      }}
+                      className={`add-to-cart-btn ${cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? 'added' : ''}`}
+                      style={{ width: '100%', height: '40px', fontSize: '13px' }}
                     >
                       {cartItems.some((cItem) => String(cItem.id) === String(item.id)) ? (
                         <>
-                          <Trash2 size={14} />
+                          <Trash2 size={15} />
                           <span>إزالة من السلة</span>
                         </>
                       ) : (
                         <>
-                          <ShoppingCart size={14} />
+                          <ShoppingCart size={15} />
                           <span>أضف للسلة</span>
                         </>
                       )}

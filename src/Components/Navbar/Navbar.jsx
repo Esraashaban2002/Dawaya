@@ -65,13 +65,6 @@ export default function Navbar() {
               >
                 الصيدليات
               </Link>
-
-              <Link
-                to="/favorites"
-                className={`nb-link${pathname === "/favorites" ? " active" : ""}`}
-              >
-                المفضلة
-              </Link>
             </div>
 
             <div className="nb-search">
@@ -91,7 +84,7 @@ export default function Navbar() {
               </button>
 
               <Link to="/favorites" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
-                <FaHeart style={{ color: "#e53935" }} />
+                <FaHeart style={{ color: "#000000" }} />
                 {favorites.length > 0 && <span className="nb-badge" style={{ backgroundColor: "#e53935" }}>{favorites.length}</span>}
               </Link>
 
@@ -141,7 +134,6 @@ export default function Navbar() {
               <Link to="/" className="nb-mobile-link">الرئيسية</Link>
               <Link to="/products" className="nb-mobile-link">المنتجات</Link>
               <Link to="/pharmacies" className="nb-mobile-link">الصيدليات</Link>
-              <Link to="/favorites" className="nb-mobile-link">المفضلة</Link>
 
               {userLogin == null ? (
                 <>
