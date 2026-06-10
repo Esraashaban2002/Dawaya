@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { CartContext } from "../Context/CartContext";
 import { FavoritesContext } from "../Context/FavoritesContext";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { Trash2, ShoppingCart } from "lucide-react";
 
 // ─── ROUTES ──────────────────────────────────────────────────
 const ROUTES = {
@@ -66,28 +67,46 @@ const products = [
   {
     id: 1,
     name: "بانادول اكسترا اوبتيزورب لتخفيف إضافي مسكن فعال للألم والحمى | 24 قرص",
-    price: "58.00 جنيه",
+    genericName: "Paracetamol + Caffeine",
+    category: "مسكنات",
+    description: "مسكن فعال وسريع للألم وخافض للحرارة، لطيف على المعدة.",
+    price: 58.00,
+    quantity: 150,
+    requiresPrescription: false,
+    image: "/imges/panadol_extra.png",
+    manufacturer: "جلاكسو سميث كلاين (GSK)",
     oldPrice: "70.00 جنيه",
     tag: "الأكثر مبيعاً",
-    image: "/imges/panadol_extra.png",
     route: "/product/1",
   },
   {
     id: 2,
-    name: "هيكس ألم منظور",
-    price: "12.50 جنيه",
+    name: "هيكس ألم جل موضعي مسكن للآلام ومضاد للالتهابات | 50 جرام",
+    genericName: "Diclofenac Sodium",
+    category: "مسكنات",
+    description: "جل موضعي سريع الامتصاص لتخفيف آلام المفاصل والعضلات والظهر.",
+    price: 12.50,
+    quantity: 80,
+    requiresPrescription: false,
+    image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&q=80",
+    manufacturer: "الشركة العربية للأدوية (ADCO)",
     oldPrice: null,
     tag: null,
-    image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&q=80",
     route: "/product/2",
   },
   {
     id: 3,
-    name: "فيتامين سي بريميوم",
-    price: "24.99 جنيه",
+    name: "فيتامين سي بريميوم 1000 مجم فوار لتعزيز المناعة | 20 قرص",
+    genericName: "Ascorbic Acid + Zinc",
+    category: "الفيتامينات",
+    description: "أقراص فوارة بنكهة البرتقال لتعزيز صحة الجهاز المناعي ونضارة البشرة.",
+    price: 24.99,
+    quantity: 120,
+    requiresPrescription: false,
+    image: "https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80",
+    manufacturer: "إيفا فارما (Eva Pharma)",
     oldPrice: "30.00 جنيه",
     tag: "جديد",
-    image: "https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80",
     route: "/product/3",
   },
 ];
@@ -186,6 +205,164 @@ function PharmacyScroller() {
             <span style={{ fontSize: 11, color: "#444", fontWeight: 600, fontFamily: font }}>{p.name}</span>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ProductCard Component
+// ═══════════════════════════════════════════════════════════════
+function ProductCard({ p, cartItems, addToCart, removeFromCart, isFavorite, toggleFavorite, navigate, font, dark, blue }) {
+  const [hov, setHov] = useState(false);
+  const isAdded = cartItems.some((item) => item.id === String(p.id));
+
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      onClick={() => navigate(p.route)}
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        border: "1.5px solid #e8edf2",
+        overflow: "hidden",
+        cursor: "pointer",
+        position: "relative",
+        transform: hov ? "translateY(-8px)" : "none",
+        transition: "all 0.3s ease",
+        boxShadow: hov ? "0 16px 40px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.04)",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%"
+      }}
+    >
+      {p.tag && (
+        <div style={{
+          position: "absolute",
+          top: 12,
+          left: 12,
+          zIndex: 2,
+          background: "#e53935",
+          color: "#fff",
+          fontSize: 10,
+          fontWeight: 800,
+          padding: "3px 10px",
+          borderRadius: 20,
+        }}>{p.tag}</div>
+      )}
+      {/* Heart Toggle Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleFavorite({
+            id: String(p.id),
+            name: p.name,
+            genericName: p.genericName,
+            category: p.category,
+            description: p.description,
+            price: p.price,
+            quantity: p.quantity,
+            requiresPrescription: p.requiresPrescription,
+            image: p.image,
+            manufacturer: p.manufacturer
+          });
+        }}
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          zIndex: 10,
+          background: "rgba(255, 255, 255, 0.9)",
+          border: "none",
+          borderRadius: "50%",
+          width: 34,
+          height: 34,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          transition: "transform 0.2s ease, background 0.2s ease",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      >
+        {isFavorite(p.id) ? (
+          <FaHeart style={{ color: "#e53935", fontSize: 16 }} />
+        ) : (
+          <FaRegHeart style={{ color: "#7f8c8d", fontSize: 16 }} />
+        )}
+      </button>
+      <div style={{ height: 190, overflow: "hidden", background: "#f0f4f8" }}>
+        <img
+          src={p.image}
+          alt={p.name}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transform: hov ? "scale(1.07)" : "scale(1)",
+            transition: "transform 0.4s ease",
+          }}
+        />
+      </div>
+      <div style={{ padding: "16px 16px 20px", display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
+        <div>
+          <p style={{
+            margin: "0 0 8px",
+            fontWeight: 700,
+            fontSize: 14,
+            color: dark,
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minHeight: "40px"
+          }}>{p.name}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <span style={{ color: blue, fontWeight: 800, fontSize: 17 }}>{p.price} جنيه</span>
+            {p.oldPrice && (
+              <span style={{ color: "#aab0bc", fontSize: 12, textDecoration: "line-through" }}>{p.oldPrice}</span>
+            )}
+          </div>
+        </div>
+        
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isAdded) {
+              removeFromCart(String(p.id));
+            } else {
+              addToCart({
+                id: String(p.id),
+                name: p.name,
+                genericName: p.genericName,
+                category: p.category,
+                description: p.description,
+                price: p.price,
+                quantity: p.quantity,
+                requiresPrescription: p.requiresPrescription,
+                image: p.image,
+                manufacturer: p.manufacturer
+              }, 1);
+            }
+          }}
+          className={`add-to-cart-btn ${isAdded ? "added" : ""}`}
+        >
+          {isAdded ? (
+            <>
+              <Trash2 size={15} />
+              <span>إزالة من السلة</span>
+            </>
+          ) : (
+            <>
+              <ShoppingCart size={15} />
+              <span>أضف للسلة</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   );
@@ -574,117 +751,21 @@ export default function Home() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
-            {products.map((p) => {
-              const [hov, setHov] = useState(false);
-              return (
-                <div
-                  key={p.id}
-                  onMouseEnter={() => setHov(true)}
-                  onMouseLeave={() => setHov(false)}
-                  onClick={() => navigate(p.route)}
-                  style={{
-                    background: "#fff", borderRadius: 16,
-                    border: "1.5px solid #e8edf2", overflow: "hidden",
-                    cursor: "pointer", position: "relative",
-                    transform: hov ? "translateY(-8px)" : "none",
-                    transition: "all 0.3s ease",
-                    boxShadow: hov ? "0 16px 40px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  {p.tag && (
-                    <div style={{
-                      position: "absolute", top: 12, left: 12, zIndex: 2,
-                      background: "#e53935", color: "#fff",
-                      fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20,
-                    }}>{p.tag}</div>
-                  )}
-                  {/* Heart Toggle Button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite({
-                        id: String(p.id),
-                        name: p.name,
-                        price: parseFloat(p.price.replace(" جنيه", "")),
-                        brand: "بانادول",
-                        image: p.image
-                      });
-                    }}
-                    style={{
-                      position: "absolute",
-                      top: 12,
-                      right: 12,
-                      zIndex: 10,
-                      background: "rgba(255, 255, 255, 0.9)",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: 34,
-                      height: 34,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                      transition: "transform 0.2s ease, background 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.1)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
-                  >
-                    {isFavorite(p.id) ? (
-                      <FaHeart style={{ color: "#e53935", fontSize: 16 }} />
-                    ) : (
-                      <FaRegHeart style={{ color: "#7f8c8d", fontSize: 16 }} />
-                    )}
-                  </button>
-                  <div style={{ height: 190, overflow: "hidden", background: "#f0f4f8" }}>
-                    <img
-                      src={p.image} alt={p.name}
-                      style={{
-                        width: "100%", height: "100%", objectFit: "cover",
-                        transform: hov ? "scale(1.07)" : "scale(1)",
-                        transition: "transform 0.4s ease",
-                      }}
-                    />
-                  </div>
-                  <div style={{ padding: "16px 16px 20px" }}>
-                    <p style={{ margin: "0 0 8px", fontWeight: 700, fontSize: 14, color: dark }}>{p.name}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                      <span style={{ color: blue, fontWeight: 800, fontSize: 17 }}>{p.price}</span>
-                      {p.oldPrice && (
-                        <span style={{ color: "#aab0bc", fontSize: 12, textDecoration: "line-through" }}>{p.oldPrice}</span>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        const isAdded = cartItems.some((item) => item.id === String(p.id));
-                        if (isAdded) {
-                          removeFromCart(String(p.id));
-                        } else {
-                          addToCart({
-                            id: String(p.id),
-                            name: p.name,
-                            price: parseFloat(p.price.replace(" جنيه", "")),
-                            brand: "بانادول",
-                            image: p.image
-                          }, 1);
-                        }
-                      }}
-                      style={{
-                        width: "100%", padding: "9px 0",
-                        background: cartItems.some((item) => item.id === String(p.id)) ? "#ef4444" : (hov ? dark : "transparent"),
-                        color: cartItems.some((item) => item.id === String(p.id)) ? "#fff" : (hov ? "#fff" : dark),
-                        border: `2px solid ${cartItems.some((item) => item.id === String(p.id)) ? "#ef4444" : dark}`, borderRadius: 10,
-                        fontWeight: 700, fontSize: 13, cursor: "pointer",
-                        transition: "all 0.22s ease", fontFamily: font,
-                      }}
-                    >
-                      {cartItems.some((item) => item.id === String(p.id)) ? "إزالة من السلة" : "أضف للسلة"}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            {products.map((p) => (
+              <ProductCard
+                key={p.id}
+                p={p}
+                cartItems={cartItems}
+                addToCart={addToCart}
+                removeFromCart={removeFromCart}
+                isFavorite={isFavorite}
+                toggleFavorite={toggleFavorite}
+                navigate={navigate}
+                font={font}
+                dark={dark}
+                blue={blue}
+              />
+            ))}
           </div>
         </div>
       </section>
