@@ -16,12 +16,14 @@ import FAQSection from '../components/Home/FAQSection';
 const Home = () => {
   return (
     <motion.main
+
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
       className="overflow-x-hidden"
     >
+      <div style={{direction: "ltr"}}>
       <HeroSection />
       <StatsSection />
       {/* <ServicesSection /> */}
@@ -36,6 +38,7 @@ const Home = () => {
      
       <FAQSection />
       {/* <CTASection /> */}
+      </div>
     </motion.main>
   );
 };
