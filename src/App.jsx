@@ -23,6 +23,7 @@ import Cart from './Pages/Cart';
 import Favorites from './Pages/Favorites';
 import Checkout from './Pages/Checkout';
 import Prescription from './Pages/Prescription';
+import Reminders from './Pages/Reminders';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
@@ -60,6 +61,14 @@ function App() {
         {
           path: "/prescription",
           element: <Prescription />
+        },
+        {
+          path: "/reminders",
+          element: <Reminders />
+        },
+        {
+          path: "/whatsapp",
+          element: <Reminders />
         },
         {
           path: "/about",
