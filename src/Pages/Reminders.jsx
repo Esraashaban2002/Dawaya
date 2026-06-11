@@ -469,7 +469,7 @@ export default function Reminders() {
 
                     {/* Custom Phone Number input */}
                     {phoneType === "custom" && (
-                      <div className="form-group" style={{ margin: '4px 0 0 0' }} className="animate-fade-in">
+                      <div className="form-group animate-fade-in" style={{ margin: '4px 0 0 0' }}>
                         <input 
                           type="tel" 
                           value={customPhone}
