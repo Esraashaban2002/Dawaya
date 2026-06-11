@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Bell, Clock, Calendar, Check, AlertCircle, Trash2, 
-  Plus, MessageSquare, Smartphone, User, Phone, CheckCircle, RefreshCw, X
+  Plus, MessageSquare, Smartphone, User, Phone, CheckCircle, RefreshCw, X, Edit
 } from 'lucide-react';
 import { UserContext } from '../Context/UserContext';
 import { api } from '../services/api';
@@ -58,6 +58,7 @@ export default function Reminders() {
   const [validationError, setValidationError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [simulatedReminder, setSimulatedReminder] = useState(null);
+  const [editingReminderId, setEditingReminderId] = useState(null);
 
   // Fetch profile phone number
   const fetchProfilePhone = async () => {
@@ -115,6 +116,41 @@ export default function Reminders() {
     setIsLoading(false);
   }, [userLogin]);
 
+  const handleEditClick = (rem) => {
+    setMedicineName(rem.medicineName);
+    setDosage(rem.dosage);
+    setFrequency(rem.frequency);
+    setTime(rem.time);
+    setUseApp(rem.useApp);
+    setUseWhatsapp(rem.useWhatsapp);
+    setPhoneType(rem.phoneType || (profilePhone ? "profile" : "custom"));
+    if (rem.phoneType === "custom") {
+      setCustomPhone(rem.phoneNumber || "");
+    } else {
+      setCustomPhone("");
+    }
+    setEditingReminderId(rem.id);
+    setValidationError("");
+    setSuccessMsg("");
+    
+    // Smooth scroll to the form panel
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReminderId(null);
+    setMedicineName("");
+    setDosage("قرص واحد");
+    setFrequency("مرة واحدة يومياً");
+    setTime("08:00");
+    setUseApp(true);
+    setUseWhatsapp(false);
+    setPhoneType(profilePhone ? "profile" : "custom");
+    setCustomPhone("");
+    setValidationError("");
+    setSuccessMsg("");
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setValidationError("");
@@ -148,22 +184,46 @@ export default function Reminders() {
       }
     }
 
-    const newReminder = {
-      id: "rem-" + Date.now(),
-      medicineName,
-      dosage,
-      frequency,
-      time,
-      useApp,
-      useWhatsapp,
-      phoneType: useWhatsapp ? phoneType : "",
-      phoneNumber: useWhatsapp ? finalPhone : "",
-      active: true
-    };
+    if (editingReminderId) {
+      const updated = reminders.map(r => {
+        if (r.id === editingReminderId) {
+          return {
+            ...r,
+            medicineName,
+            dosage,
+            frequency,
+            time,
+            useApp,
+            useWhatsapp,
+            phoneType: useWhatsapp ? phoneType : "",
+            phoneNumber: useWhatsapp ? finalPhone : "",
+          };
+        }
+        return r;
+      });
+      setReminders(updated);
+      localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+      setSuccessMsg("تم تحديث التذكير الطبي بنجاح!");
+      setEditingReminderId(null);
+    } else {
+      const newReminder = {
+        id: "rem-" + Date.now(),
+        medicineName,
+        dosage,
+        frequency,
+        time,
+        useApp,
+        useWhatsapp,
+        phoneType: useWhatsapp ? phoneType : "",
+        phoneNumber: useWhatsapp ? finalPhone : "",
+        active: true
+      };
 
-    const updated = [newReminder, ...reminders];
-    setReminders(updated);
-    localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+      const updated = [newReminder, ...reminders];
+      setReminders(updated);
+      localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+      setSuccessMsg("تم إضافة التذكير الطبي بنجاح وسيبدأ العمل فوراً!");
+    }
 
     // Reset Form
     setMedicineName("");
@@ -176,7 +236,6 @@ export default function Reminders() {
       setPhoneType("profile");
     }
     setCustomPhone("");
-    setSuccessMsg("تم إضافة التذكير الطبي بنجاح وسيبدأ العمل فوراً!");
     
     setTimeout(() => {
       setSuccessMsg("");
@@ -222,10 +281,12 @@ export default function Reminders() {
             <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Bell style={{ color: 'var(--color-primary)' }} />
-                إعداد تذكير طبي جديد
+                {editingReminderId ? "تعديل التذكير الطبي" : "إعداد تذكير طبي جديد"}
               </h2>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '6px' }}>
-                املأ مواعيد جرعات دوائك واشترك بالتنبيهات لنرسل لك رسالة تذكير فورية في الموعد المحدد.
+                {editingReminderId 
+                  ? "تعديل تفاصيل التذكير الحالي. اضغط على حفظ التعديلات لتطبيق التغييرات."
+                  : "املأ مواعيد جرعات دوائك واشترك بالتنبيهات لنرسل لك رسالة تذكير فورية في الموعد المحدد."}
               </p>
             </div>
 
@@ -427,15 +488,51 @@ export default function Reminders() {
                 )}
               </div>
 
-              {/* Submit CTA */}
-              <button 
-                type="submit" 
-                className="checkout-btn"
-                style={{ border: 'none', padding: '12px 0', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                <Plus size={18} />
-                <span>حفظ التذكير الطبي</span>
-              </button>
+              {/* Submit CTA / Edit CTAs */}
+              {editingReminderId ? (
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    type="submit" 
+                    className="checkout-btn"
+                    style={{ flex: 1, border: 'none', padding: '12px 0', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  >
+                    <Check size={18} />
+                    <span>حفظ التعديلات</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleCancelEdit}
+                    className="checkout-btn-secondary"
+                    style={{ 
+                      flex: 1, 
+                      border: '1px solid var(--color-border)', 
+                      background: '#f8fafc',
+                      color: 'var(--color-text-muted)',
+                      padding: '12px 0', 
+                      fontSize: '14px', 
+                      fontWeight: '800', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justify: 'center', 
+                      gap: '8px',
+                      borderRadius: 'var(--radius-md)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <X size={18} />
+                    <span>إلغاء التعديل</span>
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  type="submit" 
+                  className="checkout-btn"
+                  style={{ border: 'none', padding: '12px 0', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  <Plus size={18} />
+                  <span>حفظ التذكير الطبي</span>
+                </button>
+              )}
 
             </form>
           </div>
@@ -465,7 +562,11 @@ export default function Reminders() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {reminders.map((rem) => (
-                  <div key={rem.id} className="reminder-active-card animate-fade-in" style={{ opacity: rem.active ? 1 : 0.6 }}>
+                  <div 
+                    key={rem.id} 
+                    className={`reminder-active-card animate-fade-in ${editingReminderId === rem.id ? 'editing' : ''}`} 
+                    style={{ opacity: rem.active ? 1 : 0.6 }}
+                  >
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                         <span style={{ fontSize: '15px', fontWeight: 900, color: 'var(--color-text-main)' }}>
@@ -498,25 +599,13 @@ export default function Reminders() {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {/* Toggle switch active/inactive */}
-                      <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '22px', cursor: 'pointer' }}>
+                      <label className="reminder-switch">
                         <input 
                           type="checkbox" 
                           checked={rem.active}
                           onChange={() => toggleReminderActive(rem.id)}
-                          style={{ opacity: 0, width: 0, height: 0 }}
                         />
-                        <span style={{
-                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: rem.active ? 'var(--color-primary)' : '#cbd5e1',
-                          borderRadius: '34px', transition: '.3s ease',
-                          display: 'flex', alignItems: 'center', padding: '2px'
-                        }}>
-                          <span style={{
-                            width: '16px', height: '16px', background: '#fff', borderRadius: '50%',
-                            transform: rem.active ? 'translateX(18px)' : 'translateX(0)',
-                            transition: '.3s ease', display: 'block'
-                          }} />
-                        </span>
+                        <span className="reminder-slider" />
                       </label>
 
                       {/* WhatsApp simulation trigger */}
@@ -534,6 +623,27 @@ export default function Reminders() {
                           <Smartphone size={16} />
                         </button>
                       )}
+
+                      {/* Edit */}
+                      <button 
+                        onClick={() => handleEditClick(rem)}
+                        className="action-icon-btn" 
+                        title="تعديل التذكير"
+                        style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          border: '1px solid var(--color-border)', 
+                          borderRadius: '50%', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justify: 'center', 
+                          cursor: 'pointer',
+                          color: 'var(--color-primary)',
+                          background: 'var(--color-primary-light)'
+                        }}
+                      >
+                        <Edit size={14} />
+                      </button>
 
                       {/* Delete */}
                       <button 
