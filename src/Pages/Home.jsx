@@ -98,7 +98,7 @@ const products = [
     id: 3,
     name: "فيتامين سي بريميوم 1000 مجم فوار لتعزيز المناعة | 20 قرص",
     genericName: "Ascorbic Acid + Zinc",
-    category: "الفيتامينات",
+    category: "فيتامينات",
     description: "أقراص فوارة بنكهة البرتقال لتعزيز صحة الجهاز المناعي ونضارة البشرة.",
     price: 24.99,
     quantity: 120,

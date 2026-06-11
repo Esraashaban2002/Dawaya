@@ -10,7 +10,7 @@ import { UserContext } from '../Context/UserContext';
 
 export default function Favorites() {
   const { favorites, removeFromFavorites } = useContext(FavoritesContext);
-  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
+  const { cartItems, addToCart, removeFromCart, setShowLoginModal } = useContext(CartContext);
   const { userLogin } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ export default function Favorites() {
   const handleAddToCart = (e, item) => {
     e.stopPropagation();
     if (!userLogin) {
-      triggerToast('يرجى تسجيل الدخول أولاً لإدارة السلة!', 'error');
+      setShowLoginModal(true);
       return;
     }
     const isAdded = cartItems.some((cItem) => String(cItem.id) === String(item.id));

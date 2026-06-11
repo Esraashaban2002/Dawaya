@@ -31,7 +31,7 @@ const PRODUCTS_DB = [
     id: "3",
     name: "فيتامين سي بريميوم 1000 مجم فوار لتعزيز المناعة | 20 قرص",
     genericName: "Ascorbic Acid + Zinc",
-    category: "الفيتامينات",
+    category: "فيتامينات",
     price: 24.99,
     image: "https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&q=80",
     manufacturer: "إيفا فارما (Eva Pharma)"
@@ -85,7 +85,7 @@ const PRESETS = [
 ];
 
 export default function Prescription() {
-  const { cartItems, addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, setShowLoginModal } = useContext(CartContext);
   const { userLogin } = useContext(UserContext);
   const navigate = useNavigate();
 
@@ -270,7 +270,7 @@ export default function Prescription() {
 
   const handleAddSelectedToCart = () => {
     if (!userLogin) {
-      triggerToast('يرجى تسجيل الدخول أولاً لإضافة المنتجات إلى السلة!', 'error');
+      setShowLoginModal(true);
       return;
     }
 
