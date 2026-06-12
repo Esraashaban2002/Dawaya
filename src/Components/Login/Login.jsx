@@ -17,24 +17,6 @@ export default function Login() {
   async function handelLogin(formValues) {
     setIsLoading(true);
 
-    // 1. Check local registry first to support updated credentials
-    try {
-      const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
-      const matchedUser = users.find(u => u.email.toLowerCase() === formValues.email.toLowerCase());
-      if (matchedUser && matchedUser.password === formValues.password) {
-        const activeToken = matchedUser.token || localStorage.getItem("userToken") || "mock_token_for_dawaya_auth";
-        localStorage.setItem("userToken", activeToken);
-        setUserLogin(activeToken);
-        localStorage.setItem("dawaya_current_email", matchedUser.email);
-        localStorage.setItem("dawaya_current_password", matchedUser.password);
-        setIsLoading(false);
-        navigate("/");
-        return;
-      }
-    } catch (e) {
-      console.error("Local login intercept failed", e);
-    }
-
     // 2. Fallback to server API if no local match is found
     try {
       let { data } = await axios.post(
@@ -59,7 +41,7 @@ export default function Login() {
             users[index].token = token;
           } else {
             users.push({
-              username: formValues.email.split('@')[0],
+              username: formValues.email.split('@')[0].slice(0, 12),
               email: formValues.email,
               password: formValues.password,
               phone: '01012345678',
@@ -105,9 +87,15 @@ export default function Login() {
     onSubmit: handelLogin,
   });
 
+
+  const handleGoogleLogin = () => {
+    window.location.href = "https://dawaya-back-end.vercel.app/api/auth/google?action=login";
+  }
+
+
   return (
 
-    <div className="w-[90%] lg:w-[80%] mx-auto min-h-[85vh] flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-2xl border border-sky-100 bg-white">
+    <div className="w-[90%] lg:w-[80%] mx-auto min-h-screen flex flex-col md:flex-row overflow-hidden rounded-3xl shadow-2xl border border-sky-100 bg-white my-15">
 
       <div className="flex-1 bg-[#faf7fb] flex items-center justify-center px-6 py-10 lg:px-14">
         <div className="w-full max-w-md">
@@ -198,6 +186,15 @@ export default function Login() {
                 إنشاء حساب
               </NavLink>
             </p>
+
+            <button
+              onClick={handleGoogleLogin}
+              className="w-full py-3 mt-5 rounded-xl bg-white border border-gray-300 font-semibold flex items-center justify-center hover:opacity-100 gap-3 hover:bg-gray-50 transition cursor-pointer" >
+              <i className="fa-brands fa-google"></i> تسجيل الدخول عبر Google
+            </button>
+
+
+
           </form>
         </div>
       </div>
