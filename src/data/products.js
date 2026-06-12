@@ -1,0 +1,43 @@
+// src/data/products.js
+export const products = [
+  {
+    name: 'فيتامين C 1000mg',
+    description: 'مكمل غذائي لدعم المناعة مع الزنك',
+    price: 24.99,
+    oldPrice: 34.99,
+    discount: 28,
+    rating: 4,
+    reviews: 128,
+    image: '/assets/products/product-1.jpg',
+  },
+  {
+    name: 'مسكن الألم',
+    description: 'تسكين سريع للصداع وآلام العضلات',
+    price: 12.99,
+    oldPrice: 18.99,
+    discount: 31,
+    rating: 5,
+    reviews: 256,
+    image: '/assets/products/product-2.jpg',
+  },
+  {
+    name: 'مضاد الحساسية',
+    description: 'مضاد هيستامين غير مسبب للنعاس',
+    price: 19.99,
+    oldPrice: null,
+    discount: 0,
+    rating: 4,
+    reviews: 89,
+    image: '/assets/products/product-3.jpg',
+  },
+  {
+    name: 'بروبيوتيك للهضم',
+    description: 'يدعم صحة الجهاز الهضمي',
+    price: 29.99,
+    oldPrice: 39.99,
+    discount: 25,
+    rating: 5,
+    reviews: 312,
+    image: '/assets/products/product-4.jpg',
+  },
+];
