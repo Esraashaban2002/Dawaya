@@ -7,16 +7,20 @@ import {
   FaGlobe,
   FaBars,
   FaTimes,
+  FaHeart,
 } from "react-icons/fa";
 import "./Navbar.css";
-import logo from "/public/imges/logo.png";
 import { UserContext } from "../../Context/UserContext";
+import { CartContext } from "../../Context/CartContext";
+import { FavoritesContext } from "../../Context/FavoritesContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { pathname } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
+  const { cartCount } = useContext(CartContext);
+  const { favorites } = useContext(FavoritesContext);
   const navigate = useNavigate();
 
   function logout() {
@@ -28,16 +32,13 @@ export default function Navbar() {
   return (
     <>
       <div className="nb">
-        <div className="nb-top">
-          احنا معاك ف بيتك احنا دواك..
-        </div>
+        <div className="nb-top">احنا معاك ف بيتك احنا دواك..</div>
 
         <nav className="nb-main">
           <div className="nb-inner">
-
             <Link to="/" className="nb-logo">
               <img
-                src={logo}
+                src="/imges/logo.png"
                 alt="Dawaa Logo"
                 style={{ width: "100px", height: "90px" }}
               />
@@ -82,15 +83,21 @@ export default function Navbar() {
                 <FaGlobe />
               </button>
 
-              <button className="nb-icon-btn" style={{ position: "relative" }}>
+              <Link to="/favorites" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
+                <FaHeart style={{ color: "#000000" }} />
+                {favorites.length > 0 && <span className="nb-badge" style={{ backgroundColor: "#e53935" }}>{favorites.length}</span>}
+              </Link>
+
+              <Link to="/cart" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
                 <FaShoppingCart />
-              </button>
+                {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
+              </Link>
             </div>
 
             {/* Auth Section */}
             {userLogin == null ? (
               <div className="nb-auth-links">
-                <NavLink to="/register" className="nb-link">
+                <NavLink to="/AccountType" className="nb-link">
                   إنشاء حساب
                 </NavLink>
                 <NavLink to="/login" className="nb-login">
@@ -103,7 +110,11 @@ export default function Navbar() {
                 <NavLink to="/profile" className="nb-link">
                   الملف الشخصي
                 </NavLink>
-                <span onClick={logout} className="nb-login" style={{ cursor: "pointer" }}>
+                <span
+                  onClick={logout}
+                  className="nb-login"
+                  style={{ cursor: "pointer" }}
+                >
                   تسجيل الخروج
                 </span>
               </div>
@@ -126,13 +137,23 @@ export default function Navbar() {
 
               {userLogin == null ? (
                 <>
-                  <Link to="/register" className="nb-mobile-link">إنشاء حساب</Link>
-                  <Link to="/login" className="nb-mobile-login">تسجيل دخول</Link>
+                  <Link to="/register" className="nb-mobile-link">
+                    إنشاء حساب
+                  </Link>
+                  <Link to="/login" className="nb-mobile-login">
+                    تسجيل دخول
+                  </Link>
                 </>
               ) : (
                 <>
-                  <Link to="/profile" className="nb-mobile-link">الملف الشخصي</Link>
-                  <span onClick={logout} className="nb-mobile-login" style={{ cursor: "pointer" }}>
+                  <Link to="/profile" className="nb-mobile-link">
+                    الملف الشخصي
+                  </Link>
+                  <span
+                    onClick={logout}
+                    className="nb-mobile-login"
+                    style={{ cursor: "pointer" }}
+                  >
                     تسجيل الخروج
                   </span>
                 </>
