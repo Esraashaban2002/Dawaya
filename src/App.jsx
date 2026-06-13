@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
+import Prouducts from "./Pages/Prouducts";
 import NotFound from "./Pages/NotFound";
 import "./App.css";
 import Layout from "./Components/Layout/Layout";
@@ -14,6 +15,11 @@ import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
+
+import UserProfile from './Components/UserProfile';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 import UserProfile from "./Components/UserProfile/UserProfile";
 import AccountType from "./Components/AccountType/AccountType";
 import PharmacistRegister from "./Components/PharmacistRegister/PharmacistRegister";
@@ -55,6 +61,10 @@ function App() {
         {
           path: "/favorites",
           element: <Favorites />
+        },
+        {
+          path: "/products",
+          element: <Prouducts />
         },
         {
           path: "/about",
@@ -135,6 +145,13 @@ function App() {
   ]);
 
   return (
+    <QueryClientProvider client={queryClient}>
+      <UserContextProvider>
+        <div dir="rtl">
+          <RouterProvider router={router}></RouterProvider>
+        </div>
+      </UserContextProvider>
+    </QueryClientProvider>
     <UserContextProvider>
       <CartContextProvider>
         <FavoritesContextProvider>
