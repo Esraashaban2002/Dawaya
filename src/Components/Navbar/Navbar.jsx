@@ -59,7 +59,7 @@ export default function Navbar() {
 
               <Link
                 to="/#products-section"
-                className={`nb-link${(pathname === "/" && hash === "#products-section") ? " active" : ""}`}
+                className={`nb-link${(pathname === "/products") ? " active" : ""}`}
               >
                 المنتجات
               </Link>
