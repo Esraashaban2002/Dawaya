@@ -18,6 +18,28 @@ const Home = () => {
   const { hash } = useLocation();
 
   useEffect(() => {
+  const getCookie = (name) => {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  };
+
+  const token = getCookie('token');
+  if (token) {
+    localStorage.setItem('token', token);
+    // مسح الكوكي بعد القراءة
+    document.cookie = 'token=; Max-Age=0; path=/';
+
+    fetch("https://dawaya-back-end.vercel.app/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setUser(data.user);
+      });
+  }
+}, []);
+
+  useEffect(() => {
     if (hash) {
       const element = document.querySelector(hash);
       if (element) {
