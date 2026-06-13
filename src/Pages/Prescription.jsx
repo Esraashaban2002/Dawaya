@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   FileText, Upload, Check, AlertCircle, 
   RefreshCw, ShoppingCart, Trash2, ArrowRight,
@@ -88,6 +88,18 @@ export default function Prescription() {
   const { cartItems, addToCart, setShowLoginModal } = useContext(CartContext);
   const { userLogin } = useContext(UserContext);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.file) {
+      const file = location.state.file;
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setScanFinished(false);
+      setMatches([]);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // State Management
   const [selectedFile, setSelectedFile] = useState(null);
@@ -616,6 +628,10 @@ export default function Prescription() {
                               <img 
                                 src={item.product.image} 
                                 alt={item.product.name} 
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                                }}
                                 style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
                               />
                               <div style={{ flex: 1, minWidth: 0 }}>

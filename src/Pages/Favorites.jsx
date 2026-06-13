@@ -161,6 +161,10 @@ export default function Favorites() {
                       <img 
                         src={item.image} 
                         alt={item.name} 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                        }}
                         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                       />
                     </div>
