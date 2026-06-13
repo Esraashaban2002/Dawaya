@@ -152,15 +152,6 @@ function App() {
         </div>
       </UserContextProvider>
     </QueryClientProvider>
-    <UserContextProvider>
-      <CartContextProvider>
-        <FavoritesContextProvider>
-          <div dir="rtl">
-            <RouterProvider router={router}></RouterProvider>
-          </div>
-        </FavoritesContextProvider>
-      </CartContextProvider>
-    </UserContextProvider>
   );
 }
 
