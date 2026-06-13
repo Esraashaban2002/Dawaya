@@ -144,15 +144,18 @@ function App() {
   ]);
 
   return (
-   <UserContextProvider>
+    
+  <QueryClientProvider client={queryClient}>
+    <UserContextProvider>
       <CartContextProvider>
         <FavoritesContextProvider>
           <div dir="rtl">
-            <RouterProvider router={router}></RouterProvider>
+            <RouterProvider router={router} />
           </div>
         </FavoritesContextProvider>
       </CartContextProvider>
     </UserContextProvider>
+  </QueryClientProvider>
     
   );
 }

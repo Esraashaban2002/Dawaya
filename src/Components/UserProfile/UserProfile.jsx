@@ -12,6 +12,7 @@ import {
   EditProfileModal,
   ChangePasswordModal
 } from './Modals';
+import { Link } from 'react-router-dom';
 
 const INITIAL_PROFILE = {
   fullName: '',
