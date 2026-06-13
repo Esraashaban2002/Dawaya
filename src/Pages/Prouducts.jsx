@@ -1538,6 +1538,7 @@ export default function Prouducts() {
   const [showPromo, setShowPromo] = useState(true);
   const [toastMessage, setToastMessage] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentAllPage, setCurrentAllPage] = useState(0);
 
   // Client-side filtering, searching, paging
   const filteredMedicines = React.useMemo(() => {
@@ -1854,81 +1855,84 @@ export default function Prouducts() {
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDrop={(e) => handleDrop(e, index)}
-                    className={`border rounded-xl transition-all duration-250 group ${
+                    className={`transition-all duration-200 group/item relative rounded-xl ${
                       isDragged
-                        ? "border-dashed border-[#f06a4f] bg-[#f06a4f]/5 opacity-60 scale-[0.97] shadow-inner"
+                        ? "bg-[#f06a4f]/5 opacity-60 scale-[0.98]"
                         : isSelected
-                        ? "border-[#009eb6]/20 bg-gradient-to-r from-[#009eb6]/5 to-[#009eb6]/10 shadow-[0_4px_12px_-2px_rgba(0,158,182,0.05)]"
-                        : "border-slate-100 hover:border-[#009eb6]/15 hover:bg-slate-50/50 bg-white"
+                        ? "bg-[#009eb6]/5 text-[#009eb6]"
+                        : "hover:bg-slate-50 text-slate-700 hover:text-slate-950"
                     }`}
                   >
                     {/* Main Category Header */}
-                    <div className="flex items-center justify-between p-2.5">
-                      {/* Drag Handle & Name */}
+                    <div className="flex items-center justify-between py-2 px-3">
+                      {/* Active Indicator Line & Selectable Title */}
                       <div className="flex items-center gap-2.5 flex-grow min-w-0">
-                        {/* Drag Handle */}
-                        <div 
-                          className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-[#f06a4f] transition-colors p-1 rounded-lg hover:bg-slate-50 flex items-center justify-center"
-                          title="اسحب لإعادة الترتيب"
-                        >
-                          <GripVertical className="w-4 h-4" />
-                        </div>
+                        {/* Active indicator badge */}
+                        <span className={`w-1 h-5 rounded-full transition-all duration-300 ${
+                          isSelected 
+                            ? "bg-[#009eb6] scale-110" 
+                            : "bg-transparent group-hover/item:bg-slate-300"
+                        }`} />
 
-                        {/* Category Selectable Area */}
+                        {/* Category Name Button */}
                         <button
                           onClick={() => handleMainCatChange(cat.name)}
-                          className={`flex items-center gap-2 text-xs font-black text-right transition-colors truncate flex-grow ${
-                            isSelected ? "text-[#009eb6]" : "text-slate-700 hover:text-slate-950"
+                          className={`text-xs font-black text-right transition-colors truncate flex-grow py-1 ${
+                            isSelected ? "text-[#009eb6]" : "text-slate-700"
                           }`}
                         >
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-sm transition-all duration-300 ${
-                            isSelected 
-                              ? "bg-[#009eb6]/10 text-[#009eb6] scale-110" 
-                              : "bg-slate-50 text-slate-500 group-hover:bg-[#009eb6]/5 group-hover:text-[#009eb6]"
-                          }`}>
-                            {cat.icon}
-                          </div>
                           <span className="truncate">{cat.name}</span>
                         </button>
                       </div>
 
-                      {/* Expand/Collapse Chevron */}
-                      {cat.subcategories && cat.subcategories.length > 0 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleCategoryExpand(cat.name);
-                          }}
-                          className="p-1.5 hover:bg-slate-100/80 rounded-lg text-slate-400 hover:text-[#009eb6] transition-colors"
+                      {/* Controls: Drag Handle & Expand Chevron */}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Drag Handle (subtle, visible on hover) */}
+                        <div 
+                          className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-[#f06a4f] transition-opacity opacity-0 group-hover/item:opacity-100 p-1 rounded hover:bg-slate-100 flex items-center justify-center"
+                          title="اسحب لإعادة الترتيب"
                         >
-                          {isExpanded ? (
-                            <ChevronUp className="w-3.5 h-3.5 text-[#009eb6]" />
-                          ) : (
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      )}
+                          <GripVertical className="w-3.5 h-3.5" />
+                        </div>
+
+                        {/* Expand/Collapse Chevron */}
+                        {cat.subcategories && cat.subcategories.length > 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleCategoryExpand(cat.name);
+                            }}
+                            className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-[#009eb6] transition-colors"
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="w-3.5 h-3.5 text-[#009eb6]" />
+                            ) : (
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Subcategories (Collapsible list) */}
                     {isExpanded && cat.subcategories && cat.subcategories.length > 0 && (
-                      <div className="mr-8 border-r border-[#009eb6]/15 pr-3.5 pb-3 mt-0.5 flex flex-col gap-1 animate-fadeIn">
+                      <div className="mr-6 border-r border-[#009eb6]/15 pr-3 pb-2 mt-0.5 flex flex-col gap-0.5 animate-fadeIn">
                         {cat.subcategories.map((sub) => {
                           const isSubActive = activeSubCat === sub.name && isSelected;
                           return (
                             <button
                               key={sub.name}
                               onClick={() => handleSubCatChange(sub, cat.name)}
-                              className={`w-full text-right text-xs font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-start gap-2.5 group relative ${
+                              className={`w-full text-right text-[11px] font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-start gap-2.5 group/sub relative ${
                                 isSubActive
-                                  ? "text-[#009eb6] bg-[#009eb6]/5 font-extrabold shadow-sm shadow-[#009eb6]/2"
-                                  : "text-slate-500 hover:text-[#009eb6] hover:bg-slate-50/60"
+                                  ? "text-[#009eb6] bg-[#009eb6]/5 font-extrabold"
+                                  : "text-slate-500 hover:text-[#009eb6] hover:bg-slate-100/50"
                               }`}
                             >
-                              <span className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                              <span className={`w-1 h-1 rounded-full transition-all duration-300 ${
                                 isSubActive 
-                                  ? "bg-[#009eb6] scale-125 shadow-sm shadow-[#009eb6]/50" 
-                                  : "bg-slate-300 group-hover:bg-[#009eb6]/50"
+                                  ? "bg-[#009eb6] scale-125" 
+                                  : "bg-slate-300 group-hover/sub:bg-[#009eb6]/50"
                               }`} />
                               <span>{sub.name}</span>
                             </button>
@@ -2051,102 +2055,251 @@ export default function Prouducts() {
                 </button>
               </div>
             ) : (
-              /* Products Grid */
+              /* Products Display */
               <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"
-                >
-                  {medicines.map((med) => (
-                    <motion.div
-                      key={med._id}
-                      className="bg-white border border-slate-100 hover:border-[#10b981]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[340px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
-                      onClick={() => openModal(med)}
-                    >
-                      {/* Requires Prescription Tag */}
-                      {med.requiresPrescription && (
-                        <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[9px] font-black px-2 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
-                          <span className="w-1 h-1 rounded-full bg-red-500"></span>
-                          يلزم وصفة
-                        </span>
-                      )}
-
-                      {/* Product Image */}
-                      <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
-                        <img
-                          src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
-                          alt={med.name}
-                          className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                        />
+                {categoryApiValue === "" && !searchParam ? (
+                  /* Default View: Horizontal Carousel of Grids (12 Cards Per slide) + Category Sliders */
+                  <>
+                    {/* 1. All Products Section (Page-by-page Horizontal Grid Carousel) */}
+                    <div className="relative group/all-slider flex flex-col mb-12">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-sm font-black text-[#102542] flex items-center gap-2">
+                          <span className="w-1.5 h-4 rounded-full bg-gradient-to-b from-[#10b981] to-[#059669]" />
+                          جميع المنتجات
+                        </h3>
                       </div>
 
-                      {/* Info & Price */}
-                      <div className="text-right flex-grow flex flex-col justify-between">
-                        <div>
-                          <h4 className="text-xs md:text-sm font-black text-slate-800 line-clamp-2 h-9 leading-snug group-hover:text-[#10b981] transition-colors mb-1">
-                            {med.name}
-                          </h4>
-                          <p className="text-[10px] text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
-                            {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
-                          </p>
-                        </div>
-
-                        <div className="flex items-baseline justify-start gap-1 mb-3">
-                          <span className="text-[15px] font-black text-slate-900">{med.price}</span>
-                          <span className="text-[10px] text-slate-500 font-bold">جنيه</span>
-                        </div>
-                      </div>
-
-                      {/* Add to Cart Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
-                        }}
-                        className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5" />
-                        <span>أضف إلى العربة</span>
-                      </button>
-                    </motion.div>
-                  ))}
-                </motion.div>
-
-                {/* 5. Numbered Pagination Bar */}
-                {apiData.pages > 1 && (
-                  <div className="flex items-center justify-center gap-2.5 mt-12 bg-white border border-slate-100 py-3 px-6 rounded-2xl shadow-sm max-w-md mx-auto" dir="ltr">
-                    <button
-                      onClick={() => setPage(p => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981] disabled:opacity-40 disabled:pointer-events-none transition-all"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-
-                    <div className="flex items-center gap-1.5">
-                      {visiblePages.map((pNum) => (
+                      <div className="relative flex items-center w-full">
+                        {/* Left scroll arrow */}
                         <button
-                          key={pNum}
-                          onClick={() => setPage(pNum)}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black transition-all ${page === pNum
-                              ? "bg-[#10b981] text-white shadow-md shadow-[#10b981]/20"
-                              : "border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981]"
-                            }`}
+                          type="button"
+                          onClick={() => {
+                            const container = document.getElementById('all-products-carousel');
+                            if (container) {
+                              container.scrollBy({ left: -container.clientWidth, behavior: 'smooth' });
+                            }
+                          }}
+                          className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all opacity-0 group-hover/all-slider:opacity-100 z-10 border border-slate-100"
                         >
-                          {pNum}
+                          <ChevronLeft className="w-5 h-5" />
                         </button>
-                      ))}
+
+                        {/* Right scroll arrow */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const container = document.getElementById('all-products-carousel');
+                            if (container) {
+                              container.scrollBy({ left: container.clientWidth, behavior: 'smooth' });
+                            }
+                          }}
+                          className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-lg transition-all opacity-0 group-hover/all-slider:opacity-100 z-10 border border-slate-100"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+
+                        {/* Scroll Container of Grids */}
+                        <div
+                          id="all-products-carousel"
+                          className="flex overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory w-full"
+                          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                          onScroll={(e) => {
+                            const container = e.currentTarget;
+                            const pageIdx = Math.round(Math.abs(container.scrollLeft) / container.clientWidth);
+                            setCurrentAllPage(pageIdx);
+                          }}
+                        >
+                          {(() => {
+                            const chunks = [];
+                            for (let i = 0; i < sortedMedicines.length; i += 12) {
+                              chunks.push(sortedMedicines.slice(i, i + 12));
+                            }
+                            return chunks.map((chunk, chunkIdx) => (
+                              <div
+                                key={chunkIdx}
+                                className="snap-start shrink-0 w-full grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5 px-1"
+                              >
+                                {chunk.map((med) => (
+                                  <div
+                                    key={med._id}
+                                    className="bg-white border border-slate-100 hover:border-[#10b981]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[340px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
+                                    onClick={() => openModal(med)}
+                                  >
+                                    {med.requiresPrescription && (
+                                      <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[9px] font-black px-2 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
+                                        <span className="w-1 h-1 rounded-full bg-red-500"></span>
+                                        يلزم وصفة
+                                      </span>
+                                    )}
+
+                                    <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
+                                      <img
+                                        src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
+                                        alt={med.name}
+                                        className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                      />
+                                    </div>
+
+                                    <div className="text-right flex-grow flex flex-col justify-between">
+                                      <div>
+                                        <h4 className="text-xs md:text-sm font-black text-slate-800 line-clamp-2 h-9 leading-snug group-hover:text-[#10b981] transition-colors mb-1">
+                                          {med.name}
+                                        </h4>
+                                        <p className="text-[10px] text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                                          {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
+                                        </p>
+                                      </div>
+
+                                      <div className="flex items-baseline justify-start gap-1 mb-3">
+                                        <span className="text-[15px] font-black text-slate-900">{med.price}</span>
+                                        <span className="text-[10px] text-slate-500 font-bold">جنيه</span>
+                                      </div>
+                                    </div>
+
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+                                      }}
+                                      className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
+                                    >
+                                      <ShoppingCart className="w-3.5 h-3.5" />
+                                      <span>أضف إلى العربة</span>
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Dot indicators acting as the slider navigation at the bottom */}
+                      <div className="flex items-center justify-center gap-2.5 mt-4" dir="ltr">
+                        {(() => {
+                          const pageCount = Math.ceil(sortedMedicines.length / 12);
+                          return Array.from({ length: pageCount }).map((_, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                const container = document.getElementById('all-products-carousel');
+                                if (container) {
+                                  container.scrollTo({ left: -idx * container.clientWidth, behavior: 'smooth' });
+                                  setCurrentAllPage(idx);
+                                }
+                              }}
+                              className={`h-2.5 rounded-full transition-all duration-300 ${
+                                currentAllPage === idx
+                                  ? "bg-[#10b981] w-6 shadow-sm"
+                                  : "bg-slate-200 hover:bg-slate-300 w-2"
+                              }`}
+                            />
+                          ));
+                        })()}
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => setPage(p => Math.min(apiData.pages, p + 1))}
-                      disabled={page === apiData.pages}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981] disabled:opacity-40 disabled:pointer-events-none transition-all"
+                  </>
+                ) : (
+                  /* Standard Grid View */
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"
                     >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                      {medicines.map((med) => (
+                        <motion.div
+                          key={med._id}
+                          className="bg-white border border-slate-100 hover:border-[#10b981]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[340px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
+                          onClick={() => openModal(med)}
+                        >
+                          {/* Requires Prescription Tag */}
+                          {med.requiresPrescription && (
+                            <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[9px] font-black px-2 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-red-500"></span>
+                              يلزم وصفة
+                            </span>
+                          )}
+
+                          {/* Product Image */}
+                          <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
+                            <img
+                              src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
+                              alt={med.name}
+                              className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+
+                          {/* Info & Price */}
+                          <div className="text-right flex-grow flex flex-col justify-between">
+                            <div>
+                              <h4 className="text-xs md:text-sm font-black text-slate-800 line-clamp-2 h-9 leading-snug group-hover:text-[#10b981] transition-colors mb-1">
+                                {med.name}
+                              </h4>
+                              <p className="text-[10px] text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                                {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
+                              </p>
+                            </div>
+
+                            <div className="flex items-baseline justify-start gap-1 mb-3">
+                              <span className="text-[15px] font-black text-slate-900">{med.price}</span>
+                              <span className="text-[10px] text-slate-500 font-bold">جنيه</span>
+                            </div>
+                          </div>
+
+                          {/* Add to Cart Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+                            }}
+                            className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                            <span>أضف إلى العربة</span>
+                          </button>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+
+                    {/* 5. Numbered Pagination Bar */}
+                    {apiData.pages > 1 && (
+                      <div className="flex items-center justify-center gap-2.5 mt-12 bg-white border border-slate-100 py-3 px-6 rounded-2xl shadow-sm max-w-md mx-auto" dir="ltr">
+                        <button
+                          onClick={() => setPage(p => Math.max(1, p - 1))}
+                          disabled={page === 1}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981] disabled:opacity-40 disabled:pointer-events-none transition-all"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                          {visiblePages.map((pNum) => (
+                            <button
+                              key={pNum}
+                              onClick={() => setPage(pNum)}
+                              className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black transition-all ${page === pNum
+                                  ? "bg-[#10b981] text-white shadow-md shadow-[#10b981]/20"
+                                  : "border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981]"
+                                }`}
+                            >
+                              {pNum}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => setPage(p => Math.min(apiData.pages, p + 1))}
+                          disabled={page === apiData.pages}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981] disabled:opacity-40 disabled:pointer-events-none transition-all"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
