@@ -128,7 +128,7 @@ function App() {
       ],
     },
 
-    // ─── الـ Admin Dashboard — 
+  // Admin Dashboard
     {
       path: "/admin",
       element: (
@@ -144,13 +144,16 @@ function App() {
   ]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <UserContextProvider>
-        <div dir="rtl">
-          <RouterProvider router={router}></RouterProvider>
-        </div>
-      </UserContextProvider>
-    </QueryClientProvider>
+   <UserContextProvider>
+      <CartContextProvider>
+        <FavoritesContextProvider>
+          <div dir="rtl">
+            <RouterProvider router={router}></RouterProvider>
+          </div>
+        </FavoritesContextProvider>
+      </CartContextProvider>
+    </UserContextProvider>
+    
   );
 }
 
