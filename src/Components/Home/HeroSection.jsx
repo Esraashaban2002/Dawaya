@@ -13,12 +13,12 @@ const HeroSection = () => {
       subtitle: "حلول رقمية ذكية لزيادة المبيعات"
     },
     {
-      image: "/public/imges/HeroImage/DriveFast.png", // توصيل سريع
+      image: "/imges/HeroImage/DriveFast.png", // توصيل سريع
       title: "توصيلات سريعة",
       subtitle: "وصل طلبك في أقل من ساعة"
     },
     {
-      image: "/public/imges/HeroImage/Medicine.png", // نواقص الأدوية
+      image: "/imges/HeroImage/Medicine.png", // نواقص الأدوية
       title: "نوفر نواقص الأدوية",
       subtitle: "منصة ذكية لتأمين احتياجات صيدليتك"
     },
