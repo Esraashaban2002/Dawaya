@@ -44,8 +44,8 @@ export function EditProfileModal({ profile, onSave, onClose }) {
 
     // Validate Age
     const ageNum = Number(formData.age);
-    if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120) {
-      setValidationError('يرجى إدخال عمر صحيح بين 1 و 120 سنة');
+    if (isNaN(ageNum) || !Number.isInteger(ageNum) || ageNum <= 0 || ageNum > 120) {
+      setValidationError('يرجى إدخال عمر صحيح (عدد صحيح) بين 1 و 120 سنة');
       return;
     }
 
@@ -127,11 +127,22 @@ export function EditProfileModal({ profile, onSave, onClose }) {
             <div className="form-group">
               <label className="form-label">العمر</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 name="age"
                 className="form-input"
                 value={formData.age}
-                onChange={handleChange}
+                onKeyDown={(e) => {
+                  if (["e", "E", "+", "-", "."].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, "");
+                  setFormData((prev) => ({ ...prev, age: val }));
+                  setValidationError('');
+                }}
                 required
               />
             </div>

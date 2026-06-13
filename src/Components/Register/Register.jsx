@@ -88,7 +88,8 @@ export default function Register() {
       .number()
       .typeError("العمر يجب أن يكون رقماً")
       .integer("العمر يجب أن يكون عدداً صحيحاً")
-      .min(1, "العمر يجب أن يكون سنة واحدة على الأقل")
+      .positive("العمر يجب أن يكون رقماً موجباً")
+      .min(18, "العمر يجب أن يكون ١٨ سنة على الأقل")
       .max(120, "العمر يجب ألا يتجاوز 120 سنة")
       .required("العمر مطلوب"),
   });
@@ -109,7 +110,7 @@ export default function Register() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-[#f6f7fb] py-10 px-4">
+      <div className="min-h-screen flex items-start justify-center bg-[#f6f7fb] py-15 px-4">
         <div className="w-full max-w-6xl bg-white rounded-[32px] overflow-hidden shadow-2xl flex flex-col lg:flex-row">
           <div
             className="hidden lg:flex flex-1 relative bg-cover bg-center min-h-[750px]"
@@ -204,9 +205,19 @@ export default function Register() {
                   </label>
 
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     onBlur={formik.handleBlur}
-                    onChange={formik.handleChange}
+                    onKeyDown={(e) => {
+                      if (["e", "E", "+", "-", "."].includes(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, "");
+                      formik.setFieldValue("age", val);
+                    }}
                     name="age"
                     value={formik.values.age}
                     className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-sky-500"
