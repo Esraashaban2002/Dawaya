@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link , useNavigate, useSearchParams} from "react-router-dom";
+
+
+  
 
 // ─── ROUTES ──────────────────────────────────────────────────
 const ROUTES = {
@@ -195,6 +198,17 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [fading, setFading] = useState(false);
   const navigate = useNavigate();
+const [searchParams] = useSearchParams();
+
+useEffect(() => {
+  const token = searchParams.get("token");
+  if (token) {
+    localStorage.setItem("token", token);
+    navigate("/", { replace: true });
+  }
+}, []);
+
+
 
   const goTo = (i) => {
     if (i === slide) return;
