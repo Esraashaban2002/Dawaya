@@ -1,5 +1,6 @@
 // src/pages/Home/Home.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import HeroSection from '../Components/Home/HeroSection';
 import StatsSection from '../Components/Home/StatsSection';
@@ -14,6 +15,19 @@ import FAQSection from '../Components/Home/FAQSection';
 // import CTASection from '../components/Home/CTASection';
 
 const Home = () => {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [hash]);
+
   return (
     <motion.main
 

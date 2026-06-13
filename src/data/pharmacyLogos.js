@@ -36,7 +36,7 @@ export const pharmacyLogos = [
     url: 'https://example.com/pharmacy6',
   },
   {
-    name: 'صيدلية 6',
+    name: 'صيدلية 8',
     image: '/imge/PharmcyLogo/10_al_amal_pharmacy.png',
     url: 'https://example.com/pharmacy6',
   },
