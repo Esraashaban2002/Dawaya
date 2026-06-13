@@ -9,138 +9,1460 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Fetch list of medicines
-const fetchMedicines = async ({ queryKey }) => {
-  const [_key, { search, category, page, limit }] = queryKey;
-  let url = `https://dawaya-back-end.vercel.app/api/medicines?page=${page}&limit=${limit}`;
-  if (search) url += `&search=${search}`;
-  if (category) url += `&category=${category}`;
+// Local static data for medicines (100 products)
+const localMedicines = [
+  {
+    "id": 1,
+    "name": "بروفين 400 مجم",
+    "genericName": "Ibuprofen",
+    "category": "مسكنات",
+    "description": "وصف مختصر لدواء 1",
+    "price": 20,
+    "quantity": 50,
+    "requiresPrescription": false,
+    "image": "https://media.zid.store/0a395ab0-f830-43d1-a748-253eb7272793/1f387de7-72b5-4a52-95d5-c7b3e9d6754a.jpg",
+    "manufacturer": "فاركو"
+  },
+  {
+    "id": 2,
+    "name": "بانادول أدفانس",
+    "genericName": "Paracetamol",
+    "category": "مضادات حيوية",
+    "description": "وصف مختصر لدواء 2",
+    "price": 23,
+    "quantity": 57,
+    "requiresPrescription": true,
+    "image": "https://i-cf65.ch-static.com/content/dam/cf-consumer-healthcare/panadol-reskin/ar_AE/adult/Panadol%20Advance%20455x455.jpg?auto=format",
+    "manufacturer": "إيبيكو"
+  },
+  {
+    "id": 3,
+    "name": "كتافلام 50 مجم",
+    "genericName": "Diclofenac",
+    "category": "أدوية البرد",
+    "description": "وصف مختصر لدواء 3",
+    "price": 26,
+    "quantity": 64,
+    "requiresPrescription": false,
+    "image": "https://ozone-pharmacy.com/media/mf_webp/jpg/media/catalog/product/cache/0daeb07bb1d294c1f281fab47369d56a/P/r/ProductImage_150610_2.webp",
+    "manufacturer": "أمون"
+  },
+  {
+    "id": 4,
+    "name": "أوجمنتين 1 جم",
+    "genericName": "Amoxicillin + Clavulanate",
+    "category": "الحساسية",
+    "description": "وصف مختصر لدواء 4",
+    "price": 29,
+    "quantity": 71,
+    "requiresPrescription": false,
+    "image": "https://cdn.salla.sa/VqEPxq/6a98eb05-eec5-4030-9710-ad7d996bc690-1000x1000-JXYZt5fFDtM8zuBDj72m7lE4xvGgDQfsdtSmlhXZ.png",
+    "manufacturer": "سيجما"
+  },
+  {
+    "id": 5,
+    "name": "أموكسيل 500 مجم",
+    "genericName": "Amoxicillin",
+    "category": "الجهاز الهضمي",
+    "description": "وصف مختصر لدواء 5",
+    "price": 32,
+    "quantity": 78,
+    "requiresPrescription": false,
+    "image": "https://cdn.salla.sa/VqEPxq/f1cfc174-9849-4e57-b37f-d65cf9bef4a9-1000x1000-NUdVBV3S9gmFNVSH8hQY01UJzYPqItoAKwcyzO2Q.jpg",
+    "manufacturer": "ممفيس"
+  },
+  {
+    "id": 6,
+    "name": "كونجستال",
+    "genericName": "Paracetamol + Pseudoephedrine",
+    "category": "ضغط الدم",
+    "description": "وصف مختصر لدواء 6",
+    "price": 35,
+    "quantity": 85,
+    "requiresPrescription": true,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlG3kzZIwls0f7r6MMAlYvgrAP1Ud2AzkskA&s",
+    "manufacturer": "أكتوبر فارما"
+  },
+  {
+    "id": 7,
+    "name": "أنتينال",
+    "genericName": "Nifuroxazide",
+    "category": "السكري",
+    "description": "وصف مختصر لدواء 7",
+    "price": 38,
+    "quantity": 92,
+    "requiresPrescription": true,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTULVOxL5WxeiR5elDMuw_DmqL2i2tVy1K1IQ&s",
+    "manufacturer": "ميرك"
+  },
+  {
+    "id": 8,
+    "name": "إيموديوم",
+    "genericName": "Loperamide",
+    "category": "فيتامينات",
+    "description": "وصف مختصر لدواء 8",
+    "price": 41,
+    "quantity": 99,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCPIXml8IgKB9CJbve3h2kpYl4o6B75BC6LQ&s",
+    "manufacturer": "فايزر"
+  },
+  {
+    "id": 9,
+    "name": "جاست ريج",
+    "genericName": "Trimebutine",
+    "category": "القلب والأوعية",
+    "description": "وصف مختصر لدواء 9",
+    "price": 44,
+    "quantity": 106,
+    "requiresPrescription": true,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGOhcbDWBxOeXpIYixkhhs2zeRZKG0cvquAQ&s",
+    "manufacturer": "سانوفي"
+  },
+  {
+    "id": 10,
+    "name": "زيرتك",
+    "genericName": "Cetirizine",
+    "category": "الربو",
+    "description": "وصف مختصر لدواء 10",
+    "price": 47,
+    "quantity": 113,
+    "requiresPrescription": true,
+    "image": "https://www.bloompharmacy.com/cdn/shop/products/zyrtec-10-mg-20-tablets-382069_600x600_crop_center.jpg?v=1687731891",
+    "manufacturer": "جلاكسو سميث كلاين"
+  },
+  {
+    "id": 11,
+    "name": "بانادول إكسترا",
+    "genericName": "Paracetamol",
+    "category": "مسكنات",
+    "description": "مسكن قوي للآلام وخافض للحرارة",
+    "price": 50,
+    "quantity": 120,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdv-u4L-4kXdW8Q0XR8DDTx68Z7DHywPUyAw&s",
+    "manufacturer": "جلاكسو سميث كلاين"
+  },
+  {
+    "id": 12,
+    "name": "أميوكسيسين",
+    "genericName": "Amoxicillin",
+    "category": "مضادات حيوية",
+    "description": "مضاد حيوي واسع الطيف لعلاج العدوى البكتيرية",
+    "price": 53,
+    "quantity": 127,
+    "requiresPrescription": true,
+    "image": "https://barakat-pharma.com/wp-content/uploads/2019/09/all_0057_Amoxicillin-Arabic.jpg",
+    "manufacturer": "إيبيكو"
+  },
+  {
+    "id": 13,
+    "name": "كومتركس",
+    "genericName": "Paracetamol + Phenylephrine",
+    "category": "أدوية البرد",
+    "description": "دواء شامل لأعراض البرد والإنفلونزا",
+    "price": 56,
+    "quantity": 134,
+    "requiresPrescription": false,
+    "image": "https://dwaprices.com/upload/1634211164.jpg",
+    "manufacturer": "أمون"
+  },
+  {
+    "id": 14,
+    "name": "زيرتك",
+    "genericName": "Cetirizine",
+    "category": "الحساسية",
+    "description": "مضاد للحساسية وحكة الجلد والأرتيكاريا",
+    "price": 59,
+    "quantity": 141,
+    "requiresPrescription": false,
+    "image": "https://www.bloompharmacy.com/cdn/shop/products/zyrtec-10-mg-20-tablets-382069_600x600_crop_center.jpg?v=1687731891",
+    "manufacturer": "سيجما"
+  },
+  {
+    "id": 15,
+    "name": "جافيسكون",
+    "genericName": "Alginic Acid + Sodium Bicarbonate",
+    "category": "الجهاز الهضمي",
+    "description": "دواء فعال لحموضة المعدة والارتجاع المريئي",
+    "price": 62,
+    "quantity": 148,
+    "requiresPrescription": false,
+    "image": "https://cdn.chefaa.com/filters:format(webp)/public/uploads/products/gaviscon-peppermint-24-liquid-sachets-10ml-ldzp-11648820436.png",
+    "manufacturer": "ممفيس"
+  },
+  {
+    "id": 16,
+    "name": "تينول",
+    "genericName": "Atenolol",
+    "category": "ضغط الدم",
+    "description": "دواء لخفض ضغط الدم العالي",
+    "price": 65,
+    "quantity": 155,
+    "requiresPrescription": true,
+    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2020/09/28/4ccbecc426afc963e844902455f71cd2.jpg.webp",
+    "manufacturer": "أكتوبر فارما"
+  },
+  {
+    "id": 17,
+    "name": "أماريل",
+    "genericName": "Glimepiride",
+    "category": "السكري",
+    "description": "دواء لتنظيم نسبة السكر في الدم",
+    "price": 68,
+    "quantity": 162,
+    "requiresPrescription": true,
+    "image": "https://almasrypharmacy.com/media/catalog/product/cache/u/n/unnamed_4_.png",
+    "manufacturer": "ميرك"
+  },
+  {
+    "id": 18,
+    "name": "سنتروم",
+    "genericName": "Multi-Vitamin & Minerals",
+    "category": "فيتامينات",
+    "description": "مكمل غذائي شامل من الفيتامينات والمعادن",
+    "price": 71,
+    "quantity": 169,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRDaipW_EG4aCHiIdJ8pId85ig3EGZ8FqXqh-6ECDf6ODGNnJRwf3-GRjMqqHSe2PhzSYc7tvSBuxD-mhDGRi119mIlkoty191RChmCmPFQeCL_X0fl35IRTYrvR5jbXaNNlIvoSA&usqp=CAc",
+    "manufacturer": "فايزر"
+  },
+  {
+    "id": 19,
+    "name": "أسبرين",
+    "genericName": "Acetylsalicylic Acid",
+    "category": "القلب والأوعية",
+    "description": "مضاد للتجلط ومسكن للآلام",
+    "price": 74,
+    "quantity": 176,
+    "requiresPrescription": true,
+    "image": "https://www.aspirin.me/sites/g/files/vrxlpx24711/files/2022-03/prod-packshot-aspirin-protect-ar2%20%281%29.png",
+    "manufacturer": "سانوفي"
+  },
+  {
+    "id": 20,
+    "name": "فينتولين",
+    "genericName": "Salbutamol",
+    "category": "الربو",
+    "description": "استنشاق لتوسيع الشعب الهوائية",
+    "price": 77,
+    "quantity": 183,
+    "requiresPrescription": true,
+    "image": "https://doctormpharmacy.com/cdn/shop/files/121931.jpg?v=1755356251",
+    "manufacturer": "جلاكسو سميث كلاين"
+  },
+  {
+    "id": 21,
+    "name": "ديكلوفيناك",
+    "genericName": "Diclofenac",
+    "category": "مسكنات",
+    "description": "مسكن قوي ومضاد للالتهاب",
+    "price": 80,
+    "quantity": 190,
+    "requiresPrescription": false,
+    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2021/08/23/9c2d7741b73691f447d285a5a14b296a.webp",
+    "manufacturer": "فاركو"
+  },
+  {
+    "id": 22,
+    "name": "إريثرومايسين",
+    "genericName": "Erythromycin",
+    "category": "مضادات حيوية",
+    "description": "مضاد حيوي ماكروليدي للعدوى البكتيرية",
+    "price": 83,
+    "quantity": 197,
+    "requiresPrescription": true,
+    "image": "https://scontent.fcai19-3.fna.fbcdn.net/v/t39.30808-6/528257151_1323127649821413_4962218174622745807_n.jpg?stp=dst-jpg_tt6&cstp=mx960x540&ctp=s960x540&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Xtzsk3v2M7cQ7kNvwFnaqQt&_nc_oc=AdoE0YOQx12IVGTRTZvvFv0kYQoxugumEHPO12RWOS7S8LQ9A2omiCRE5P6ABID85Hw&_nc_zt=23&_nc_ht=scontent.fcai19-3.fna&_nc_gid=TSa8x8CQ0RxtiCjKTj1t3g&_nc_ss=7a289&oh=00_Af_n_x8Xv668XqVyEaENbrC-swB3-Gk8U_NwSVy_1qHa8A&oe=6A32EB31",
+    "manufacturer": "إيبيكو"
+  },
+  {
+    "id": 23,
+    "name": "كونجيستال",
+    "genericName": "Diphenhydramine + Phenylephrine",
+    "category": "أدوية البرد",
+    "description": "دواء فعال لأعراض البرد والاحتقان",
+    "price": 86,
+    "quantity": 204,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkY8POdYocyledHhulzwJXTtj0nqO4gAC9Uw&s",
+    "manufacturer": "أمون"
+  },
+  {
+    "id": 24,
+    "name": "تيلفاست",
+    "genericName": "Fexofenadine",
+    "category": "الحساسية",
+    "description": "مضاد حساسية حديث بدون نعاس",
+    "price": 89,
+    "quantity": 211,
+    "requiresPrescription": false,
+    "image": "https://images.matjrah.online/2744/image/catalog/productimage/054b4da9af96018642665b98290ff61f8-550x550.jpg",
+    "manufacturer": "سيجما"
+  },
+  {
+    "id": 25,
+    "name": "رينمارك",
+    "genericName": "Metoclopramide",
+    "category": "الجهاز الهضمي",
+    "description": "دواء لتحسين حركة الجهاز الهضمي",
+    "price": 92,
+    "quantity": 218,
+    "requiresPrescription": false,
+    "image": "https://m.media-amazon.com/images/I/71UjDJJSmhL.jpg",
+    "manufacturer": "ممفيس"
+  },
+  {
+    "id": 26,
+    "name": "دوميتل",
+    "genericName": "Lisinopril",
+    "category": "ضغط الدم",
+    "description": "مثبط ACE لخفض ضغط الدم",
+    "price": 95,
+    "quantity": 225,
+    "requiresPrescription": true,
+    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2021/05/30/82a9c302ecee12fdc672a4e1d6551c5d.webp",
+    "manufacturer": "أكتوبر فارما"
+  },
+  {
+    "id": 27,
+    "name": "جليبنكلاميد",
+    "genericName": "Glibenclamide",
+    "category": "السكري",
+    "description": "دواء لتنظيم السكري من النوع الثاني",
+    "price": 98,
+    "quantity": 232,
+    "requiresPrescription": true,
+    "image": "https://www.sehatok.com/sites/default/files/styles/large_16_9/public/2023-12/%D8%AF%D9%88%D8%A7%D9%86%D9%8A%D9%84%20%28%D8%AC%D9%84%D9%8A%D9%86%D9%83%D9%84%D8%A7%D9%85%D9%8A%D8%AF%29.png?h=b986b931&itok=RkCz8DHB",
+    "manufacturer": "ميرك"
+  },
+  {
+    "id": 28,
+    "name": "فيتامين د3",
+    "genericName": "Cholecalciferol",
+    "category": "فيتامينات",
+    "description": "فيتامين د لتقوية العظام والمناعة",
+    "price": 101,
+    "quantity": 239,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8CX0bom8R4vN25zrpnK630xD8pz4XCy1gYw&s",
+    "manufacturer": "فايزر"
+  },
+  {
+    "id": 29,
+    "name": "أنجيوتال",
+    "genericName": "Isosorbide Dinitrate",
+    "category": "القلب والأوعية",
+    "description": "دواء لعلاج الذبحة الصدرية",
+    "price": 104,
+    "quantity": 246,
+    "requiresPrescription": true,
+    "image": "https://www.albayan.ae/assets/archives/images/2018/10/17/3385584.jpg",
+    "manufacturer": "سانوفي"
+  },
+  {
+    "id": 30,
+    "name": "سيريتايد",
+    "genericName": "Salmeterol + Fluticasone",
+    "category": "الربو",
+    "description": "استنشاق مركب لعلاج الربو المزمن",
+    "price": 107,
+    "quantity": 253,
+    "requiresPrescription": true,
+    "image": "https://kuludonline.com/cdn/shop/files/26742_grande.jpg?v=1746793265",
+    "manufacturer": "جلاكسو سميث كلاين"
+  },
+  {
+    "id": 31,
+    "name": "إيبوبروفين",
+    "genericName": "Ibuprofen",
+    "category": "مسكنات",
+    "description": "مسكن قوي ومضاد للالتهاب",
+    "price": 110,
+    "quantity": 260,
+    "requiresPrescription": false,
+    "image": "https://media.gemini.media/img/large/2022/6/16/2022_6_16_14_22_7_800.jpg",
+    "manufacturer": "فاركو"
+  },
+  {
+    "id": 32,
+    "name": "أموكسيسيلين كلافيولانات",
+    "genericName": "Amoxicillin + Clavulanic Acid",
+    "category": "مضادات حيوية",
+    "description": "مضاد حيوي محسّن للعدوى المقاومة",
+    "price": 113,
+    "quantity": 267,
+    "requiresPrescription": true,
+    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2021/10/02/6877616c0fae147679c04114f2dcbc87.jpg.webp",
+    "manufacturer": "إيبيكو"
+  },
+  {
+    "id": 33,
+    "name": "نوفاليس",
+    "genericName": "Chlorphenamine + Paracetamol",
+    "category": "أدوية البرد",
+    "description": "دواء شامل لأعراض البرد",
+    "price": 116,
+    "quantity": 274,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYFThhFf1Yj5jz7FLMCYh1zt_ke8xWU6cO1w&s",
+    "manufacturer": "أمون"
+  },
+  {
+    "id": 34,
+    "name": "دسلين",
+    "genericName": "Loratadine",
+    "category": "الحساسية",
+    "description": "مضاد حساسية طويل المفعول",
+    "price": 119,
+    "quantity": 281,
+    "requiresPrescription": false,
+    "image": "https://tse2.mm.bing.net/th/id/OIP.J92eb3TND30WUdKENAvNKAAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "سيجما"
+  },
+  {
+    "id": 35,
+    "name": "أوميبرازول",
+    "genericName": "Omeprazole",
+    "category": "الجهاز الهضمي",
+    "description": "دواء لتقليل حموضة المعدة",
+    "price": 122,
+    "quantity": 288,
+    "requiresPrescription": false,
+    "image": "https://i5.walmartimages.com/seo/Omeprazole-Delayed-Release-Tablets-20mg-Acid-Reducer-42-Count_6d1bf2ff-4c49-40a1-a0ed-8bc3c737b64f.9d8856e9c1a4e8186ab2c8128030483a.jpeg",
+    "manufacturer": "ممفيس"
+  },
+  {
+    "id": 36,
+    "name": "كابوتين",
+    "genericName": "Captopril",
+    "category": "ضغط الدم",
+    "description": "مثبط ACE لخفض ضغط الدم السريع",
+    "price": 125,
+    "quantity": 295,
+    "requiresPrescription": true,
+    "image": "https://tse4.mm.bing.net/th/id/OIP.V-K_6CAocliYTO-KB_JCpQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "أكتوبر فارما"
+  },
+  {
+    "id": 37,
+    "name": "ميتفورمين",
+    "genericName": "Metformin",
+    "category": "السكري",
+    "description": "الخيار الأول لعلاج السكري من النوع الثاني",
+    "price": 128,
+    "quantity": 52,
+    "requiresPrescription": true,
+    "image": "https://altabeb.com/wp-content/uploads/2019/01/prod_photo20160503121208-1024x637.jpg",
+    "manufacturer": "ميرك"
+  },
+  {
+    "id": 38,
+    "name": "كالسيوم فيتامين د",
+    "genericName": "Calcium + Vitamin D3",
+    "category": "فيتامينات",
+    "description": "مكمل لصحة العظام والأسنان",
+    "price": 131,
+    "quantity": 59,
+    "requiresPrescription": false,
+    "image": "https://tse1.mm.bing.net/th/id/OIP.VOmx3VBviShbQ8P4mign6wHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "فايزر"
+  },
+  {
+    "id": 39,
+    "name": "أتينول كوفين",
+    "genericName": "Atenolol + Nifedipine",
+    "category": "القلب والأوعية",
+    "description": "دواء مركب لضغط الدم والقلب",
+    "price": 134,
+    "quantity": 66,
+    "requiresPrescription": true,
+    "image": "https://tse4.mm.bing.net/th/id/OIP.V-K_6CAocliYTO-KB_JCpQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "سانوفي"
+  },
+  {
+    "id": 40,
+    "name": "فورموتيرول",
+    "genericName": "Formoterol",
+    "category": "الربو",
+    "description": "منبسط قصبي طويل المفعول",
+    "price": 137,
+    "quantity": 73,
+    "requiresPrescription": true,
+    "image": "https://www.sehatok.com/sites/default/files/styles/hp_main_slider_large/public/2023-09/%D9%81%D9%88%D8%B1%D8%A7%D8%AF%D9%8A%D9%84%20(%D9%81%D9%88%D8%B1%D9%85%D9%88%D8%AA%D9%8A%D8%B1%D9%88%D9%84).png?h=6c2b0a87&itok=9ovkCdVj",
+    "manufacturer": "جلاكسو سميث كلاين"
+  },
+  {
+    "id": 41,
+    "name": "نابروكسين",
+    "genericName": "Naproxen",
+    "category": "مسكنات",
+    "description": "مسكن قوي وفعال للالتهابات",
+    "price": 140,
+    "quantity": 80,
+    "requiresPrescription": false,
+    "image": "https://th.bing.com/th/id/R.07cc6dbc107e8aacf5ad95590e0e0157?rik=%2fVhF%2bKSRMSoxbw&riu=http%3a%2f%2fchefaa.com%2fblog%2fwp-content%2fuploads%2f2022%2f05%2f%d9%86%d8%a7%d8%a8%d8%b1%d9%88%d9%83%d8%b3%d9%8a%d9%86-naproxen-e1652963562360-300x156.png&ehk=oMlQg414WeXBZg4g9mT%2b%2fZVHeopVwJN7bemQxB3s1yE%3d&risl=&pid=ImgRaw&r=0",
+    "manufacturer": "فاركو"
+  },
+  {
+    "id": 42,
+    "name": "أزيثرومايسين",
+    "genericName": "Azithromycin",
+    "category": "مضادات حيوية",
+    "description": "مضاد حيوي ماكروليدي عريض الطيف",
+    "price": 143,
+    "quantity": 87,
+    "requiresPrescription": true,
+    "image": "https://tse3.mm.bing.net/th/id/OIP.xB2L0_uUGxSNSkrx_7ajYAHaD-?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "إيبيكو"
+  },
+  {
+    "id": 43,
+    "name": "سيتريزين ديهيدروكلوريد",
+    "genericName": "Cetirizine HCl",
+    "category": "أدوية البرد",
+    "description": "مضاد حساسية لأعراض البرد",
+    "price": 146,
+    "quantity": 94,
+    "requiresPrescription": false,
+    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2023/11/30/432c3553ae19691ac798e91837d144fd.jpg.webp",
+    "manufacturer": "أمون"
+  },
+  {
+    "id": 44,
+    "name": "ديسلوراتادين",
+    "genericName": "Desloratadine",
+    "category": "الحساسية",
+    "description": "مضاد حساسية قوي وسريع المفعول",
+    "price": 149,
+    "quantity": 101,
+    "requiresPrescription": false,
+    "image": "https://www.rosheta.com/upload/447502f784f069347df4805018ebd8eb8efc0eabd09d384b8853c4df8828f98d.webp",
+    "manufacturer": "سيجما"
+  },
+  {
+    "id": 45,
+    "name": "دومبيريدون",
+    "genericName": "Domperidone",
+    "category": "الجهاز الهضمي",
+    "description": "دواء لتحسين حركة المعدة والأمعاء",
+    "price": 152,
+    "quantity": 108,
+    "requiresPrescription": false,
+    "image": "https://www.rosheta.com/upload/c_img/c3a1156aeff870de52b83198320e0d74.jpg",
+    "manufacturer": "ممفيس"
+  },
+  {
+    "id": 46,
+    "name": "ماكس برس",
+    "genericName": "Nifedipine",
+    "category": "ضغط الدم",
+    "description": "حاصرات قنوات الكالسيوم لخفض الضغط",
+    "price": 155,
+    "quantity": 115,
+    "requiresPrescription": true,
+    "image": "https://tse4.mm.bing.net/th/id/OIP.ilvzd2iy7YAwIEpU4e2CPQHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "أكتوبر فارما"
+  },
+  {
+    "id": 47,
+    "name": "إنسولين NPH",
+    "genericName": "Insulin NPH",
+    "category": "السكري",
+    "description": "إنسولين متوسط المفعول لعلاج السكري",
+    "price": 158,
+    "quantity": 122,
+    "requiresPrescription": true,
+    "image": "https://tse3.mm.bing.net/th/id/OIP.jalYvVwCigupfWp7WTDUnAAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
+    "manufacturer": "ميرك"
+  },
+  {
+    "id": 48,
+    "name": "فيتامين B المركب",
+    "genericName": "B-Complex Vitamins",
+    "category": "فيتامينات",
+    "description": "مجموعة فيتامينات B للطاقة والصحة",
+    "price": 161,
+    "quantity": 129,
+    "requiresPrescription": false,
+    "image": "https://egyptvitamins.com/wp-content/uploads/2023/03/61Dt8NimkXL._AC_SL1500_-600x600.jpg",
+    "manufacturer": "فايزر"
+  },
+  {
+    "id": 49,
+    "name": "إنالابريل",
+    "genericName": "Enalapril",
+    "category": "القلب والأوعية",
+    "description": "مثبط ACE لعلاج قصور القلب",
+    "price": 164,
+    "quantity": 136,
+    "requiresPrescription": true,
+    "image": "https://mosbatesabz.com/mag/wp-content/uploads/2024/03/Enalapril-1.jpg",
+    "manufacturer": "سانوفي"
+  },
+  {
+    "id": 50,
+    "name": "بوديزونيد",
+    "genericName": "Budesonide",
+    "category": "الربو",
+    "description": "كورتيكوستيرويد استنشاقي للربو",
+    "price": 167,
+    "quantity": 143,
+    "requiresPrescription": true,
+    "image": "https://mosbatesabz.com/mag/wp-content/uploads/2018/01/%D8%B9%D9%88%D8%A7%D8%B1%D8%B6-%D8%AC%D8%A7%D9%86%D8%A8%DB%8C-%D8%AF%D8%A7%D8%B1%D9%88%DB%8C-%D8%A8%D9%88%D8%AF%D8%B2%D9%88%D9%86%D8%A7%DB%8C%D8%AF-budesonide.jpg",
+    "manufacturer": "جلاكسو سميث كلاين"
+  },
+  {
+    "id": 51,
+    "name": "أسيتامينوفين 500",
+    "genericName": "Acetaminophen 500mg",
+    "category": "مسكنات",
+    "description": "مسكن فعال وخافض للحرارة",
+    "price": 170,
+    "quantity": 150,
+    "requiresPrescription": false,
+    "image": "https://dwaprices.com/upload/1674905336.jpg",
+    "manufacturer": "فاركو"
+  },
+  {
+    "id": 52,
+    "name": "CeraVe Foaming Cleanser",
+    "genericName": "Foaming Facial Cleanser",
+    "category": "الغسول",
+    "description": "غسول رغوي للبشرة العادية والدهنية يساعد على تنظيف البشرة دون الإخلال بالحاجز الطبيعي لها.",
+    "price": 650,
+    "quantity": 35,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSIspCdZRyrCYvlUyjcrBwGwgZIT0wtxJkIBWQkEGm-zHTGbhgd_1p5hdIsCHEtYnjvs2SnIU60ojYgpppNx2z7oF2y6lIPrux4nnNeZtuusOB92FrWpEenpx9ajw68bjs2tiaWjqY&usqp=CAc",
+    "manufacturer": "CeraVe"
+  },
+  {
+    "id": 53,
+    "name": "La Roche Posay Effaclar Gel",
+    "genericName": "Purifying Foaming Gel",
+    "category": "الغسول",
+    "description": "غسول للبشرة الدهنية والحساسة يساعد على إزالة الزيوت والشوائب.",
+    "price": 720,
+    "quantity": 28,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcT7MHyzjG7rYaXW3frrzdT8OeozYRHq2sXRXQqCebTBISouHy8rjPGQqKWdODU-xrnwzzCWHjB48H58-ddeOJVyjyBn7r69RvkpDQtNCen_kZW05u7JMQ09uWQEmcbhIPKRRc5_wyQ&usqp=CAc",
+    "manufacturer": "La Roche-Posay"
+  },
+  {
+    "id": 54,
+    "name": "The Ordinary Niacinamide 10% + Zinc 1%",
+    "genericName": "Niacinamide Serum",
+    "category": "السيروم",
+    "description": "سيروم يساعد على تقليل إفراز الدهون وتحسين مظهر المسام.",
+    "price": 850,
+    "quantity": 18,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcR8YHaa41VD4379eB6ibLrv9uKkIEKn0gxPzUYkPiq4FZJ2fYVazktTtqaYkCVP2En10KcX0J5XeOgAhsDWDKhO8qsoTJevlnWGYiGiNxIKMkGhyNM4tSQ2YdTq4wMveotdFLJTfkg&usqp=CAc",
+    "manufacturer": "The Ordinary"
+  },
+  {
+    "id": 55,
+    "name": "Vichy Dercos Anti-Dandruff Shampoo",
+    "genericName": "Anti Dandruff Shampoo",
+    "category": "شامبو وبلسم",
+    "description": "شامبو لعلاج القشرة مناسب لفروة الرأس الحساسة.",
+    "price": 580,
+    "quantity": 40,
+    "requiresPrescription": false,
+    "image": "https://f.nooncdn.com/p/pzsku/Z76C9D61E82659995635DZ/45/_/1779344991/7e305ba1-2624-4534-9f9c-fc066211defd.jpg?width=480",
+    "manufacturer": "Vichy"
+  },
+  {
+    "id": 56,
+    "name": "Centrum Multivitamin",
+    "genericName": "Multivitamin Supplement",
+    "category": "الفيتامينات والمكملات",
+    "description": "مكمل غذائي يحتوي على مجموعة متكاملة من الفيتامينات والمعادن.",
+    "price": 420,
+    "quantity": 55,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTJ5cp1sW73XU_iy1lb_q_2rDP5j1NqVpFP_kllXOjtY3mQrlhRCIIXS7ECotZN1GacTsOFT-IYqbBWHAbGSMIyB27r5abecPb2xKIJWmQOOLKINOaHFw-7khd5rzS1E8w0MV7t5DA&usqp=CAc",
+    "manufacturer": "Centrum"
+  },
+  {
+    "id": 57,
+    "name": "CeraVe Moisturizing Cream",
+    "genericName": "Moisturizing Cream",
+    "category": "الترطيب",
+    "description": "كريم مرطب للوجه والجسم للبشرة الجافة.",
+    "price": 690,
+    "quantity": 30,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQ8DF1FNO4yhHtN7q3Bc1_4PR8O8gu6K6cqiTNQnKsrPH_QViu4UR7Zv766dhUKbEuw_32cABxKxmJ1-Y1LKl6_BwlERBDiGcqqj1w_Qf1CeUS395IhZrZYZa0RQZu-asob86M-Fr6b&usqp=CAc",
+    "manufacturer": "CeraVe"
+  },
+  {
+    "id": 58,
+    "name": "Neutrogena Hydro Boost Water Gel",
+    "genericName": "Water Gel Moisturizer",
+    "category": "الترطيب",
+    "description": "جل مرطب غني بحمض الهيالورونيك.",
+    "price": 520,
+    "quantity": 24,
+    "requiresPrescription": false,
+    "image": "https://erosstore.co/cdn/shop/files/nyotrogyna-gl-mayy-mrtb-neutrogena-hydro-boost-water-gel-moisturizer-3464559.jpg?v=1777644312&width=1000",
+    "manufacturer": "Neutrogena"
+  },
+  {
+    "id": 59,
+    "name": "Bepanthen Cream",
+    "genericName": "Dexpanthenol Cream",
+    "category": "الترطيب",
+    "description": "كريم مرطب ومهدئ للبشرة الحساسة.",
+    "price": 145,
+    "quantity": 60,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTrEW4BrDRGO3GH6sNYIyjybdKozfyANAbtE5o6T3Ps-9IputaAvIcIb71TzRqZ-18Z7_zIUJhokqFObdn07FeTvGmWFiYkiv28bRC_K5yiRmJJVVk9sAzXdIDp18taxojHOtB_oJRuA5M&usqp=CAc",
+    "manufacturer": "Bayer"
+  },
+  {
+    "id": 60,
+    "name": "La Roche Posay Anthelios SPF50+",
+    "genericName": "Sunscreen",
+    "category": "الوقاية من الشمس",
+    "description": "واقي شمس واسع الطيف للبشرة الحساسة.",
+    "price": 890,
+    "quantity": 18,
+    "requiresPrescription": false,
+    "image": "https://alfouadpharmacies.com/cdn/shop/files/Group_2_9.webp?v=1781088238&width=1600",
+    "manufacturer": "La Roche-Posay"
+  },
+  {
+    "id": 61,
+    "name": "Bioderma Photoderm Max SPF50+",
+    "genericName": "Sunscreen",
+    "category": "الوقاية من الشمس",
+    "description": "واقي شمس للحماية العالية من الأشعة فوق البنفسجية.",
+    "price": 780,
+    "quantity": 20,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSR9o-0pqePgRT1RaA6sZNHGnyEKHKqEUAW_y2i7-9uCL78wq756QVqKmULku9-FbjRMlJw1hKfOILhyYqbeqRqFy8w_40qzifPNO5N8UEpG3D2KNYE086s3OVuhzAd71RneTng8Q&usqp=CAc",
+    "manufacturer": "Bioderma"
+  },
+  {
+    "id": 62,
+    "name": "ISDIN Fusion Water SPF50",
+    "genericName": "Sunscreen",
+    "category": "الوقاية من الشمس",
+    "description": "واقي شمس خفيف سريع الامتصاص.",
+    "price": 950,
+    "quantity": 15,
+    "requiresPrescription": false,
+    "image": "https://m.media-amazon.com/images/I/81l2Tgu38EL._AC_SL1500_.jpg",
+    "manufacturer": "ISDIN"
+  },
+  {
+    "id": 63,
+    "name": "Vichy Liftactiv Vitamin C Serum",
+    "genericName": "Vitamin C Serum",
+    "category": "السيروم",
+    "description": "سيروم مضاد للأكسدة لتوحيد لون البشرة.",
+    "price": 1150,
+    "quantity": 14,
+    "requiresPrescription": false,
+    "image": "https://www.lojaglamourosa.com/resources/medias/shop/products/shop-rt-01318-01-liftactiv-vitamin-c-serum---20ml--1.jpg",
+    "manufacturer": "Vichy"
+  },
+  {
+    "id": 64,
+    "name": "The Ordinary Hyaluronic Acid 2% + B5",
+    "genericName": "Hyaluronic Acid Serum",
+    "category": "السيروم",
+    "description": "سيروم لترطيب البشرة بعمق.",
+    "price": 790,
+    "quantity": 25,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSYYprFZlQ12F0ikNzxonw186M_LkWLh8yX29bNt5RjTPYr4Au0y01fwRhOqAkFN_nMg-lgOeHUt3qn4q2enupO3r0irFwAkVWZ0gMmGOTCVl_y59V3-9OoCJaftUCTlmZMn4GBA2A&usqp=CAc",
+    "manufacturer": "The Ordinary"
+  },
+  {
+    "id": 65,
+    "name": "COSRX Snail Mucin Essence",
+    "genericName": "Snail Essence",
+    "category": "السيروم",
+    "description": "إيسنس لإصلاح وترطيب البشرة.",
+    "price": 920,
+    "quantity": 12,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcR73mqOfzxURtvMolwaJ6xWal1_LeoyaAkfW968DeBvVYrwdwTLNywAmnDQRp6grQ_IQRwusp1XQNstfkrCibRoI_ZhGfDXs4eDsdWBIPMzPj3UaELRSVUQK6jzYVYclIW9NfKTfw&usqp=CAc",
+    "manufacturer": "COSRX"
+  },
+  {
+    "id": 66,
+    "name": "Pantene Pro-V Hair Fall Control",
+    "genericName": "Hair Shampoo",
+    "category": "شامبو وبلسم",
+    "description": "شامبو لتقليل تساقط الشعر.",
+    "price": 180,
+    "quantity": 50,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRPTuU6CbF14C6L7kD9pFCaquUcyBS7AujRw-tH5Dug7HIH0opzP5vRy1C6ntU3eDIINR8tXZ4ec8TonjAA5L-ajPrJ2fBI2DwA-N6N8s_egFvmOuFtBMyYKtJdKWAqTL3Mi0Isvjg&usqp=CAc",
+    "manufacturer": "Pantene"
+  },
+  {
+    "id": 67,
+    "name": "Head & Shoulders Classic Clean",
+    "genericName": "Anti Dandruff Shampoo",
+    "category": "شامبو وبلسم",
+    "description": "شامبو فعال ضد القشرة.",
+    "price": 175,
+    "quantity": 45,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQ8MpgmAWHmEd7l_-PZSOVKb8mxq7MT2n24WZLIIFgLvPyqrbMZ5CF_XyK__VMtfos_9NBAyVqWYSxNOB_o3NHo4cJiW-p6Vb5o03HepWwJWAsFr-TcvrRoGdm5WP2hDyFdJIlf7S0&usqp=CAc",
+    "manufacturer": "P&G"
+  },
+  {
+    "id": 68,
+    "name": "L'Oreal Elvive Hyaluron Moisture",
+    "genericName": "Hair Shampoo",
+    "category": "شامبو وبلسم",
+    "description": "شامبو لترطيب الشعر الجاف.",
+    "price": 220,
+    "quantity": 40,
+    "requiresPrescription": false,
+    "image": "https://alfouadpharmacies.com/cdn/shop/files/Loreal-Elvive-Hyaluron-Moisture-Hair-Cream-200ML.webp?v=1754298094",
+    "manufacturer": "L'Oreal"
+  },
+  {
+    "id": 69,
+    "name": "L'Oreal Extraordinary Oil",
+    "genericName": "Hair Oil",
+    "category": "ترطيب وعلاج الشعر",
+    "description": "زيت مغذي للشعر الجاف والمتقصف.",
+    "price": 350,
+    "quantity": 22,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQYdOa8ttOq_TlXxiRMo3vXJe7D0O3XvzHRF-D0aoDQelk7GscvGifZBLpokhcKt8BFjbZ8vOH3SUxRh0hs0Muo1sfJ8Lx3jd5bb0YLnoqrVqYDdRIJxq9paDRaMkFpUNywRlwS_S4&usqp=CAc",
+    "manufacturer": "L'Oreal"
+  },
+  {
+    "id": 70,
+    "name": "Mielle Rosemary Mint Oil",
+    "genericName": "Hair Oil",
+    "category": "ترطيب وعلاج الشعر",
+    "description": "زيت لتقوية بصيلات الشعر.",
+    "price": 890,
+    "quantity": 10,
+    "requiresPrescription": false,
+    "image": "https://m.media-amazon.com/images/I/812+NN-pXCL._AC_UF350,350_QL80_.jpg",
+    "manufacturer": "Mielle"
+  },
+  {
+    "id": 71,
+    "name": "Kerastase Genesis Serum",
+    "genericName": "Hair Serum",
+    "category": "ترطيب وعلاج الشعر",
+    "description": "سيروم لتقليل تساقط الشعر.",
+    "price": 1800,
+    "quantity": 8,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTU1C2lZwabf-ZUVr9rXwY94foOj19nzV6imBuvBQMQUMyLye5iImC0n4VJ9Bqj9_HRp2uJNfMtD3YXpTN90RYRyBZ0S3uwX59SeKuiS8dhy7TayvimnU8NiVmttAN9HEhGy3fTtS0&usqp=CAc",
+    "manufacturer": "Kerastase"
+  },
+  {
+    "id": 72,
+    "name": "Sofi",
+    "genericName": "Sanitary Pads",
+    "category": "العناية النسائية",
+    "description": "فوط صحية للاستخدام اليومي.",
+    "price": 95,
+    "quantity": 80,
+    "requiresPrescription": false,
+    "image": "https://omaleen.com/wp-content/uploads/2024/05/Sofy-Musk-All.jpg",
+    "manufacturer": "P&G"
+  },
+  {
+    "id": 73,
+    "name": "Femfresh Intimate Wash",
+    "genericName": "Intimate Wash",
+    "category": "العناية النسائية",
+    "description": "غسول للمناطق الحساسة.",
+    "price": 210,
+    "quantity": 30,
+    "requiresPrescription": false,
+    "image": "https://eg.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/77/6565331/1.jpg?5207",
+    "manufacturer": "Femfresh"
+  },
+  {
+    "id": 74,
+    "name": "Gillette Fusion Shaving Gel",
+    "genericName": "Shaving Gel",
+    "category": "العناية الرجالية",
+    "description": "جل حلاقة يمنح انزلاقاً سلساً.",
+    "price": 230,
+    "quantity": 35,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQ-Hm69rnWpUZpKkoaVqwN9T0XC8Oi5L3v8z3yFqLLzhsAYBMP8xhL19pQPVOFuDgiYynKUYF3pIinCPzkjU6fhLDlcy4QyAHnOdUky3ugnX83dpoda7yLcPsVXH08p443rMoD_DSk&usqp=CAc",
+    "manufacturer": "Gillette"
+  },
+  {
+    "id": 75,
+    "name": "Nivea Men Sensitive",
+    "genericName": "After Shave Balm",
+    "category": "العناية الرجالية",
+    "description": "بلسم مهدئ بعد الحلاقة.",
+    "price": 260,
+    "quantity": 25,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSvvQ6yb-HeOU1BEN778oF6gaZ-cdxH2S_CYc5gXSLGLNNIksQoZSN0V-DLum32EbRqcziTx3W6fpf0M0wAcgvDqgZW7Jt1-_Lc5uPfA0uc7h7ahbG55wBqgUSwklsId2aSpiFCvYmwlyM&usqp=CAc",
+    "manufacturer": "Nivea"
+  },
+  {
+    "id": 76,
+    "name": "Dettol Hand Sanitizer",
+    "genericName": "Hand Sanitizer",
+    "category": "الحماية",
+    "description": "مطهر لليدين يقضي على 99.9% من الجراثيم.",
+    "price": 85,
+    "quantity": 75,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQvjh9i_GU5Dax15HoF6UjmoJ3bdL2SKZlcw5zxITQk-URcbnqDmJ4_4HL_yhwfLCD694EVlj0QoD-e5LN-NIlFm0h9O3adQbzyPGvOXlsUlDAvh1O0wtXErz6icMDs5-z_zcxbMw&usqp=CAc",
+    "manufacturer": "Dettol"
+  },
+  {
+    "id": 77,
+    "name": "Fine Face Mask",
+    "genericName": "Medical Mask",
+    "category": "الحماية",
+    "description": "كمامات طبية للاستخدام اليومي.",
+    "price": 60,
+    "quantity": 120,
+    "requiresPrescription": false,
+    "image": "https://dkud4u09qff41.cloudfront.net/Products/1977cc95-fe16-4c18-9d9b-3435cb797e80.jpeg",
+    "manufacturer": "Fine"
+  },
+  {
+    "id": 78,
+    "name": "Centrum Multivitamin",
+    "genericName": "Multivitamin Supplement",
+    "category": "الفيتامينات والمكملات",
+    "description": "مكمل غذائي يحتوي على مجموعة متكاملة من الفيتامينات والمعادن.",
+    "price": 420,
+    "quantity": 35,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcRcApMIXs6zQRRzSjbAx1PUbeJSffvKvj5Kq1CJXOV-YBUmdgnNK5HGhMebMXTMjhi6-WZISyc2GZ25m91LPm30GXe-ZctIfKw8WBLOeX3SeRFN4xH8wv2FuUijkLKChyVdcIP_4g&usqp=CAc",
+    "manufacturer": "Centrum"
+  },
+  {
+    "id": 79,
+    "name": "Omega 3 Plus",
+    "genericName": "Omega 3 Supplement",
+    "category": "الفيتامينات والمكملات",
+    "description": "مكمل غذائي لدعم صحة القلب والمفاصل.",
+    "price": 290,
+    "quantity": 40,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRHhpNEeaoyykFHFpUg-i2fFtknxotkDV4fiOfzsvRg6VyF9d5m84xrdFVooncvydDbzRxnAhMiAdHNIlZvNbYLpYAXlbaSPy_8F1TDOW9CduIKx4Gu3wnPH0gZGsAuAu2dKvFM5c4&usqp=CAc",
+    "manufacturer": "Mepaco"
+  },
+  {
+    "id": 80,
+    "name": "C Retard",
+    "genericName": "Vitamin C",
+    "category": "الفيتامينات والمكملات",
+    "description": "فيتامين سي لدعم المناعة.",
+    "price": 110,
+    "quantity": 60,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSupIevn15bMKt5WlAN_dmaOt0lhA4Zg6OBovu2ghjR-PLNqIzX6qwyZps2gJ8DrydafGdiOrONOeb3f7DCe7PVg7sBjFv_46R1-YGTNJZGYwmgowxzQImYU0-aWXRIwA&usqp=CAc",
+    "manufacturer": "CID"
+  },
+  {
+    "id": 81,
+    "name": "Davalindi D3",
+    "genericName": "Vitamin D3",
+    "category": "الفيتامينات والمكملات",
+    "description": "مكمل فيتامين د3 لدعم صحة العظام.",
+    "price": 145,
+    "quantity": 50,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQFB4S7sHIqU1okMh19W90_u1naiiWBp-l1mNpzAvNml-_mtguXXBDdA-SX5Tad01-N3zglpKp3xkrth6g9ePdJD92yWQBcXjeW8jYbXzPEUEMft5axCsMacKtVs4VOgWY-2mURwA&usqp=CAc",
+    "manufacturer": "Eva Pharma"
+  },
+  {
+    "id": 82,
+    "name": "Dove Deeply Nourishing Body Wash",
+    "genericName": "Body Wash",
+    "category": "العناية بالجسم والاستحمام",
+    "description": "غسول جسم مرطب للاستخدام اليومي.",
+    "price": 190,
+    "quantity": 40,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQHMRQDVufafaeiLl-YfvDWl3cWpxvwTkZTpmZxZAM3IkWC4pacX3_q0l-EnwD_qg447wXgMjnCArs_vDlFkT7c0ESvrkLuo_bRhxhg1V6apAGLNY3y9goaRjEVUQYcT7-Q-hQvGLw&usqp=CAc",
+    "manufacturer": "Dove"
+  },
+  {
+    "id": 83,
+    "name": "Nivea Creme Soft Shower Gel",
+    "genericName": "Shower Gel",
+    "category": "العناية بالجسم والاستحمام",
+    "description": "جل استحمام غني بالترطيب.",
+    "price": 175,
+    "quantity": 35,
+    "requiresPrescription": false,
+    "image": "https://i.makeup.cy/u/uz/uzcmp2sgn4bq.jpg",
+    "manufacturer": "Nivea"
+  },
+  {
+    "id": 84,
+    "name": "Johnson's Body Wash",
+    "genericName": "Body Wash",
+    "category": "العناية بالجسم والاستحمام",
+    "description": "غسول جسم لطيف للبشرة الحساسة.",
+    "price": 150,
+    "quantity": 45,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSSOaXdkyUneqlz4U1ifJ7UTg0cFetDjkwJsA-UN9kKlnPu2ByUKU_pcCGZmlYpSxiKX256YykftgRq7t4BI5LvJTXOY2IujcVwwJxiZENWAoPJ8cbzPYXcpypwArivD5bVRVZ6BGM&usqp=CAc",
+    "manufacturer": "Johnson's"
+  },
+  {
+    "id": 85,
+    "name": "Colgate Total",
+    "genericName": "Toothpaste",
+    "category": "العناية بالفم والأسنان",
+    "description": "معجون أسنان للحماية الكاملة.",
+    "price": 95,
+    "quantity": 80,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTD0D775Up-YM7hwUd_8qdN8IfQCrGdNXWSGmOpFjx8ayHIp6xwa94FfvywzqB9XToZA0rkAjFY1KVkRIvVw75hLhcIJPllrvpNHm51KMk6WJDwa0bAbtkOFnzt6g1Iowwsbf8EtOGn2g&usqp=CAc",
+    "manufacturer": "Colgate"
+  },
+  {
+    "id": 86,
+    "name": "Sensodyne Repair & Protect",
+    "genericName": "Toothpaste",
+    "category": "العناية بالفم والأسنان",
+    "description": "معجون أسنان للأسنان الحساسة.",
+    "price": 130,
+    "quantity": 55,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSit-ERCQQjq_lRT2HLf1gRdA7asjCB66HPrdoJYnybeSMmUKxjiQhN1GL6391SXGh0e8UjnGh1wttk1w9SbwuaM5TIJSOUOOaPAHGsyffWGFag6ijqwiDotQy6n_SIc2CJpA26kw&usqp=CAc",
+    "manufacturer": "Sensodyne"
+  },
+  {
+    "id": 87,
+    "name": "Listerine Cool Mint",
+    "genericName": "Mouthwash",
+    "category": "العناية بالفم والأسنان",
+    "description": "غسول فم يمنح انتعاشاً وحماية من البكتيريا.",
+    "price": 180,
+    "quantity": 42,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcT3iwetHtkPr6lhGuHf3uohnELyb6IvA6Hp4mylZCkaTgC61cJk5YasU4Q9wkR-U3VEVYl5X-iL9P1H1K96KbF9n3l9O2-LU_6Lj3_GOAUNtPfAuR8Crtd7ywWnvcc&usqp=CAc",
+    "manufacturer": "Listerine"
+  },
+  {
+    "id": 88,
+    "name": "Foreo Luna Mini 3",
+    "genericName": "Facial Cleansing Device",
+    "category": "أجهزة البشرة",
+    "description": "جهاز ذكي لتنظيف البشرة بعمق.",
+    "price": 5200,
+    "quantity": 5,
+    "requiresPrescription": false,
+    "image": "https://m.media-amazon.com/images/I/81mLGQws9nL._AC_UF350,350_QL80_.jpg",
+    "manufacturer": "Foreo"
+  },
+  {
+    "id": 89,
+    "name": "Beurer FC45",
+    "genericName": "Facial Brush",
+    "category": "أجهزة البشرة",
+    "description": "فرشاة كهربائية لتنظيف البشرة.",
+    "price": 1450,
+    "quantity": 8,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSQpydLmz3trNuZJRsi8aomDryh0DlbO3fnD7ZhPZxdRLdiNl82GzPl68yv_be2Trz93kpqn-5E7Lqb4FebX7A9wdYz278ccGNoKZYoOpMEceFn5VGwHU1N&usqp=CAc",
+    "manufacturer": "Beurer"
+  },
+  {
+    "id": 90,
+    "name": "Philips Hair Dryer BHD300",
+    "genericName": "Hair Dryer",
+    "category": "أجهزة تصفيف الشعر",
+    "description": "مجفف شعر احترافي للاستخدام المنزلي.",
+    "price": 1250,
+    "quantity": 10,
+    "requiresPrescription": false,
+    "image": "https://essential.mv/cdn/shop/files/PhilipsHairDryerBHD3003.webp?v=1684549354&width=1445",
+    "manufacturer": "Philips"
+  },
+  {
+    "id": 91,
+    "name": "Philips Straightener BHS375",
+    "genericName": "Hair Straightener",
+    "category": "أجهزة تصفيف الشعر",
+    "description": "مكواة شعر سيراميك لفرد الشعر بسهولة.",
+    "price": 1100,
+    "quantity": 12,
+    "requiresPrescription": false,
+    "image": "https://drahmedelezaby.com/wp-content/uploads/2022/07/71Ei8l8yh2L._AC_SY450_.jpg",
+    "manufacturer": "Philips"
+  },
+  {
+    "id": 92,
+    "name": "L'Oreal Excellence Creme",
+    "genericName": "Hair Color",
+    "category": "صبغات الشعر",
+    "description": "صبغة شعر دائمة بتغطية كاملة للشيب.",
+    "price": 320,
+    "quantity": 25,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcRn3aJ5KXONqvlXOMt-NwgG1IHDhDE09M3erfApDqQzdvWRAo26fEMz5NgMibz9psUs0yBVUg5Hl-BqESubKkGJXBMoMVeqEVJxn_TYAInjiDNKUz4IHy5FNaWBMaUUStRfmxmPXQ&usqp=CAc",
+    "manufacturer": "L'Oreal"
+  },
+  {
+    "id": 93,
+    "name": "Garnier Color Naturals",
+    "genericName": "Hair Color",
+    "category": "صبغات الشعر",
+    "description": "صبغة شعر مغذية بزيت الزيتون.",
+    "price": 145,
+    "quantity": 35,
+    "requiresPrescription": false,
+    "image": "https://m.media-amazon.com/images/I/61dGks1S9+L._AC_UF894,1000_QL80_.jpg",
+    "manufacturer": "Garnier"
+  },
+  {
+    "id": 94,
+    "name": "Freeman Charcoal Mask",
+    "genericName": "Face Mask",
+    "category": "الماسكات",
+    "description": "ماسك الفحم لتنقية وتنظيف المسام.",
+    "price": 240,
+    "quantity": 20,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSAbEq2ePE6zBuhPpTBmey5hNogG2hiC1R0MtFedX5dEufsY7Wl3tDMQJr-StZOG4jKnBdjB2YEiNk43bMyC0pwYQLWfF3PLthyG7dyN3-yGct3puNz6nv3ZVp14g-iO2RO8WaGPkIOt1o&usqp=CAc",
+    "manufacturer": "Freeman"
+  },
+  {
+    "id": 95,
+    "name": "L'Oreal Pure Clay Mask",
+    "genericName": "Clay Mask",
+    "category": "الماسكات",
+    "description": "ماسك طيني لتنظيف البشرة بعمق.",
+    "price": 310,
+    "quantity": 18,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSiXVtB7rfX3kQEkSLyIDJYmSnOWDs-FYiG6wFGFRRQ1uEdyEYS9oAZkGRAwJ2phYUF7I6nHAAQYlt20vYuejZrBE8baI2Tg6DywfkysUTeQobMTgJqG2W8LQ&usqp=CAc",
+    "manufacturer": "L'Oreal"
+  },
+  {
+    "id": 96,
+    "name": "Neutrogena Hydro Boost Eye Cream",
+    "genericName": "Eye Cream",
+    "category": "العناية بالعيون",
+    "description": "كريم مرطب لمنطقة تحت العين.",
+    "price": 430,
+    "quantity": 15,
+    "requiresPrescription": false,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQoPAuLMxv6veTHThfDaFdRYQdxpWrX9S3ScZt_jSwCftcxlyoKHrYEvlxaZWLY6opYEYp9qQT6-qkiRDlR0IzZ8UUZJA8MVe5QKKJbhC5yaXGuWTtalBSontMYO5fNUXQTJlWGiw&usqp=CAc",
+    "manufacturer": "Neutrogena"
+  }
+];
 
-  const { data } = await axios.get(url);
-  return data.data; // returns { total, page, pages, data: [...] }
-};
-
-// Fetch single medicine details
-const fetchMedicineDetails = async ({ queryKey }) => {
-  const [_key, id] = queryKey;
-  if (!id) return null;
-  const { data } = await axios.get(`https://dawaya-back-end.vercel.app/api/medicines/${id}`);
-  return data.data; // returns the single medicine object
-};
-
-// Main categories tree matching Chefaa with all subcategories
 const initialCategories = [
-  { 
-    name: "الأدوية", 
-    icon: "💊",
-    hasDropdown: false,
-    subcategories: [
-      { name: "حسب الحالة الصحية", apiValue: "" },
-      { name: "مسكنات", apiValue: "مسكنات" },
-      { name: "مضادات حيوية", apiValue: "مضادات حيوية" },
-      { name: "أدوية مزمنة", apiValue: "أدوية مزمنة" },
-      { name: "أخرى", apiValue: "أخرى" },
-      { name: "أدوية الكحة والزكام", apiValue: "أخرى" },
-      { name: "قطرات العين والأذن", apiValue: "أخرى" },
-      { name: "أدوية الأطفال", apiValue: "أخرى" },
-      { name: "أدوية المعدة والقولون", apiValue: "أخرى" },
-      { name: "أدوية الجلدية", apiValue: "أخرى" },
-      { name: "الحساسية", apiValue: "أخرى" }
+  {
+    "name": "كل المنتجات",
+    "icon": "🛍️",
+    "hasDropdown": false,
+    "subcategories": []
+  },
+  {
+    "name": "الأدوية",
+    "icon": "💊",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "حسب الحالة الصحية",
+        "apiValue": ""
+      },
+      {
+        "name": "مسكنات",
+        "apiValue": "مسكنات"
+      },
+      {
+        "name": "مضادات حيوية",
+        "apiValue": "مضادات حيوية"
+      },
+      {
+        "name": "أدوية البرد",
+        "apiValue": "أدوية البرد"
+      },
+      {
+        "name": "الحساسية",
+        "apiValue": "الحساسية"
+      },
+      {
+        "name": "الجهاز الهضمي",
+        "apiValue": "الجهاز الهضمي"
+      },
+      {
+        "name": "ضغط الدم",
+        "apiValue": "ضغط الدم"
+      },
+      {
+        "name": "السكري",
+        "apiValue": "السكري"
+      },
+      {
+        "name": "فيتامينات",
+        "apiValue": "فيتامينات"
+      },
+      {
+        "name": "القلب والأوعية",
+        "apiValue": "القلب والأوعية"
+      },
+      {
+        "name": "الربو",
+        "apiValue": "الربو"
+      }
     ]
   },
-  { 
-    name: "العناية بالشعر", 
-    icon: "💇‍♀️",
-    hasDropdown: false,
-    subcategories: [
-      { name: "شامبو وبلسم", apiValue: "أخرى" },
-      { name: "ترطيب وعلاج الشعر", apiValue: "أخرى" },
-      { name: "اجهزة تصفيف الشعر", apiValue: "أخرى" },
-      { name: "صبغات الشعر", apiValue: "أخرى" }
+  {
+    "name": "العناية بالشعر",
+    "icon": "💇‍♀️",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "جميع مستحضرات الشعر",
+        "apiValue": ""
+      },
+      {
+        "name": "شامبو وبلسم",
+        "apiValue": "شامبو وبلسم"
+      },
+      {
+        "name": "ترطيب وعلاج الشعر",
+        "apiValue": "ترطيب وعلاج الشعر"
+      },
+      {
+        "name": "اجهزة تصفيف الشعر",
+        "apiValue": "أجهزة تصفيف الشعر"
+      },
+      {
+        "name": "صبغات الشعر",
+        "apiValue": "صبغات الشعر"
+      }
     ]
   },
-  { 
-    name: "العناية بالبشرة", 
-    icon: "🧴",
-    hasDropdown: true,
-    dropdownItems: ["الغسول", "الترطيب", "السيروم", "الماسك", "الوقاية من الشمس", "أجهزة البشرة", "العناية بالعيون"],
-    subcategories: [
-      { name: "الغسول", apiValue: "أخرى" },
-      { name: "الترطيب", apiValue: "أخرى" },
-      { name: "السيروم", apiValue: "أخرى" },
-      { name: "الماسك", apiValue: "أخرى" },
-      { name: "الوقاية من الشمس", apiValue: "أخرى" },
-      { name: "أجهزة البشرة", apiValue: "أخرى" },
-      { name: "العناية بالعيون", apiValue: "أخرى" }
+  {
+    "name": "العناية بالبشرة",
+    "icon": "🧴",
+    "hasDropdown": true,
+    "dropdownItems": [
+      "الغسول",
+      "الترطيب",
+      "السيروم",
+      "الماسك",
+      "الوقاية من الشمس",
+      "أجهزة البشرة",
+      "العناية بالعيون"
+    ],
+    "subcategories": [
+      {
+        "name": "جميع مستحضرات البشرة",
+        "apiValue": ""
+      },
+      {
+        "name": "الغسول",
+        "apiValue": "الغسول"
+      },
+      {
+        "name": "الترطيب",
+        "apiValue": "الترطيب"
+      },
+      {
+        "name": "السيروم",
+        "apiValue": "السيروم"
+      },
+      {
+        "name": "الماسك",
+        "apiValue": "الماسكات"
+      },
+      {
+        "name": "الوقاية من الشمس",
+        "apiValue": "الوقاية من الشمس"
+      },
+      {
+        "name": "أجهزة البشرة",
+        "apiValue": "أجهزة البشرة"
+      },
+      {
+        "name": "العناية بالعيون",
+        "apiValue": "العناية بالعيون"
+      }
     ]
   },
-  { 
-    name: "العناية اليومية", 
-    icon: "🧼",
-    hasDropdown: false,
-    subcategories: [
-      { name: "العناية بالجسم و الاستحمام", apiValue: "أخرى" },
-      { name: "العناية بالفم و الاسنان", apiValue: "أخرى" },
-      { name: "العناية النسائية", apiValue: "أخرى" },
-      { name: "العناية الرجالية", apiValue: "أخرى" },
-      { name: "الحماية", apiValue: "أخرى" },
-      { name: "الاعشاب الطبيعية و الفيتامينات", apiValue: "أخرى" }
+  {
+    "name": "العناية اليومية",
+    "icon": "🧼",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "جميع منتجات العناية اليومية",
+        "apiValue": ""
+      },
+      {
+        "name": "العناية بالجسم و الاستحمام",
+        "apiValue": "العناية بالجسم والاستحمام"
+      },
+      {
+        "name": "العناية بالفم و الاسنان",
+        "apiValue": "العناية بالفم والأسنان"
+      },
+      {
+        "name": "العناية النسائية",
+        "apiValue": "العناية النسائية"
+      },
+      {
+        "name": "العناية الرجالية",
+        "apiValue": "العناية الرجالية"
+      },
+      {
+        "name": "الحماية",
+        "apiValue": "الحماية"
+      },
+      {
+        "name": "الاعشاب الطبيعية و الفيتامينات",
+        "apiValue": "الفيتامينات والمكملات"
+      }
     ]
   },
-  { 
-    name: "الام والطفل", 
-    icon: "👶",
-    hasDropdown: false,
-    subcategories: [
-      { name: "الحفاضات و مستحضرات التغيير", apiValue: "أخرى" },
-      { name: "العناية بالام", apiValue: "أخرى" },
-      { name: "طعام الاطفال و مستلزماته", apiValue: "أخرى" },
-      { name: "مستلزمات الرضاعة الطبيعية", apiValue: "أخرى" },
-      { name: "الاستحمام", apiValue: "أخرى" }
+  {
+    "name": "الام والطفل",
+    "icon": "👶",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "عرض الكل",
+        "apiValue": ""
+      },
+      {
+        "name": "الحفاضات و مستحضرات التغيير",
+        "apiValue": "الحفاضات و مستحضرات التغيير"
+      },
+      {
+        "name": "العناية بالام",
+        "apiValue": "العناية بالام"
+      },
+      {
+        "name": "طعام الاطفال و مستلزماته",
+        "apiValue": "طعام الاطفال و مستلزماته"
+      },
+      {
+        "name": "مستلزمات الرضاعة الطبيعية",
+        "apiValue": "مستلزمات الرضاعة الطبيعية"
+      },
+      {
+        "name": "الاستحمام",
+        "apiValue": "الاستحمام"
+      }
     ]
   },
-  { 
-    name: "المكياج و الاكسسوارات", 
-    icon: "💄",
-    hasDropdown: false,
-    subcategories: [
-      { name: "الوجه", apiValue: "أخرى" },
-      { name: "العيون", apiValue: "أخرى" },
-      { name: "الرموش", apiValue: "أخرى" },
-      { name: "الشفاه", apiValue: "أخرى" },
-      { name: "الاظافر", apiValue: "أخرى" }
+  {
+    "name": "المكياج و الاكسسوارات",
+    "icon": "💄",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "عرض الكل",
+        "apiValue": ""
+      },
+      {
+        "name": "الوجه",
+        "apiValue": "الوجه"
+      },
+      {
+        "name": "العيون",
+        "apiValue": "العيون"
+      },
+      {
+        "name": "الرموش",
+        "apiValue": "الرموش"
+      },
+      {
+        "name": "الشفاه",
+        "apiValue": "الشفاه"
+      },
+      {
+        "name": "الاظافر",
+        "apiValue": "الاظافر"
+      }
     ]
   },
-  { 
-    name: "المستلزمات الطبية", 
-    icon: "🩺",
-    hasDropdown: false,
-    subcategories: [
-      { name: "ادارة الالم", apiValue: "أخرى" },
-      { name: "اجهزة مساعدات التنفس", apiValue: "أخرى" },
-      { name: "الاسعافات الاولية", apiValue: "أخرى" },
-      { name: "العناية بالسكري", apiValue: "أخرى" },
-      { name: "ادارة الوزن", apiValue: "أخرى" },
-      { name: "كمامات", apiValue: "أخرى" },
-      { name: "التبول اللاإرادي", apiValue: "أخرى" },
-      { name: "اجهزة مراقبه الصحة", apiValue: "أخرى" }
+  {
+    "name": "المستلزمات الطبية",
+    "icon": "🩺",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "عرض الكل",
+        "apiValue": ""
+      },
+      {
+        "name": "ادارة الالم",
+        "apiValue": "ادارة الالم"
+      },
+      {
+        "name": "اجهزة مساعدات التنفس",
+        "apiValue": "اجهزة مساعدات التنفس"
+      },
+      {
+        "name": "الاسعافات الاولية",
+        "apiValue": "الاسعافات الاولية"
+      },
+      {
+        "name": "العناية بالسكري",
+        "apiValue": "العناية بالسكري"
+      },
+      {
+        "name": "ادارة الوزن",
+        "apiValue": "ادارة الوزن"
+      },
+      {
+        "name": "كمامات",
+        "apiValue": "كمامات"
+      },
+      {
+        "name": "التبول اللاإرادي",
+        "apiValue": "التبول اللاإرادي"
+      },
+      {
+        "name": "اجهزة مراقبه الصحة",
+        "apiValue": "اجهزة مراقبه الصحة"
+      }
     ]
   },
-  { 
-    name: "الفيتامينات والمكملات", 
-    icon: "💊",
-    hasDropdown: false,
-    subcategories: [
-      { name: "الفيتامينات والمعادن", apiValue: "فيتامينات" },
-      { name: "المكملات الغذائية", apiValue: "فيتامينات" },
-      { name: "التخسيس", apiValue: "فيتامينات" }
+  {
+    "name": "الفيتامينات والمكملات",
+    "icon": "💊",
+    "hasDropdown": false,
+    "subcategories": [
+      {
+        "name": "عرض الكل",
+        "apiValue": ""
+      },
+      {
+        "name": "الفيتامينات والمعادن",
+        "apiValue": "الفيتامينات والمعادن"
+      },
+      {
+        "name": "المكملات الغذائية",
+        "apiValue": "المكملات الغذائية"
+      },
+      {
+        "name": "التخسيس",
+        "apiValue": "التخسيس"
+      }
     ]
   }
 ];
 
-// No additional categories array needed since we use tree state
-
-// Marketing banner slides matching uploaded images
 const bannerSlides = [
   "/imges/banner_omega3.png",
   "/imges/banner_panadol.jpg",
@@ -149,20 +1471,20 @@ const bannerSlides = [
 ];
 
 export default function Prouducts() {
-  const [activeMainCat, setActiveMainCat] = useState("الأدوية");
-  const [activeSubCat, setActiveSubCat] = useState("حسب الحالة الصحية");
+  const [activeMainCat, setActiveMainCat] = useState("كل المنتجات");
+  const [activeSubCat, setActiveSubCat] = useState("الكل");
   const [categoryApiValue, setCategoryApiValue] = useState("");
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParam = searchParams.get("search") || "";
   const [searchInput, setSearchInput] = useState(searchParam);
   const [page, setPage] = useState(1);
-  const [limit] = useState(8); // Matches the Chefaa grid size (8 items)
+  const [limit] = useState(12); // Displays 12 cards per page as requested
   const [sortBy, setSortBy] = useState("default");
 
   // Dynamic categories state for Drag & Drop
   const [categories, setCategories] = useState(initialCategories);
-  const [expandedCats, setExpandedCats] = useState({ "الأدوية": true });
+  const [expandedCats, setExpandedCats] = useState({ "الأدوية": true, "كل المنتجات": true });
   const [draggedIndex, setDraggedIndex] = useState(null);
 
   const toggleCategoryExpand = (catName) => {
@@ -217,29 +1539,135 @@ export default function Prouducts() {
   const [toastMessage, setToastMessage] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // React Query for products list
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["medicines", { search: searchParam, category: categoryApiValue, page, limit }],
-    queryFn: fetchMedicines,
-  });
+  // Client-side filtering, searching, paging
+  const filteredMedicines = React.useMemo(() => {
+    const norm = (str) => {
+      if (!str) return "";
+      return str
+        .replace(/[أإآا]/g, "ا")
+        .replace(/ة/g, "ه")
+        .replace(/ى/g, "ي")
+        .replace(/\s+/g, "")
+        .trim();
+    };
 
-  // React Query for single medicine details
-  const { data: detailsData, isLoading: isLoadingDetails } = useQuery({
-    queryKey: ["medicineDetails", selectedMedicine?._id],
-    queryFn: fetchMedicineDetails,
-    enabled: !!selectedMedicine?._id,
-  });
+    const getProductMainCategory = (medCategory) => {
+      if (!medCategory) return "";
+      const normalized = norm(medCategory);
 
-  const apiData = data || { data: [], total: 0, page: 1, pages: 1 };
-  const medicines = apiData.data || [];
+      const medicinesSub = [
+        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي", 
+        "ضغط الدم", "السكري", "فيتامينات", "القلب والأوعية", "الربو"
+      ].map(norm);
+      
+      const haircareSub = [
+        "شامبو وبلسم", "ترطيب وعلاج الشعر", "أجهزة تصفيف الشعر", "صبغات الشعر"
+      ].map(norm);
 
-  // Client-side Sorting
-  const sortedMedicines = [...medicines].sort((a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
-    if (sortBy === "name-asc") return a.name.localeCompare(b.name);
-    return 0;
-  });
+      const skincareSub = [
+        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات", 
+        "الوقاية من الشمس", "أجهزة البشرة", "العناية بالعيون"
+      ].map(norm);
+
+      const dailycareSub = [
+        "العناية بالجسم والاستحمام", "العناية بالفم والأسنان", "العناية النسائية", 
+        "العناية الرجالية", "الحماية"
+      ].map(norm);
+
+      const vitaminsSub = [
+        "الفيتامينات والمكملات"
+      ].map(norm);
+
+      if (medicinesSub.includes(normalized)) return "الأدوية";
+      if (haircareSub.includes(normalized)) return "العناية بالشعر";
+      if (skincareSub.includes(normalized)) return "العناية بالبشرة";
+      if (dailycareSub.includes(normalized)) return "العناية اليومية";
+      if (vitaminsSub.includes(normalized)) return "الفيتامينات والمكملات";
+      
+      return "أخرى";
+    };
+
+    return localMedicines
+      .map((med) => ({
+        ...med,
+        _id: med.id,
+        images: [med.image],
+      }))
+      .filter((med) => {
+        // 1. Main category vs Sub category filtering
+        if (activeMainCat !== "كل المنتجات") {
+          const medMainCat = getProductMainCategory(med.category);
+          if (norm(medMainCat) !== norm(activeMainCat)) {
+            return false;
+          }
+
+          // 2. Category filter
+          if (categoryApiValue) {
+            const normMedCat = norm(med.category);
+            const normApiVal = norm(categoryApiValue);
+            
+            const isMaskMatch = (normMedCat.includes("ماسك") && normApiVal.includes("ماسك"));
+            const isVitaminMatch = (normMedCat.includes("فيتامين") && normApiVal.includes("فيتامين"));
+            
+            if (normMedCat !== normApiVal && !isMaskMatch && !isVitaminMatch) {
+              return false;
+            }
+          }
+        }
+
+        // 3. Search filter
+        if (searchParam) {
+          const query = searchParam.toLowerCase();
+          const matchesName = med.name?.toLowerCase().includes(query);
+          const matchesGeneric = med.genericName?.toLowerCase().includes(query);
+          const matchesManufacturer = med.manufacturer?.toLowerCase().includes(query);
+          if (!matchesName && !matchesGeneric && !matchesManufacturer) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+  }, [activeMainCat, categoryApiValue, searchParam]);
+
+  const sortedMedicines = React.useMemo(() => {
+    const sorted = [...filteredMedicines];
+    if (sortBy === "price-asc") return sorted.sort((a, b) => a.price - b.price);
+    if (sortBy === "price-desc") return sorted.sort((a, b) => b.price - a.price);
+    if (sortBy === "name-asc") return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    return sorted;
+  }, [filteredMedicines, sortBy]);
+
+  // Pagination
+  const paginatedMedicines = React.useMemo(() => {
+    const startIndex = (page - 1) * limit;
+    return sortedMedicines.slice(startIndex, startIndex + limit);
+  }, [sortedMedicines, page, limit]);
+
+  const totalItems = sortedMedicines.length;
+  const totalPages = Math.ceil(totalItems / limit);
+
+  const apiData = {
+    data: paginatedMedicines,
+    total: totalItems,
+    page: page,
+    pages: totalPages || 1,
+  };
+  const medicines = apiData.data;
+
+  // Pagination group calculations (displays 8 pages at a time in the bar)
+  const maxVisiblePages = 8;
+  const currentGroup = Math.ceil(page / maxVisiblePages);
+  const startPage = (currentGroup - 1) * maxVisiblePages + 1;
+  const endPage = Math.min(startPage + maxVisiblePages - 1, apiData.pages);
+  const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+  const isLoading = false;
+  const isError = false;
+  const refetch = () => {};
+
+  const detailsData = null;
+  const isLoadingDetails = false;
 
   // Handle main horizontal category change
   const handleMainCatChange = (catName) => {
@@ -256,11 +1684,11 @@ export default function Prouducts() {
       // Set to first subcategory if available
       const firstSub = selectedCatObj.subcategories?.[0];
       setActiveSubCat(firstSub ? firstSub.name : catName);
-      setCategoryApiValue(firstSub ? firstSub.apiValue : "أخرى");
+      setCategoryApiValue(firstSub ? firstSub.apiValue : "");
       setExpandedCats(prev => ({ ...prev, [catName]: true }));
     } else {
       setActiveSubCat(catName);
-      setCategoryApiValue("أخرى");
+      setCategoryApiValue("");
     }
   };
 
@@ -294,12 +1722,12 @@ export default function Prouducts() {
   const handleReset = () => {
     setSearchInput("");
     setSearchParams({});
-    setActiveMainCat("الأدوية");
-    setActiveSubCat("حسب الحالة الصحية");
+    setActiveMainCat("كل المنتجات");
+    setActiveSubCat("الكل");
     setCategoryApiValue("");
     setSortBy("default");
     setPage(1);
-    setExpandedCats({ "الأدوية": true });
+    setExpandedCats({ "الأدوية": true, "كل المنتجات": true });
   };
 
   const openModal = (medicine) => {
@@ -320,25 +1748,8 @@ export default function Prouducts() {
 
       <div className="max-w-[1200px] mx-auto px-4 py-6">
 
-        {/* 2. Breadcrumbs & Search Area */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold">
-            <Link to="/" className="hover:text-[#009eb6] transition-colors">الرئيسية</Link>
-            <span className="text-slate-300">/</span>
-            <span
-              onClick={() => handleMainCatChange("الأدوية")}
-              className="hover:text-[#009eb6] cursor-pointer transition-colors"
-            >
-              {activeMainCat}
-            </span>
-            {activeSubCat !== activeMainCat && (
-              <>
-                <span className="text-slate-300">/</span>
-                <span className="text-[#009eb6]">{activeSubCat}</span>
-              </>
-            )}
-          </div>
-
+        {/* 2. Search Area */}
+        <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-6">
           {/* Search bar inside page matching premium layout */}
           <form onSubmit={handleSearchSubmit} className="relative w-full md:w-[350px]">
             <input
@@ -647,7 +2058,7 @@ export default function Prouducts() {
                   animate={{ opacity: 1 }}
                   className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"
                 >
-                  {sortedMedicines.map((med) => (
+                  {medicines.map((med) => (
                     <motion.div
                       key={med._id}
                       className="bg-white border border-slate-100 hover:border-[#10b981]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[340px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
@@ -676,8 +2087,8 @@ export default function Prouducts() {
                           <h4 className="text-xs md:text-sm font-black text-slate-800 line-clamp-2 h-9 leading-snug group-hover:text-[#10b981] transition-colors mb-1">
                             {med.name}
                           </h4>
-                          <p className="text-[10px] text-slate-400 font-bold mb-1 truncate">
-                            {med.manufacturer || med.genericName}
+                          <p className="text-[10px] text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                            {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
                           </p>
                         </div>
 
@@ -714,7 +2125,7 @@ export default function Prouducts() {
                     </button>
 
                     <div className="flex items-center gap-1.5">
-                      {Array.from({ length: apiData.pages }, (_, i) => i + 1).map((pNum) => (
+                      {visiblePages.map((pNum) => (
                         <button
                           key={pNum}
                           onClick={() => setPage(pNum)}
