@@ -74,6 +74,8 @@ function App() {
         {
           path: "/whatsapp",
           element: <Reminders />
+        },
+        {
           path: "/products",
           element: <Prouducts />
         },
@@ -156,7 +158,7 @@ function App() {
   ]);
 
   return (
-    
+
   <QueryClientProvider client={queryClient}>
     <UserContextProvider>
       <CartContextProvider>

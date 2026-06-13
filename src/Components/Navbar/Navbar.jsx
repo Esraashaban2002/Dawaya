@@ -17,8 +17,7 @@ import { FavoritesContext } from "../../Context/FavoritesContext";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { pathname, hash } = useLocation();
-  const { pathname, search: urlSearch } = useLocation();
+  const { pathname, hash , search: urlSearch } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
   const { cartCount } = useContext(CartContext);
   const { favorites } = useContext(FavoritesContext);
