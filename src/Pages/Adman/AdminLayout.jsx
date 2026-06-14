@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { api } from '../../services/api';
 
 const navItems = [
   { path: '/admin', label: 'الرئيسية', icon: '📊', end: true },
@@ -90,7 +91,7 @@ export default function AdminLayout() {
           </h1>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
             style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, #0ea5e9 100%)' }}>
-            A
+            {api.getProfile.username ? api.getProfile.username.charAt(0).toUpperCase() : 'U'}
           </div>
         </div>
 

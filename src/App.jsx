@@ -19,6 +19,8 @@ import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
+import Pharmacies from './Pages/Adman/Pharmacies';
+import Orders from './Pages/Adman/Orders';
 
 function App() {
   let router = createBrowserRouter([
@@ -96,6 +98,8 @@ function App() {
       children: [
         { index: true, element: <Dashboard /> },
         { path: "users", element: <Users /> },
+        { path: "pharmacies", element: <Pharmacies /> },
+        { path: "orders", element: <Orders /> },
       ]
     }
   ]);

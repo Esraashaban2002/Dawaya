@@ -161,59 +161,67 @@ export const deleteUser = async (id) => {
 };
 
 
-// ─── PHARMACIES ───
-export const getPharmacies = async (params = {}) => {
-  const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${BASE_URL}/pharmacies?${query}`, { headers: getHeaders() });
-  return res.json();
-};
 
-export const createPharmacy = async (data) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies`, {
+async function authFetch(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: getHeaders(),
+  });
+ 
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const err = await res.json();
+      msg = err.message || err.error || msg;
+    } catch (_) {}
+    console.error(`[API] ${options.method || 'GET'} ${url} → ${res.status}:`, msg);
+    throw new Error(msg);
+  }
+ 
+  const text = await res.text();
+  return text ? JSON.parse(text) : {};
+}
+ 
+// ─── PHARMACIES ───────────────────────────────────────
+ 
+// ✅ صحّحنا المسار: /admin/pharmacies بدل /pharmacies
+export const getPharmacies = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return authFetch(`${BASE_URL}/pharmacies?${query}`);
+};
+ 
+export const createPharmacy = (data) =>
+  authFetch(`${BASE_URL}/admin/pharmacies`, {
     method: 'POST',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
-  return res.json();
-};
-
-export const updatePharmacy = async (id, data) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}`, {
+ 
+export const updatePharmacy = (id, data) =>
+  authFetch(`${BASE_URL}/admin/pharmacies/${id}`, {
     method: 'PUT',
-    headers: getHeaders(),
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
-  return res.json();
-};
-
-export const deletePharmacy = async (id) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}`, {
+ 
+export const deletePharmacy = (id) =>
+  authFetch(`${BASE_URL}/admin/pharmacies/${id}`, {
     method: 'DELETE',
-    headers: getHeaders()
   });
-  return res.json();
-};
-
-export const togglePharmacy = async (id) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}/toggle`, {
+ 
+export const togglePharmacy = (id) =>
+  authFetch(`${BASE_URL}/admin/pharmacies/${id}/toggle`, {
     method: 'PATCH',
-    headers: getHeaders()
   });
-  return res.json();
-};
-
-// ─── ORDERS ───
-export const getOrders = async (params = {}) => {
+ 
+// ─── ORDERS ───────────────────────────────────────────
+ 
+export const getOrders = (params = {}) => {
   const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, {headers: getHeaders() });
-  return res.json();
+  return authFetch(`${BASE_URL}/admin/orders?${query}`);
 };
-
-export const updateOrderStatus = async (id, status) => {
-  const res = await fetch(`${BASE_URL}/admin/orders/${id}/status`, {
+ 
+export const updateOrderStatus = (id, status) =>
+  authFetch(`${BASE_URL}/admin/orders/${id}/status`, {
     method: 'PATCH',
-    headers: getHeaders(),
-    body: JSON.stringify({ status })
+    body: JSON.stringify({ status }),
   });
-  return res.json();
-};
+ 
