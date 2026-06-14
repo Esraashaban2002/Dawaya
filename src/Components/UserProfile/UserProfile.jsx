@@ -159,6 +159,16 @@ export default function UserProfile() {
       localStorage.setItem("dawaya_users", JSON.stringify(users));
       localStorage.setItem("dawaya_current_email", updatedProfile.email);
       localStorage.setItem("dawaya_current_password", updatedProfile.password);
+
+      // Sync local storage reminders that use the profile phone number
+      const savedReminders = localStorage.getItem("dawaya_reminders");
+      if (savedReminders) {
+        const list = JSON.parse(savedReminders);
+        const updatedList = list.map(rem => 
+          rem.phoneType === "profile" ? { ...rem, phoneNumber: updatedProfile.phone } : rem
+        );
+        localStorage.setItem("dawaya_reminders", JSON.stringify(updatedList));
+      }
     } catch (e) {
       console.error("Local storage registry update failed", e);
     }

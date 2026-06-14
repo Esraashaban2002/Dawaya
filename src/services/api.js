@@ -1,4 +1,7 @@
 const BASE_URL = 'https://dawaya-back-end.vercel.app/api';
+const REMINDERS_BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000/api'
+  : 'https://dawaya-back-end.vercel.app/api';
 
 // Helper to check if a token is a valid JWT format
 function isValidJWT(token) {
@@ -145,7 +148,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/user/profile`, {
       method: 'PUT',
       headers: getHeaders(),
-      body: JSON.stringify(bodyToSend),
+      body: JSON.stringify(profileData),
     });
 
     if (!response.ok) {
@@ -200,6 +203,45 @@ export const api = {
   // Check if user is logged in
   isLoggedIn() {
     return !!localStorage.getItem('userToken');
+  },
+
+  // ─── REMINDERS ───
+  async getReminders() {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error('فشل في تحميل التذكيرات.');
+    return response.json();
+  },
+
+  async createReminder(reminderData) {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(reminderData),
+    });
+    if (!response.ok) throw new Error('فشل في حفظ التذكير.');
+    return response.json();
+  },
+
+  async updateReminder(id, reminderData) {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(reminderData),
+    });
+    if (!response.ok) throw new Error('فشل في تحديث التذكير.');
+    return response.json();
+  },
+
+  async deleteReminder(id) {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error('فشل في حذف التذكير.');
+    return response.json();
   }
 };
 
@@ -207,7 +249,7 @@ export const api = {
 
 // ─── STATS ───
 export const getStats = async () => {
-  const res = await fetch(`${BASE_URL}/admin/stats`, {headers: getHeaders() });
+  const res = await fetch(`${BASE_URL}/admin/stats`, { headers: getHeaders() });
   return res.json();
 };
 
@@ -225,7 +267,7 @@ export const getUsers = async (params = {}) => {
 };
 
 export const getUserById = async (id) => {
-  const res = await fetch(`${BASE_URL}/admin/users/${id}`, { headers: getHeaders()});
+  const res = await fetch(`${BASE_URL}/admin/users/${id}`, { headers: getHeaders() });
   return res.json();
 };
 
@@ -291,7 +333,7 @@ export const togglePharmacy = async (id) => {
 // ─── ORDERS ───
 export const getOrders = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, {headers: getHeaders() });
+  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, { headers: getHeaders() });
   return res.json();
 };
 

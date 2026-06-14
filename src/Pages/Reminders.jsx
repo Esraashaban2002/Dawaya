@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Bell, Clock, Calendar, Check, AlertCircle, Trash2, 
+import {
+  Bell, Clock, Calendar, Check, AlertCircle, Trash2,
   Plus, MessageSquare, Smartphone, User, Phone, CheckCircle, RefreshCw, X, Edit
 } from 'lucide-react';
 import { UserContext } from '../Context/UserContext';
@@ -17,7 +17,7 @@ const DEFAULT_REMINDERS = [
     useApp: true,
     useWhatsapp: true,
     phoneType: "profile",
-    phoneNumber: "01012345678",
+    phoneNumber: "",
     active: true
   },
   {
@@ -91,6 +91,7 @@ export default function Reminders() {
       setPhoneType("custom"); // Force custom if profile phone does not exist
     } else {
       setPhoneType("profile");
+      setCustomPhone(phone); // Pre-populate custom phone input with profile phone
     }
   };
 
@@ -103,18 +104,49 @@ export default function Reminders() {
 
   // Load reminders
   useEffect(() => {
-    fetchProfilePhone();
-    
-    // Load from localStorage or set defaults
-    const saved = localStorage.getItem("dawaya_reminders");
-    if (saved) {
-      setReminders(JSON.parse(saved));
-    } else {
-      setReminders(DEFAULT_REMINDERS);
-      localStorage.setItem("dawaya_reminders", JSON.stringify(DEFAULT_REMINDERS));
-    }
-    setIsLoading(false);
+    const loadReminders = async () => {
+      fetchProfilePhone();
+      try {
+        const data = await api.getReminders();
+        if (data && data.success && data.data) {
+          setReminders(data.data);
+        } else {
+          const saved = localStorage.getItem("dawaya_reminders");
+          setReminders(saved ? JSON.parse(saved) : DEFAULT_REMINDERS);
+        }
+      } catch (err) {
+        console.warn("Backend reminders not available, loading from local storage:", err);
+        const saved = localStorage.getItem("dawaya_reminders");
+        setReminders(saved ? JSON.parse(saved) : DEFAULT_REMINDERS);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadReminders();
   }, [userLogin]);
+
+  // Sync profile-type reminders with the profilePhone state dynamically
+  useEffect(() => {
+    if (profilePhone && reminders.length > 0) {
+      let hasChanged = false;
+      const updated = reminders.map(r => {
+        if (r.phoneType === "profile" && r.phoneNumber !== profilePhone) {
+          hasChanged = true;
+          const updatedRem = { ...r, phoneNumber: profilePhone };
+          // Sync changes to reminders backend database
+          api.updateReminder(r._id || r.id, updatedRem)
+            .then(() => console.log(`Successfully synced reminder ${r._id || r.id} to new profile phone ${profilePhone}`))
+            .catch(err => console.warn(`Failed to sync reminder ${r._id || r.id} to new profile phone:`, err));
+          return updatedRem;
+        }
+        return r;
+      });
+      if (hasChanged) {
+        setReminders(updated);
+        localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+      }
+    }
+  }, [profilePhone, reminders]);
 
   const handleEditClick = (rem) => {
     setMedicineName(rem.medicineName);
@@ -127,12 +159,12 @@ export default function Reminders() {
     if (rem.phoneType === "custom") {
       setCustomPhone(rem.phoneNumber || "");
     } else {
-      setCustomPhone("");
+      setCustomPhone(profilePhone || "");
     }
-    setEditingReminderId(rem.id);
+    setEditingReminderId(rem.id || rem._id);
     setValidationError("");
     setSuccessMsg("");
-    
+
     // Smooth scroll to the form panel
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -146,7 +178,7 @@ export default function Reminders() {
     setUseApp(true);
     setUseWhatsapp(false);
     setPhoneType(profilePhone ? "profile" : "custom");
-    setCustomPhone("");
+    setCustomPhone(profilePhone || "");
     setValidationError("");
     setSuccessMsg("");
   };
@@ -184,44 +216,73 @@ export default function Reminders() {
       }
     }
 
+    const finalReminderData = {
+      medicineName,
+      dosage,
+      frequency,
+      time,
+      useApp,
+      useWhatsapp,
+      phoneType: useWhatsapp ? phoneType : "",
+      phoneNumber: useWhatsapp ? finalPhone : "",
+      active: true
+    };
+
     if (editingReminderId) {
-      const updated = reminders.map(r => {
-        if (r.id === editingReminderId) {
+      const updatedLocal = reminders.map(r => {
+        if (r.id === editingReminderId || r._id === editingReminderId) {
           return {
             ...r,
-            medicineName,
-            dosage,
-            frequency,
-            time,
-            useApp,
-            useWhatsapp,
-            phoneType: useWhatsapp ? phoneType : "",
-            phoneNumber: useWhatsapp ? finalPhone : "",
+            ...finalReminderData
           };
         }
         return r;
       });
-      setReminders(updated);
-      localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+
+      api.updateReminder(editingReminderId, finalReminderData)
+        .then((data) => {
+          if (data && data.success && data.data) {
+            const updatedList = reminders.map(r => (r._id === editingReminderId || r.id === editingReminderId) ? data.data : r);
+            setReminders(updatedList);
+            localStorage.setItem("dawaya_reminders", JSON.stringify(updatedList));
+          } else {
+            setReminders(updatedLocal);
+            localStorage.setItem("dawaya_reminders", JSON.stringify(updatedLocal));
+          }
+        })
+        .catch((err) => {
+          console.warn("Failed to update reminder in backend, saving locally:", err);
+          setReminders(updatedLocal);
+          localStorage.setItem("dawaya_reminders", JSON.stringify(updatedLocal));
+        });
+
       setSuccessMsg("تم تحديث التذكير الطبي بنجاح!");
       setEditingReminderId(null);
     } else {
-      const newReminder = {
-        id: "rem-" + Date.now(),
-        medicineName,
-        dosage,
-        frequency,
-        time,
-        useApp,
-        useWhatsapp,
-        phoneType: useWhatsapp ? phoneType : "",
-        phoneNumber: useWhatsapp ? finalPhone : "",
-        active: true
+      const localId = "rem-" + Date.now();
+      const localNewReminder = {
+        id: localId,
+        ...finalReminderData
       };
+      const updatedLocal = [localNewReminder, ...reminders];
 
-      const updated = [newReminder, ...reminders];
-      setReminders(updated);
-      localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+      api.createReminder(finalReminderData)
+        .then((data) => {
+          if (data && data.success && data.data) {
+            const updatedList = [data.data, ...reminders];
+            setReminders(updatedList);
+            localStorage.setItem("dawaya_reminders", JSON.stringify(updatedList));
+          } else {
+            setReminders(updatedLocal);
+            localStorage.setItem("dawaya_reminders", JSON.stringify(updatedLocal));
+          }
+        })
+        .catch((err) => {
+          console.warn("Failed to save reminder to backend, saving locally:", err);
+          setReminders(updatedLocal);
+          localStorage.setItem("dawaya_reminders", JSON.stringify(updatedLocal));
+        });
+
       setSuccessMsg("تم إضافة التذكير الطبي بنجاح وسيبدأ العمل فوراً!");
     }
 
@@ -235,28 +296,39 @@ export default function Reminders() {
     } else {
       setPhoneType("profile");
     }
-    setCustomPhone("");
-    
+    setCustomPhone(profilePhone || "");
+
     setTimeout(() => {
       setSuccessMsg("");
     }, 4000);
   };
 
-  const toggleReminderActive = (id) => {
-    const updated = reminders.map(r => {
-      if (r.id === id) {
-        return { ...r, active: !r.active };
-      }
-      return r;
-    });
-    setReminders(updated);
-    localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+  const toggleReminderActive = async (targetId) => {
+    const reminderToToggle = reminders.find(r => r.id === targetId || r._id === targetId);
+    if (!reminderToToggle) return;
+
+    const newActiveState = !reminderToToggle.active;
+    const updatedLocal = reminders.map(r => (r.id === targetId || r._id === targetId) ? { ...r, active: newActiveState } : r);
+    setReminders(updatedLocal);
+    localStorage.setItem("dawaya_reminders", JSON.stringify(updatedLocal));
+
+    try {
+      await api.updateReminder(targetId, { ...reminderToToggle, active: newActiveState });
+    } catch (err) {
+      console.warn("Could not sync active state toggle with backend:", err);
+    }
   };
 
-  const handleDeleteReminder = (id) => {
-    const updated = reminders.filter(r => r.id !== id);
-    setReminders(updated);
-    localStorage.setItem("dawaya_reminders", JSON.stringify(updated));
+  const handleDeleteReminder = async (targetId) => {
+    const updatedLocal = reminders.filter(r => r.id !== targetId && r._id !== targetId);
+    setReminders(updatedLocal);
+    localStorage.setItem("dawaya_reminders", JSON.stringify(updatedLocal));
+
+    try {
+      await api.deleteReminder(targetId);
+    } catch (err) {
+      console.warn("Could not delete reminder from backend:", err);
+    }
   };
 
   const triggerWhatsappSimulation = (reminder) => {
@@ -266,7 +338,7 @@ export default function Reminders() {
   return (
     <div className="cart-page" style={{ background: '#f4f6f9', minHeight: '90vh', paddingBottom: '48px' }}>
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
-        
+
         {/* Navigation Breadcrumb */}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
@@ -275,7 +347,7 @@ export default function Reminders() {
         </nav>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
-          
+
           {/* Right Panel: Add Reminder Form */}
           <div className="cart-items-card animate-fade-in" style={{ padding: '32px' }}>
             <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
@@ -284,7 +356,7 @@ export default function Reminders() {
                 {editingReminderId ? "تعديل التذكير الطبي" : "إعداد تذكير طبي جديد"}
               </h2>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', marginTop: '6px' }}>
-                {editingReminderId 
+                {editingReminderId
                   ? "تعديل تفاصيل التذكير الحالي. اضغط على حفظ التعديلات لتطبيق التغييرات."
                   : "املأ مواعيد جرعات دوائك واشترك بالتنبيهات لنرسل لك رسالة تذكير فورية في الموعد المحدد."}
               </p>
@@ -327,12 +399,12 @@ export default function Reminders() {
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              
+
               {/* Medicine Name */}
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ marginBottom: '8px' }}>اسم الدواء</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={medicineName}
                   onChange={(e) => setMedicineName(e.target.value)}
                   className="form-input"
@@ -345,8 +417,8 @@ export default function Reminders() {
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', margin: 0 }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ marginBottom: '8px' }}>الجرعة المطلوبة</label>
-                  <select 
-                    value={dosage} 
+                  <select
+                    value={dosage}
                     onChange={(e) => setDosage(e.target.value)}
                     className="form-input"
                   >
@@ -361,8 +433,8 @@ export default function Reminders() {
 
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ marginBottom: '8px' }}>التكرار</label>
-                  <select 
-                    value={frequency} 
+                  <select
+                    value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
                     className="form-input"
                   >
@@ -379,8 +451,8 @@ export default function Reminders() {
                 <label className="form-label" style={{ marginBottom: '8px' }}>توقيت أخذ الجرعة</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Clock size={16} style={{ color: 'var(--color-primary)' }} />
-                  <input 
-                    type="time" 
+                  <input
+                    type="time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
                     className="form-input"
@@ -398,11 +470,11 @@ export default function Reminders() {
                 <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                   حدد طريقة استقبال التنبيه:
                 </span>
-                
+
                 <div style={{ display: 'flex', gap: '20px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={useApp}
                       onChange={(e) => setUseApp(e.target.checked)}
                       style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
@@ -411,8 +483,8 @@ export default function Reminders() {
                   </label>
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={useWhatsapp}
                       onChange={(e) => setUseWhatsapp(e.target.checked)}
                       style={{ width: '16px', height: '16px', accentColor: 'var(--color-primary)' }}
@@ -427,7 +499,7 @@ export default function Reminders() {
                     marginTop: '8px', borderTop: '1px solid #edf2f7', paddingTop: '12px',
                     display: 'flex', flexDirection: 'column', gap: '12px'
                   }} className="animate-fade-in">
-                    
+
                     <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 700 }}>
                       حدد رقم الهاتف لاستقبال التنبيهات:
                     </span>
@@ -435,8 +507,8 @@ export default function Reminders() {
                     {/* Options: Profile or Custom */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px' }}>
-                        <input 
-                          type="radio" 
+                        <input
+                          type="radio"
                           name="phoneType"
                           value="profile"
                           checked={phoneType === "profile"}
@@ -445,7 +517,7 @@ export default function Reminders() {
                           style={{ accentColor: 'var(--color-primary)' }}
                         />
                         <span>
-                          رقم الهاتف المسجل بالملف الشخصي: 
+                          رقم الهاتف المسجل بالملف الشخصي:
                           {profilePhone ? (
                             <strong style={{ direction: 'ltr', display: 'inline-block', marginRight: '6px', color: 'var(--color-primary)' }}> {profilePhone}</strong>
                           ) : (
@@ -455,8 +527,8 @@ export default function Reminders() {
                       </label>
 
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px' }}>
-                        <input 
-                          type="radio" 
+                        <input
+                          type="radio"
                           name="phoneType"
                           value="custom"
                           checked={phoneType === "custom"}
@@ -470,8 +542,8 @@ export default function Reminders() {
                     {/* Custom Phone Number input */}
                     {phoneType === "custom" && (
                       <div className="form-group animate-fade-in" style={{ margin: '4px 0 0 0' }}>
-                        <input 
-                          type="tel" 
+                        <input
+                          type="tel"
                           value={customPhone}
                           onChange={(e) => setCustomPhone(e.target.value)}
                           className="form-input"
@@ -491,29 +563,29 @@ export default function Reminders() {
               {/* Submit CTA / Edit CTAs */}
               {editingReminderId ? (
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="checkout-btn"
                     style={{ flex: 1, border: 'none', padding: '12px 0', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                   >
                     <Check size={18} />
                     <span>حفظ التعديلات</span>
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={handleCancelEdit}
                     className="checkout-btn-secondary"
-                    style={{ 
-                      flex: 1, 
-                      border: '1px solid var(--color-border)', 
+                    style={{
+                      flex: 1,
+                      border: '1px solid var(--color-border)',
                       background: '#f8fafc',
                       color: 'var(--color-text-muted)',
-                      padding: '12px 0', 
-                      fontSize: '14px', 
-                      fontWeight: '800', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justify: 'center', 
+                      padding: '12px 0',
+                      fontSize: '14px',
+                      fontWeight: '800',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justify: 'center',
                       gap: '8px',
                       borderRadius: 'var(--radius-md)',
                       cursor: 'pointer'
@@ -524,8 +596,8 @@ export default function Reminders() {
                   </button>
                 </div>
               ) : (
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="checkout-btn"
                   style={{ border: 'none', padding: '12px 0', fontSize: '14px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
@@ -562,9 +634,9 @@ export default function Reminders() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {reminders.map((rem) => (
-                  <div 
-                    key={rem.id} 
-                    className={`reminder-active-card animate-fade-in ${editingReminderId === rem.id ? 'editing' : ''}`} 
+                  <div
+                    key={rem.id || rem._id}
+                    className={`reminder-active-card animate-fade-in ${editingReminderId === (rem.id || rem._id) ? 'editing' : ''}`}
                     style={{ opacity: rem.active ? 1 : 0.6 }}
                   >
                     <div>
@@ -600,10 +672,10 @@ export default function Reminders() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {/* Toggle switch active/inactive */}
                       <label className="reminder-switch">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={rem.active}
-                          onChange={() => toggleReminderActive(rem.id)}
+                          onChange={() => toggleReminderActive(rem.id || rem._id)}
                         />
                         <span className="reminder-slider" />
                       </label>
@@ -625,18 +697,18 @@ export default function Reminders() {
                       )}
 
                       {/* Edit */}
-                      <button 
+                      <button
                         onClick={() => handleEditClick(rem)}
-                        className="action-icon-btn" 
+                        className="action-icon-btn"
                         title="تعديل التذكير"
-                        style={{ 
-                          width: '32px', 
-                          height: '32px', 
-                          border: '1px solid var(--color-border)', 
-                          borderRadius: '50%', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justify: 'center', 
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justify: 'center',
                           cursor: 'pointer',
                           color: 'var(--color-primary)',
                           background: 'var(--color-primary-light)'
@@ -646,9 +718,9 @@ export default function Reminders() {
                       </button>
 
                       {/* Delete */}
-                      <button 
-                        onClick={() => handleDeleteReminder(rem.id)}
-                        className="action-icon-btn" 
+                      <button
+                        onClick={() => handleDeleteReminder(rem.id || rem._id)}
+                        className="action-icon-btn"
                         title="حذف التذكير"
                         style={{ width: '32px', height: '32px', border: '1px solid var(--color-border)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                       >
@@ -668,13 +740,13 @@ export default function Reminders() {
       {simulatedReminder && (
         <div className="modal-overlay" style={{ zIndex: 10000 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }} className="animate-fade-in">
-            
+
             {/* Phone Frame Mockup container */}
             <div className="whatsapp-phone-mockup">
-              
+
               {/* WhatsApp header */}
               <div className="whatsapp-chat-header">
-                <button 
+                <button
                   onClick={() => setSimulatedReminder(null)}
                   style={{ background: 'none', border: 'none', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', padding: 0 }}
                 >
@@ -729,7 +801,7 @@ export default function Reminders() {
             }}>
               <span>تمت محاكاة إرسال رسالة التنبيه الطبية بنجاح إلى الرقم: </span>
               <strong style={{ color: '#fff', direction: 'ltr', display: 'inline-block' }}>{simulatedReminder.phoneNumber}</strong>
-              <button 
+              <button
                 onClick={() => setSimulatedReminder(null)}
                 className="btn btn-primary"
                 style={{ width: '100%', padding: '8px 0', fontSize: '12px', marginTop: '12px', cursor: 'pointer', borderRadius: '8px' }}
