@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Bell, Clock, Calendar, Check, AlertCircle, Trash2,
@@ -53,12 +53,78 @@ export default function Reminders() {
   const [useWhatsapp, setUseWhatsapp] = useState(location.pathname === '/whatsapp');
   const [phoneType, setPhoneType] = useState("profile");
   const [customPhone, setCustomPhone] = useState("");
-
+  const [activeInAppAlert, setActiveInAppAlert] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const alertedKeysRef = useRef(new Set());
+ 
   // UI state
   const [validationError, setValidationError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [simulatedReminder, setSimulatedReminder] = useState(null);
   const [editingReminderId, setEditingReminderId] = useState(null);
+
+  const triggerToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 4000);
+  };
+
+  // Request Notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Poll current time to alert on matching active reminders
+  useEffect(() => {
+    const checkReminders = () => {
+      const now = new Date();
+      const currentHour = String(now.getHours()).padStart(2, '0');
+      const currentMin = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${currentHour}:${currentMin}`;
+
+      reminders.forEach(rem => {
+        if (rem.active && rem.useApp && rem.time === currentTimeStr) {
+          const alertKey = `${rem._id || rem.id}-${currentTimeStr}`;
+          if (!alertedKeysRef.current.has(alertKey)) {
+            // Play notification sound
+            try {
+              const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const oscillator = audioCtx.createOscillator();
+              const gainNode = audioCtx.createGain();
+              oscillator.connect(gainNode);
+              gainNode.connect(audioCtx.destination);
+              oscillator.type = 'sine';
+              oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+              gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+              oscillator.start();
+              oscillator.stop(audioCtx.currentTime + 0.3);
+            } catch (e) {
+              console.log("Audio play blocked by browser policies.");
+            }
+
+            // Show in-app alert modal
+            setActiveInAppAlert(rem);
+            alertedKeysRef.current.add(alertKey);
+
+            // Send desktop native notification if permitted
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification("تذكير موعد الدواء - دوايا", {
+                body: `حان الآن موعد جرعة: ${rem.medicineName} (${rem.dosage})`,
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        }
+      });
+    };
+
+    // Check every 10 seconds
+    const interval = setInterval(checkReminders, 10000);
+    return () => clearInterval(interval);
+  }, [reminders]);
 
   // Fetch profile phone number
   const fetchProfilePhone = async () => {
@@ -91,7 +157,6 @@ export default function Reminders() {
       setPhoneType("custom"); // Force custom if profile phone does not exist
     } else {
       setPhoneType("profile");
-      setCustomPhone(phone); // Pre-populate custom phone input with profile phone
     }
   };
 
@@ -159,7 +224,7 @@ export default function Reminders() {
     if (rem.phoneType === "custom") {
       setCustomPhone(rem.phoneNumber || "");
     } else {
-      setCustomPhone(profilePhone || "");
+      setCustomPhone("");
     }
     setEditingReminderId(rem.id || rem._id);
     setValidationError("");
@@ -178,7 +243,7 @@ export default function Reminders() {
     setUseApp(true);
     setUseWhatsapp(false);
     setPhoneType(profilePhone ? "profile" : "custom");
-    setCustomPhone(profilePhone || "");
+    setCustomPhone("");
     setValidationError("");
     setSuccessMsg("");
   };
@@ -296,7 +361,7 @@ export default function Reminders() {
     } else {
       setPhoneType("profile");
     }
-    setCustomPhone(profilePhone || "");
+    setCustomPhone("");
 
     setTimeout(() => {
       setSuccessMsg("");
@@ -811,6 +876,135 @@ export default function Reminders() {
             </div>
 
           </div>
+        </div>
+      )}
+
+      {/* In-App Notification Alert Modal */}
+      {activeInAppAlert && (
+        <div className="modal-overlay" style={{ zIndex: 11000, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)' }}>
+          <div className="animate-fade-in" style={{
+            background: '#ffffff',
+            borderRadius: '24px',
+            padding: '32px',
+            width: '100%',
+            maxWidth: '440px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            textAlign: 'center',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            direction: 'rtl'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'rgba(16, 185, 129, 0.1)',
+              color: '#10b981',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px'
+            }}>
+              <Bell size={32} style={{ animation: 'bounce 1s infinite' }} />
+            </div>
+
+            <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', marginBottom: '8px' }}>
+              حان موعد جرعة الدواء!
+            </h3>
+            <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '24px' }}>
+              تذكير تلقائي من نظام دوايا الذكي لمساعدتك في الحفاظ على صحتك.
+            </p>
+
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '16px',
+              padding: '16px 20px',
+              marginBottom: '28px',
+              textAlign: 'right'
+            }}>
+              <div style={{ marginBottom: '10px' }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>اسم الدواء:</span>
+                <div style={{ fontSize: '16px', fontWeight: 900, color: '#0f172a' }}>{activeInAppAlert.medicineName}</div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>الجرعة:</span>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>{activeInAppAlert.dosage}</div>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#94a3b8' }}>الموعد:</span>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>{activeInAppAlert.time}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setActiveInAppAlert(null);
+                  triggerToast(`تم تسجيل أخذ جرعة ${activeInAppAlert.medicineName} بنجاح!`, 'success');
+                }}
+                className="checkout-btn"
+                style={{
+                  width: '100%',
+                  border: 'none',
+                  padding: '12px 0',
+                  fontWeight: '800',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <CheckCircle size={18} />
+                <span>تم أخذ الجرعة</span>
+              </button>
+
+              <button
+                onClick={() => setActiveInAppAlert(null)}
+                style={{
+                  width: '100%',
+                  background: 'transparent',
+                  border: '1px solid #e2e8f0',
+                  color: '#64748b',
+                  padding: '10px 0',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                تجاهل مؤقتاً
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Feedback */}
+      {toast.show && (
+        <div 
+          className="animate-fade-in"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: '12000',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: toast.type === 'success' ? '#10b981' : '#ef4444',
+            color: '#ffffff',
+            padding: '12px 20px',
+            borderRadius: '10px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+            fontSize: '14px',
+            fontWeight: '600'
+          }}
+        >
+          {toast.type === 'success' ? <Check size={16} /> : <AlertCircle size={16} />}
+          <span>{toast.message}</span>
         </div>
       )}
 
