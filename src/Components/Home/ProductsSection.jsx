@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { motion } from 'framer-motion';
-import { FaStar, FaShoppingCart, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
+import { FaStar, FaShoppingCart, FaChevronRight, FaChevronLeft, FaArrowLeft } from 'react-icons/fa';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -113,6 +113,19 @@ const ProductsSection = () => {
             <FaChevronRight className="h-5 w-5 group-hover:scale-110 transition" />
           </button>
         </div>
+
+        {/* زر عرض جميع المنتجات */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="text-center mt-12"
+        >
+          <button className="group bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 px-8 py-3 rounded-full font-semibold text-lg inline-flex items-center gap-2 shadow-md hover:shadow-xl transform hover:scale-105">
+            <span>عرض جميع المنتجات</span>
+            <FaArrowLeft className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </motion.div>
       </div>
 
       <style jsx>{`
