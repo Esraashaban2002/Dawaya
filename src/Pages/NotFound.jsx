@@ -1,48 +1,37 @@
-// src/pages/NotFound.jsx
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FaHome, FaArrowRight, FaStore } from 'react-icons/fa';
+import React from "react";
+import { Link } from "react-router-dom";
+import { FileQuestion, Home } from "lucide-react";
+import { motion } from "framer-motion";
 
-const NotFound = () => {
-  const navigate = useNavigate();
-
+export default function NotFound() {
   return (
-    <section className=" flex items-center justify-center px-4 my-5">
+    <div className="min-h-[60vh] flex items-center justify-center px-4 py-8" dir="rtl">
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center"
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="bg-white rounded-3xl p-8 md:p-12 shadow-xl shadow-slate-100 border border-slate-100 max-w-md w-full text-center flex flex-col items-center gap-6"
       >
-        <div className="mb-6">
-          <h1 className="text-4xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-400">
-            404
-          </h1>
-        </div>
-
-        {/* النص */}
-        <div className="mb-6">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-            عفواً! الصفحة غير متوفرة
-          </h2>
-          <p className="text-gray-500 text-sm">
-            يبدو أنك تبحث عن شيء غير موجود
-          </p>
-        </div>
-
-        {/* روابط سريعة
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2 justify-center text-sm">
-            <Link to="/" className="text-blue-600 hover:underline">الرئيسية</Link>
-            <span className="text-gray-300">•</span>
-            <Link to="/products" className="text-blue-600 hover:underline">المنتجات</Link>
-            <span className="text-gray-300">•</span>
-            <Link to="/contact" className="text-blue-600 hover:underline">اتصل بنا</Link>
+        {/* Animated Icon Circle */}
+        <div className="relative w-24 h-24 flex items-center justify-center">
+          <div className="absolute inset-0 bg-rose-100/50 rounded-full animate-ping opacity-75 duration-1000" style={{ animationDuration: "3s" }} />
+          <div className="relative w-20 h-20 bg-gradient-to-br from-rose-50 to-rose-100/80 text-rose-500 rounded-full flex items-center justify-center border border-rose-200 shadow-inner">
+            <FileQuestion className="w-10 h-10" />
           </div>
-        </div> */}
+        </div>
 
-        {/* أزرار */}
+        {/* 404 & Title */}
+        <div className="flex flex-col gap-2">
+          <span className="text-4xl font-extrabold text-rose-500 tracking-wider">404</span>
+          <h1 className="text-xl font-black text-slate-800">الصفحة غير موجودة</h1>
+        </div>
+
+        {/* Description */}
+        <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
+          عذراً، الصفحة التي تبحث عنها غير متوفرة حالياً، ربما تم نقلها أو حذفها نهائياً. يرجى التحقق من الرابط أو العودة للرئيسية.
+        </p>
+
+      {/* أزرار */}
         <div className="flex flex-wrap gap-3 justify-center">
           <Link
             to="/"
@@ -65,8 +54,6 @@ const NotFound = () => {
           🫀 نهتم بصحتك
         </p>
       </motion.div>
-    </section>
+    </div>
   );
-};
-
-export default NotFound;
+}

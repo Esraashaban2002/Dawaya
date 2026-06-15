@@ -1,1168 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { CartContext } from "../Context/CartContext";
+import { UserContext } from "../Context/UserContext";
 import {
   Search, SlidersHorizontal, ChevronLeft, ChevronRight, ShoppingCart,
   Heart, X, Pill, Stethoscope, AlertCircle, Share2, Activity,
-  ChevronDown, ChevronUp, MessageCircle, Check, Loader2, GripVertical
+  ChevronDown, ChevronUp, MessageCircle, Check, Loader2, GripVertical,
+  MapPin, Star, Clock, Phone, MessageSquare, Award, ShieldCheck, Trash
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import { PharmacyCard, MapModal } from "./pharmacies";
 
 // Local static data for medicines (100 products)
-const localMedicines = [
-  {
-    "id": 1,
-    "name": "بروفين 400 مجم",
-    "genericName": "Ibuprofen",
-    "category": "مسكنات",
-    "description": "وصف مختصر لدواء 1",
-    "price": 20,
-    "quantity": 50,
-    "requiresPrescription": false,
-    "image": "https://media.zid.store/0a395ab0-f830-43d1-a748-253eb7272793/1f387de7-72b5-4a52-95d5-c7b3e9d6754a.jpg",
-    "manufacturer": "فاركو"
-  },
-  {
-    "id": 2,
-    "name": "بانادول أدفانس",
-    "genericName": "Paracetamol",
-    "category": "مضادات حيوية",
-    "description": "وصف مختصر لدواء 2",
-    "price": 23,
-    "quantity": 57,
-    "requiresPrescription": true,
-    "image": "https://i-cf65.ch-static.com/content/dam/cf-consumer-healthcare/panadol-reskin/ar_AE/adult/Panadol%20Advance%20455x455.jpg?auto=format",
-    "manufacturer": "إيبيكو"
-  },
-  {
-    "id": 3,
-    "name": "كتافلام 50 مجم",
-    "genericName": "Diclofenac",
-    "category": "أدوية البرد",
-    "description": "وصف مختصر لدواء 3",
-    "price": 26,
-    "quantity": 64,
-    "requiresPrescription": false,
-    "image": "https://ozone-pharmacy.com/media/mf_webp/jpg/media/catalog/product/cache/0daeb07bb1d294c1f281fab47369d56a/P/r/ProductImage_150610_2.webp",
-    "manufacturer": "أمون"
-  },
-  {
-    "id": 4,
-    "name": "أوجمنتين 1 جم",
-    "genericName": "Amoxicillin + Clavulanate",
-    "category": "الحساسية",
-    "description": "وصف مختصر لدواء 4",
-    "price": 29,
-    "quantity": 71,
-    "requiresPrescription": false,
-    "image": "https://cdn.salla.sa/VqEPxq/6a98eb05-eec5-4030-9710-ad7d996bc690-1000x1000-JXYZt5fFDtM8zuBDj72m7lE4xvGgDQfsdtSmlhXZ.png",
-    "manufacturer": "سيجما"
-  },
-  {
-    "id": 5,
-    "name": "أموكسيل 500 مجم",
-    "genericName": "Amoxicillin",
-    "category": "الجهاز الهضمي",
-    "description": "وصف مختصر لدواء 5",
-    "price": 32,
-    "quantity": 78,
-    "requiresPrescription": false,
-    "image": "https://cdn.salla.sa/VqEPxq/f1cfc174-9849-4e57-b37f-d65cf9bef4a9-1000x1000-NUdVBV3S9gmFNVSH8hQY01UJzYPqItoAKwcyzO2Q.jpg",
-    "manufacturer": "ممفيس"
-  },
-  {
-    "id": 6,
-    "name": "كونجستال",
-    "genericName": "Paracetamol + Pseudoephedrine",
-    "category": "ضغط الدم",
-    "description": "وصف مختصر لدواء 6",
-    "price": 35,
-    "quantity": 85,
-    "requiresPrescription": true,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlG3kzZIwls0f7r6MMAlYvgrAP1Ud2AzkskA&s",
-    "manufacturer": "أكتوبر فارما"
-  },
-  {
-    "id": 7,
-    "name": "أنتينال",
-    "genericName": "Nifuroxazide",
-    "category": "السكري",
-    "description": "وصف مختصر لدواء 7",
-    "price": 38,
-    "quantity": 92,
-    "requiresPrescription": true,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTULVOxL5WxeiR5elDMuw_DmqL2i2tVy1K1IQ&s",
-    "manufacturer": "ميرك"
-  },
-  {
-    "id": 8,
-    "name": "إيموديوم",
-    "genericName": "Loperamide",
-    "category": "فيتامينات",
-    "description": "وصف مختصر لدواء 8",
-    "price": 41,
-    "quantity": 99,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCPIXml8IgKB9CJbve3h2kpYl4o6B75BC6LQ&s",
-    "manufacturer": "فايزر"
-  },
-  {
-    "id": 9,
-    "name": "جاست ريج",
-    "genericName": "Trimebutine",
-    "category": "القلب والأوعية",
-    "description": "وصف مختصر لدواء 9",
-    "price": 44,
-    "quantity": 106,
-    "requiresPrescription": true,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGOhcbDWBxOeXpIYixkhhs2zeRZKG0cvquAQ&s",
-    "manufacturer": "سانوفي"
-  },
-  {
-    "id": 10,
-    "name": "زيرتك",
-    "genericName": "Cetirizine",
-    "category": "الربو",
-    "description": "وصف مختصر لدواء 10",
-    "price": 47,
-    "quantity": 113,
-    "requiresPrescription": true,
-    "image": "https://www.bloompharmacy.com/cdn/shop/products/zyrtec-10-mg-20-tablets-382069_600x600_crop_center.jpg?v=1687731891",
-    "manufacturer": "جلاكسو سميث كلاين"
-  },
-  {
-    "id": 11,
-    "name": "بانادول إكسترا",
-    "genericName": "Paracetamol",
-    "category": "مسكنات",
-    "description": "مسكن قوي للآلام وخافض للحرارة",
-    "price": 50,
-    "quantity": 120,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdv-u4L-4kXdW8Q0XR8DDTx68Z7DHywPUyAw&s",
-    "manufacturer": "جلاكسو سميث كلاين"
-  },
-  {
-    "id": 12,
-    "name": "أميوكسيسين",
-    "genericName": "Amoxicillin",
-    "category": "مضادات حيوية",
-    "description": "مضاد حيوي واسع الطيف لعلاج العدوى البكتيرية",
-    "price": 53,
-    "quantity": 127,
-    "requiresPrescription": true,
-    "image": "https://barakat-pharma.com/wp-content/uploads/2019/09/all_0057_Amoxicillin-Arabic.jpg",
-    "manufacturer": "إيبيكو"
-  },
-  {
-    "id": 13,
-    "name": "كومتركس",
-    "genericName": "Paracetamol + Phenylephrine",
-    "category": "أدوية البرد",
-    "description": "دواء شامل لأعراض البرد والإنفلونزا",
-    "price": 56,
-    "quantity": 134,
-    "requiresPrescription": false,
-    "image": "https://dwaprices.com/upload/1634211164.jpg",
-    "manufacturer": "أمون"
-  },
-  {
-    "id": 14,
-    "name": "زيرتك",
-    "genericName": "Cetirizine",
-    "category": "الحساسية",
-    "description": "مضاد للحساسية وحكة الجلد والأرتيكاريا",
-    "price": 59,
-    "quantity": 141,
-    "requiresPrescription": false,
-    "image": "https://www.bloompharmacy.com/cdn/shop/products/zyrtec-10-mg-20-tablets-382069_600x600_crop_center.jpg?v=1687731891",
-    "manufacturer": "سيجما"
-  },
-  {
-    "id": 15,
-    "name": "جافيسكون",
-    "genericName": "Alginic Acid + Sodium Bicarbonate",
-    "category": "الجهاز الهضمي",
-    "description": "دواء فعال لحموضة المعدة والارتجاع المريئي",
-    "price": 62,
-    "quantity": 148,
-    "requiresPrescription": false,
-    "image": "https://cdn.chefaa.com/filters:format(webp)/public/uploads/products/gaviscon-peppermint-24-liquid-sachets-10ml-ldzp-11648820436.png",
-    "manufacturer": "ممفيس"
-  },
-  {
-    "id": 16,
-    "name": "تينول",
-    "genericName": "Atenolol",
-    "category": "ضغط الدم",
-    "description": "دواء لخفض ضغط الدم العالي",
-    "price": 65,
-    "quantity": 155,
-    "requiresPrescription": true,
-    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2020/09/28/4ccbecc426afc963e844902455f71cd2.jpg.webp",
-    "manufacturer": "أكتوبر فارما"
-  },
-  {
-    "id": 17,
-    "name": "أماريل",
-    "genericName": "Glimepiride",
-    "category": "السكري",
-    "description": "دواء لتنظيم نسبة السكر في الدم",
-    "price": 68,
-    "quantity": 162,
-    "requiresPrescription": true,
-    "image": "https://almasrypharmacy.com/media/catalog/product/cache/u/n/unnamed_4_.png",
-    "manufacturer": "ميرك"
-  },
-  {
-    "id": 18,
-    "name": "سنتروم",
-    "genericName": "Multi-Vitamin & Minerals",
-    "category": "فيتامينات",
-    "description": "مكمل غذائي شامل من الفيتامينات والمعادن",
-    "price": 71,
-    "quantity": 169,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRDaipW_EG4aCHiIdJ8pId85ig3EGZ8FqXqh-6ECDf6ODGNnJRwf3-GRjMqqHSe2PhzSYc7tvSBuxD-mhDGRi119mIlkoty191RChmCmPFQeCL_X0fl35IRTYrvR5jbXaNNlIvoSA&usqp=CAc",
-    "manufacturer": "فايزر"
-  },
-  {
-    "id": 19,
-    "name": "أسبرين",
-    "genericName": "Acetylsalicylic Acid",
-    "category": "القلب والأوعية",
-    "description": "مضاد للتجلط ومسكن للآلام",
-    "price": 74,
-    "quantity": 176,
-    "requiresPrescription": true,
-    "image": "https://www.aspirin.me/sites/g/files/vrxlpx24711/files/2022-03/prod-packshot-aspirin-protect-ar2%20%281%29.png",
-    "manufacturer": "سانوفي"
-  },
-  {
-    "id": 20,
-    "name": "فينتولين",
-    "genericName": "Salbutamol",
-    "category": "الربو",
-    "description": "استنشاق لتوسيع الشعب الهوائية",
-    "price": 77,
-    "quantity": 183,
-    "requiresPrescription": true,
-    "image": "https://doctormpharmacy.com/cdn/shop/files/121931.jpg?v=1755356251",
-    "manufacturer": "جلاكسو سميث كلاين"
-  },
-  {
-    "id": 21,
-    "name": "ديكلوفيناك",
-    "genericName": "Diclofenac",
-    "category": "مسكنات",
-    "description": "مسكن قوي ومضاد للالتهاب",
-    "price": 80,
-    "quantity": 190,
-    "requiresPrescription": false,
-    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2021/08/23/9c2d7741b73691f447d285a5a14b296a.webp",
-    "manufacturer": "فاركو"
-  },
-  {
-    "id": 22,
-    "name": "إريثرومايسين",
-    "genericName": "Erythromycin",
-    "category": "مضادات حيوية",
-    "description": "مضاد حيوي ماكروليدي للعدوى البكتيرية",
-    "price": 83,
-    "quantity": 197,
-    "requiresPrescription": true,
-    "image": "https://scontent.fcai19-3.fna.fbcdn.net/v/t39.30808-6/528257151_1323127649821413_4962218174622745807_n.jpg?stp=dst-jpg_tt6&cstp=mx960x540&ctp=s960x540&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Xtzsk3v2M7cQ7kNvwFnaqQt&_nc_oc=AdoE0YOQx12IVGTRTZvvFv0kYQoxugumEHPO12RWOS7S8LQ9A2omiCRE5P6ABID85Hw&_nc_zt=23&_nc_ht=scontent.fcai19-3.fna&_nc_gid=TSa8x8CQ0RxtiCjKTj1t3g&_nc_ss=7a289&oh=00_Af_n_x8Xv668XqVyEaENbrC-swB3-Gk8U_NwSVy_1qHa8A&oe=6A32EB31",
-    "manufacturer": "إيبيكو"
-  },
-  {
-    "id": 23,
-    "name": "كونجيستال",
-    "genericName": "Diphenhydramine + Phenylephrine",
-    "category": "أدوية البرد",
-    "description": "دواء فعال لأعراض البرد والاحتقان",
-    "price": 86,
-    "quantity": 204,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkY8POdYocyledHhulzwJXTtj0nqO4gAC9Uw&s",
-    "manufacturer": "أمون"
-  },
-  {
-    "id": 24,
-    "name": "تيلفاست",
-    "genericName": "Fexofenadine",
-    "category": "الحساسية",
-    "description": "مضاد حساسية حديث بدون نعاس",
-    "price": 89,
-    "quantity": 211,
-    "requiresPrescription": false,
-    "image": "https://images.matjrah.online/2744/image/catalog/productimage/054b4da9af96018642665b98290ff61f8-550x550.jpg",
-    "manufacturer": "سيجما"
-  },
-  {
-    "id": 25,
-    "name": "رينمارك",
-    "genericName": "Metoclopramide",
-    "category": "الجهاز الهضمي",
-    "description": "دواء لتحسين حركة الجهاز الهضمي",
-    "price": 92,
-    "quantity": 218,
-    "requiresPrescription": false,
-    "image": "https://m.media-amazon.com/images/I/71UjDJJSmhL.jpg",
-    "manufacturer": "ممفيس"
-  },
-  {
-    "id": 26,
-    "name": "دوميتل",
-    "genericName": "Lisinopril",
-    "category": "ضغط الدم",
-    "description": "مثبط ACE لخفض ضغط الدم",
-    "price": 95,
-    "quantity": 225,
-    "requiresPrescription": true,
-    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2021/05/30/82a9c302ecee12fdc672a4e1d6551c5d.webp",
-    "manufacturer": "أكتوبر فارما"
-  },
-  {
-    "id": 27,
-    "name": "جليبنكلاميد",
-    "genericName": "Glibenclamide",
-    "category": "السكري",
-    "description": "دواء لتنظيم السكري من النوع الثاني",
-    "price": 98,
-    "quantity": 232,
-    "requiresPrescription": true,
-    "image": "https://www.sehatok.com/sites/default/files/styles/large_16_9/public/2023-12/%D8%AF%D9%88%D8%A7%D9%86%D9%8A%D9%84%20%28%D8%AC%D9%84%D9%8A%D9%86%D9%83%D9%84%D8%A7%D9%85%D9%8A%D8%AF%29.png?h=b986b931&itok=RkCz8DHB",
-    "manufacturer": "ميرك"
-  },
-  {
-    "id": 28,
-    "name": "فيتامين د3",
-    "genericName": "Cholecalciferol",
-    "category": "فيتامينات",
-    "description": "فيتامين د لتقوية العظام والمناعة",
-    "price": 101,
-    "quantity": 239,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR8CX0bom8R4vN25zrpnK630xD8pz4XCy1gYw&s",
-    "manufacturer": "فايزر"
-  },
-  {
-    "id": 29,
-    "name": "أنجيوتال",
-    "genericName": "Isosorbide Dinitrate",
-    "category": "القلب والأوعية",
-    "description": "دواء لعلاج الذبحة الصدرية",
-    "price": 104,
-    "quantity": 246,
-    "requiresPrescription": true,
-    "image": "https://www.albayan.ae/assets/archives/images/2018/10/17/3385584.jpg",
-    "manufacturer": "سانوفي"
-  },
-  {
-    "id": 30,
-    "name": "سيريتايد",
-    "genericName": "Salmeterol + Fluticasone",
-    "category": "الربو",
-    "description": "استنشاق مركب لعلاج الربو المزمن",
-    "price": 107,
-    "quantity": 253,
-    "requiresPrescription": true,
-    "image": "https://kuludonline.com/cdn/shop/files/26742_grande.jpg?v=1746793265",
-    "manufacturer": "جلاكسو سميث كلاين"
-  },
-  {
-    "id": 31,
-    "name": "إيبوبروفين",
-    "genericName": "Ibuprofen",
-    "category": "مسكنات",
-    "description": "مسكن قوي ومضاد للالتهاب",
-    "price": 110,
-    "quantity": 260,
-    "requiresPrescription": false,
-    "image": "https://media.gemini.media/img/large/2022/6/16/2022_6_16_14_22_7_800.jpg",
-    "manufacturer": "فاركو"
-  },
-  {
-    "id": 32,
-    "name": "أموكسيسيلين كلافيولانات",
-    "genericName": "Amoxicillin + Clavulanic Acid",
-    "category": "مضادات حيوية",
-    "description": "مضاد حيوي محسّن للعدوى المقاومة",
-    "price": 113,
-    "quantity": 267,
-    "requiresPrescription": true,
-    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2021/10/02/6877616c0fae147679c04114f2dcbc87.jpg.webp",
-    "manufacturer": "إيبيكو"
-  },
-  {
-    "id": 33,
-    "name": "نوفاليس",
-    "genericName": "Chlorphenamine + Paracetamol",
-    "category": "أدوية البرد",
-    "description": "دواء شامل لأعراض البرد",
-    "price": 116,
-    "quantity": 274,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYFThhFf1Yj5jz7FLMCYh1zt_ke8xWU6cO1w&s",
-    "manufacturer": "أمون"
-  },
-  {
-    "id": 34,
-    "name": "دسلين",
-    "genericName": "Loratadine",
-    "category": "الحساسية",
-    "description": "مضاد حساسية طويل المفعول",
-    "price": 119,
-    "quantity": 281,
-    "requiresPrescription": false,
-    "image": "https://tse2.mm.bing.net/th/id/OIP.J92eb3TND30WUdKENAvNKAAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "سيجما"
-  },
-  {
-    "id": 35,
-    "name": "أوميبرازول",
-    "genericName": "Omeprazole",
-    "category": "الجهاز الهضمي",
-    "description": "دواء لتقليل حموضة المعدة",
-    "price": 122,
-    "quantity": 288,
-    "requiresPrescription": false,
-    "image": "https://i5.walmartimages.com/seo/Omeprazole-Delayed-Release-Tablets-20mg-Acid-Reducer-42-Count_6d1bf2ff-4c49-40a1-a0ed-8bc3c737b64f.9d8856e9c1a4e8186ab2c8128030483a.jpeg",
-    "manufacturer": "ممفيس"
-  },
-  {
-    "id": 36,
-    "name": "كابوتين",
-    "genericName": "Captopril",
-    "category": "ضغط الدم",
-    "description": "مثبط ACE لخفض ضغط الدم السريع",
-    "price": 125,
-    "quantity": 295,
-    "requiresPrescription": true,
-    "image": "https://tse4.mm.bing.net/th/id/OIP.V-K_6CAocliYTO-KB_JCpQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "أكتوبر فارما"
-  },
-  {
-    "id": 37,
-    "name": "ميتفورمين",
-    "genericName": "Metformin",
-    "category": "السكري",
-    "description": "الخيار الأول لعلاج السكري من النوع الثاني",
-    "price": 128,
-    "quantity": 52,
-    "requiresPrescription": true,
-    "image": "https://altabeb.com/wp-content/uploads/2019/01/prod_photo20160503121208-1024x637.jpg",
-    "manufacturer": "ميرك"
-  },
-  {
-    "id": 38,
-    "name": "كالسيوم فيتامين د",
-    "genericName": "Calcium + Vitamin D3",
-    "category": "فيتامينات",
-    "description": "مكمل لصحة العظام والأسنان",
-    "price": 131,
-    "quantity": 59,
-    "requiresPrescription": false,
-    "image": "https://tse1.mm.bing.net/th/id/OIP.VOmx3VBviShbQ8P4mign6wHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "فايزر"
-  },
-  {
-    "id": 39,
-    "name": "أتينول كوفين",
-    "genericName": "Atenolol + Nifedipine",
-    "category": "القلب والأوعية",
-    "description": "دواء مركب لضغط الدم والقلب",
-    "price": 134,
-    "quantity": 66,
-    "requiresPrescription": true,
-    "image": "https://tse4.mm.bing.net/th/id/OIP.V-K_6CAocliYTO-KB_JCpQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "سانوفي"
-  },
-  {
-    "id": 40,
-    "name": "فورموتيرول",
-    "genericName": "Formoterol",
-    "category": "الربو",
-    "description": "منبسط قصبي طويل المفعول",
-    "price": 137,
-    "quantity": 73,
-    "requiresPrescription": true,
-    "image": "https://www.sehatok.com/sites/default/files/styles/hp_main_slider_large/public/2023-09/%D9%81%D9%88%D8%B1%D8%A7%D8%AF%D9%8A%D9%84%20(%D9%81%D9%88%D8%B1%D9%85%D9%88%D8%AA%D9%8A%D8%B1%D9%88%D9%84).png?h=6c2b0a87&itok=9ovkCdVj",
-    "manufacturer": "جلاكسو سميث كلاين"
-  },
-  {
-    "id": 41,
-    "name": "نابروكسين",
-    "genericName": "Naproxen",
-    "category": "مسكنات",
-    "description": "مسكن قوي وفعال للالتهابات",
-    "price": 140,
-    "quantity": 80,
-    "requiresPrescription": false,
-    "image": "https://th.bing.com/th/id/R.07cc6dbc107e8aacf5ad95590e0e0157?rik=%2fVhF%2bKSRMSoxbw&riu=http%3a%2f%2fchefaa.com%2fblog%2fwp-content%2fuploads%2f2022%2f05%2f%d9%86%d8%a7%d8%a8%d8%b1%d9%88%d9%83%d8%b3%d9%8a%d9%86-naproxen-e1652963562360-300x156.png&ehk=oMlQg414WeXBZg4g9mT%2b%2fZVHeopVwJN7bemQxB3s1yE%3d&risl=&pid=ImgRaw&r=0",
-    "manufacturer": "فاركو"
-  },
-  {
-    "id": 42,
-    "name": "أزيثرومايسين",
-    "genericName": "Azithromycin",
-    "category": "مضادات حيوية",
-    "description": "مضاد حيوي ماكروليدي عريض الطيف",
-    "price": 143,
-    "quantity": 87,
-    "requiresPrescription": true,
-    "image": "https://tse3.mm.bing.net/th/id/OIP.xB2L0_uUGxSNSkrx_7ajYAHaD-?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "إيبيكو"
-  },
-  {
-    "id": 43,
-    "name": "سيتريزين ديهيدروكلوريد",
-    "genericName": "Cetirizine HCl",
-    "category": "أدوية البرد",
-    "description": "مضاد حساسية لأعراض البرد",
-    "price": 146,
-    "quantity": 94,
-    "requiresPrescription": false,
-    "image": "https://cdn.altibbi.com/cdn/cache/large/image/2023/11/30/432c3553ae19691ac798e91837d144fd.jpg.webp",
-    "manufacturer": "أمون"
-  },
-  {
-    "id": 44,
-    "name": "ديسلوراتادين",
-    "genericName": "Desloratadine",
-    "category": "الحساسية",
-    "description": "مضاد حساسية قوي وسريع المفعول",
-    "price": 149,
-    "quantity": 101,
-    "requiresPrescription": false,
-    "image": "https://www.rosheta.com/upload/447502f784f069347df4805018ebd8eb8efc0eabd09d384b8853c4df8828f98d.webp",
-    "manufacturer": "سيجما"
-  },
-  {
-    "id": 45,
-    "name": "دومبيريدون",
-    "genericName": "Domperidone",
-    "category": "الجهاز الهضمي",
-    "description": "دواء لتحسين حركة المعدة والأمعاء",
-    "price": 152,
-    "quantity": 108,
-    "requiresPrescription": false,
-    "image": "https://www.rosheta.com/upload/c_img/c3a1156aeff870de52b83198320e0d74.jpg",
-    "manufacturer": "ممفيس"
-  },
-  {
-    "id": 46,
-    "name": "ماكس برس",
-    "genericName": "Nifedipine",
-    "category": "ضغط الدم",
-    "description": "حاصرات قنوات الكالسيوم لخفض الضغط",
-    "price": 155,
-    "quantity": 115,
-    "requiresPrescription": true,
-    "image": "https://tse4.mm.bing.net/th/id/OIP.ilvzd2iy7YAwIEpU4e2CPQHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "أكتوبر فارما"
-  },
-  {
-    "id": 47,
-    "name": "إنسولين NPH",
-    "genericName": "Insulin NPH",
-    "category": "السكري",
-    "description": "إنسولين متوسط المفعول لعلاج السكري",
-    "price": 158,
-    "quantity": 122,
-    "requiresPrescription": true,
-    "image": "https://tse3.mm.bing.net/th/id/OIP.jalYvVwCigupfWp7WTDUnAAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3",
-    "manufacturer": "ميرك"
-  },
-  {
-    "id": 48,
-    "name": "فيتامين B المركب",
-    "genericName": "B-Complex Vitamins",
-    "category": "فيتامينات",
-    "description": "مجموعة فيتامينات B للطاقة والصحة",
-    "price": 161,
-    "quantity": 129,
-    "requiresPrescription": false,
-    "image": "https://egyptvitamins.com/wp-content/uploads/2023/03/61Dt8NimkXL._AC_SL1500_-600x600.jpg",
-    "manufacturer": "فايزر"
-  },
-  {
-    "id": 49,
-    "name": "إنالابريل",
-    "genericName": "Enalapril",
-    "category": "القلب والأوعية",
-    "description": "مثبط ACE لعلاج قصور القلب",
-    "price": 164,
-    "quantity": 136,
-    "requiresPrescription": true,
-    "image": "https://mosbatesabz.com/mag/wp-content/uploads/2024/03/Enalapril-1.jpg",
-    "manufacturer": "سانوفي"
-  },
-  {
-    "id": 50,
-    "name": "بوديزونيد",
-    "genericName": "Budesonide",
-    "category": "الربو",
-    "description": "كورتيكوستيرويد استنشاقي للربو",
-    "price": 167,
-    "quantity": 143,
-    "requiresPrescription": true,
-    "image": "https://mosbatesabz.com/mag/wp-content/uploads/2018/01/%D8%B9%D9%88%D8%A7%D8%B1%D8%B6-%D8%AC%D8%A7%D9%86%D8%A8%DB%8C-%D8%AF%D8%A7%D8%B1%D9%88%DB%8C-%D8%A8%D9%88%D8%AF%D8%B2%D9%88%D9%86%D8%A7%DB%8C%D8%AF-budesonide.jpg",
-    "manufacturer": "جلاكسو سميث كلاين"
-  },
-  {
-    "id": 51,
-    "name": "أسيتامينوفين 500",
-    "genericName": "Acetaminophen 500mg",
-    "category": "مسكنات",
-    "description": "مسكن فعال وخافض للحرارة",
-    "price": 170,
-    "quantity": 150,
-    "requiresPrescription": false,
-    "image": "https://dwaprices.com/upload/1674905336.jpg",
-    "manufacturer": "فاركو"
-  },
-  {
-    "id": 52,
-    "name": "CeraVe Foaming Cleanser",
-    "genericName": "Foaming Facial Cleanser",
-    "category": "الغسول",
-    "description": "غسول رغوي للبشرة العادية والدهنية يساعد على تنظيف البشرة دون الإخلال بالحاجز الطبيعي لها.",
-    "price": 650,
-    "quantity": 35,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSIspCdZRyrCYvlUyjcrBwGwgZIT0wtxJkIBWQkEGm-zHTGbhgd_1p5hdIsCHEtYnjvs2SnIU60ojYgpppNx2z7oF2y6lIPrux4nnNeZtuusOB92FrWpEenpx9ajw68bjs2tiaWjqY&usqp=CAc",
-    "manufacturer": "CeraVe"
-  },
-  {
-    "id": 53,
-    "name": "La Roche Posay Effaclar Gel",
-    "genericName": "Purifying Foaming Gel",
-    "category": "الغسول",
-    "description": "غسول للبشرة الدهنية والحساسة يساعد على إزالة الزيوت والشوائب.",
-    "price": 720,
-    "quantity": 28,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcT7MHyzjG7rYaXW3frrzdT8OeozYRHq2sXRXQqCebTBISouHy8rjPGQqKWdODU-xrnwzzCWHjB48H58-ddeOJVyjyBn7r69RvkpDQtNCen_kZW05u7JMQ09uWQEmcbhIPKRRc5_wyQ&usqp=CAc",
-    "manufacturer": "La Roche-Posay"
-  },
-  {
-    "id": 54,
-    "name": "The Ordinary Niacinamide 10% + Zinc 1%",
-    "genericName": "Niacinamide Serum",
-    "category": "السيروم",
-    "description": "سيروم يساعد على تقليل إفراز الدهون وتحسين مظهر المسام.",
-    "price": 850,
-    "quantity": 18,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcR8YHaa41VD4379eB6ibLrv9uKkIEKn0gxPzUYkPiq4FZJ2fYVazktTtqaYkCVP2En10KcX0J5XeOgAhsDWDKhO8qsoTJevlnWGYiGiNxIKMkGhyNM4tSQ2YdTq4wMveotdFLJTfkg&usqp=CAc",
-    "manufacturer": "The Ordinary"
-  },
-  {
-    "id": 55,
-    "name": "Vichy Dercos Anti-Dandruff Shampoo",
-    "genericName": "Anti Dandruff Shampoo",
-    "category": "شامبو وبلسم",
-    "description": "شامبو لعلاج القشرة مناسب لفروة الرأس الحساسة.",
-    "price": 580,
-    "quantity": 40,
-    "requiresPrescription": false,
-    "image": "https://f.nooncdn.com/p/pzsku/Z76C9D61E82659995635DZ/45/_/1779344991/7e305ba1-2624-4534-9f9c-fc066211defd.jpg?width=480",
-    "manufacturer": "Vichy"
-  },
-  {
-    "id": 56,
-    "name": "Centrum Multivitamin",
-    "genericName": "Multivitamin Supplement",
-    "category": "الفيتامينات والمكملات",
-    "description": "مكمل غذائي يحتوي على مجموعة متكاملة من الفيتامينات والمعادن.",
-    "price": 420,
-    "quantity": 55,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTJ5cp1sW73XU_iy1lb_q_2rDP5j1NqVpFP_kllXOjtY3mQrlhRCIIXS7ECotZN1GacTsOFT-IYqbBWHAbGSMIyB27r5abecPb2xKIJWmQOOLKINOaHFw-7khd5rzS1E8w0MV7t5DA&usqp=CAc",
-    "manufacturer": "Centrum"
-  },
-  {
-    "id": 57,
-    "name": "CeraVe Moisturizing Cream",
-    "genericName": "Moisturizing Cream",
-    "category": "الترطيب",
-    "description": "كريم مرطب للوجه والجسم للبشرة الجافة.",
-    "price": 690,
-    "quantity": 30,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQ8DF1FNO4yhHtN7q3Bc1_4PR8O8gu6K6cqiTNQnKsrPH_QViu4UR7Zv766dhUKbEuw_32cABxKxmJ1-Y1LKl6_BwlERBDiGcqqj1w_Qf1CeUS395IhZrZYZa0RQZu-asob86M-Fr6b&usqp=CAc",
-    "manufacturer": "CeraVe"
-  },
-  {
-    "id": 58,
-    "name": "Neutrogena Hydro Boost Water Gel",
-    "genericName": "Water Gel Moisturizer",
-    "category": "الترطيب",
-    "description": "جل مرطب غني بحمض الهيالورونيك.",
-    "price": 520,
-    "quantity": 24,
-    "requiresPrescription": false,
-    "image": "https://erosstore.co/cdn/shop/files/nyotrogyna-gl-mayy-mrtb-neutrogena-hydro-boost-water-gel-moisturizer-3464559.jpg?v=1777644312&width=1000",
-    "manufacturer": "Neutrogena"
-  },
-  {
-    "id": 59,
-    "name": "Bepanthen Cream",
-    "genericName": "Dexpanthenol Cream",
-    "category": "الترطيب",
-    "description": "كريم مرطب ومهدئ للبشرة الحساسة.",
-    "price": 145,
-    "quantity": 60,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTrEW4BrDRGO3GH6sNYIyjybdKozfyANAbtE5o6T3Ps-9IputaAvIcIb71TzRqZ-18Z7_zIUJhokqFObdn07FeTvGmWFiYkiv28bRC_K5yiRmJJVVk9sAzXdIDp18taxojHOtB_oJRuA5M&usqp=CAc",
-    "manufacturer": "Bayer"
-  },
-  {
-    "id": 60,
-    "name": "La Roche Posay Anthelios SPF50+",
-    "genericName": "Sunscreen",
-    "category": "الوقاية من الشمس",
-    "description": "واقي شمس واسع الطيف للبشرة الحساسة.",
-    "price": 890,
-    "quantity": 18,
-    "requiresPrescription": false,
-    "image": "https://alfouadpharmacies.com/cdn/shop/files/Group_2_9.webp?v=1781088238&width=1600",
-    "manufacturer": "La Roche-Posay"
-  },
-  {
-    "id": 61,
-    "name": "Bioderma Photoderm Max SPF50+",
-    "genericName": "Sunscreen",
-    "category": "الوقاية من الشمس",
-    "description": "واقي شمس للحماية العالية من الأشعة فوق البنفسجية.",
-    "price": 780,
-    "quantity": 20,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSR9o-0pqePgRT1RaA6sZNHGnyEKHKqEUAW_y2i7-9uCL78wq756QVqKmULku9-FbjRMlJw1hKfOILhyYqbeqRqFy8w_40qzifPNO5N8UEpG3D2KNYE086s3OVuhzAd71RneTng8Q&usqp=CAc",
-    "manufacturer": "Bioderma"
-  },
-  {
-    "id": 62,
-    "name": "ISDIN Fusion Water SPF50",
-    "genericName": "Sunscreen",
-    "category": "الوقاية من الشمس",
-    "description": "واقي شمس خفيف سريع الامتصاص.",
-    "price": 950,
-    "quantity": 15,
-    "requiresPrescription": false,
-    "image": "https://m.media-amazon.com/images/I/81l2Tgu38EL._AC_SL1500_.jpg",
-    "manufacturer": "ISDIN"
-  },
-  {
-    "id": 63,
-    "name": "Vichy Liftactiv Vitamin C Serum",
-    "genericName": "Vitamin C Serum",
-    "category": "السيروم",
-    "description": "سيروم مضاد للأكسدة لتوحيد لون البشرة.",
-    "price": 1150,
-    "quantity": 14,
-    "requiresPrescription": false,
-    "image": "https://www.lojaglamourosa.com/resources/medias/shop/products/shop-rt-01318-01-liftactiv-vitamin-c-serum---20ml--1.jpg",
-    "manufacturer": "Vichy"
-  },
-  {
-    "id": 64,
-    "name": "The Ordinary Hyaluronic Acid 2% + B5",
-    "genericName": "Hyaluronic Acid Serum",
-    "category": "السيروم",
-    "description": "سيروم لترطيب البشرة بعمق.",
-    "price": 790,
-    "quantity": 25,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSYYprFZlQ12F0ikNzxonw186M_LkWLh8yX29bNt5RjTPYr4Au0y01fwRhOqAkFN_nMg-lgOeHUt3qn4q2enupO3r0irFwAkVWZ0gMmGOTCVl_y59V3-9OoCJaftUCTlmZMn4GBA2A&usqp=CAc",
-    "manufacturer": "The Ordinary"
-  },
-  {
-    "id": 65,
-    "name": "COSRX Snail Mucin Essence",
-    "genericName": "Snail Essence",
-    "category": "السيروم",
-    "description": "إيسنس لإصلاح وترطيب البشرة.",
-    "price": 920,
-    "quantity": 12,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcR73mqOfzxURtvMolwaJ6xWal1_LeoyaAkfW968DeBvVYrwdwTLNywAmnDQRp6grQ_IQRwusp1XQNstfkrCibRoI_ZhGfDXs4eDsdWBIPMzPj3UaELRSVUQK6jzYVYclIW9NfKTfw&usqp=CAc",
-    "manufacturer": "COSRX"
-  },
-  {
-    "id": 66,
-    "name": "Pantene Pro-V Hair Fall Control",
-    "genericName": "Hair Shampoo",
-    "category": "شامبو وبلسم",
-    "description": "شامبو لتقليل تساقط الشعر.",
-    "price": 180,
-    "quantity": 50,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRPTuU6CbF14C6L7kD9pFCaquUcyBS7AujRw-tH5Dug7HIH0opzP5vRy1C6ntU3eDIINR8tXZ4ec8TonjAA5L-ajPrJ2fBI2DwA-N6N8s_egFvmOuFtBMyYKtJdKWAqTL3Mi0Isvjg&usqp=CAc",
-    "manufacturer": "Pantene"
-  },
-  {
-    "id": 67,
-    "name": "Head & Shoulders Classic Clean",
-    "genericName": "Anti Dandruff Shampoo",
-    "category": "شامبو وبلسم",
-    "description": "شامبو فعال ضد القشرة.",
-    "price": 175,
-    "quantity": 45,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQ8MpgmAWHmEd7l_-PZSOVKb8mxq7MT2n24WZLIIFgLvPyqrbMZ5CF_XyK__VMtfos_9NBAyVqWYSxNOB_o3NHo4cJiW-p6Vb5o03HepWwJWAsFr-TcvrRoGdm5WP2hDyFdJIlf7S0&usqp=CAc",
-    "manufacturer": "P&G"
-  },
-  {
-    "id": 68,
-    "name": "L'Oreal Elvive Hyaluron Moisture",
-    "genericName": "Hair Shampoo",
-    "category": "شامبو وبلسم",
-    "description": "شامبو لترطيب الشعر الجاف.",
-    "price": 220,
-    "quantity": 40,
-    "requiresPrescription": false,
-    "image": "https://alfouadpharmacies.com/cdn/shop/files/Loreal-Elvive-Hyaluron-Moisture-Hair-Cream-200ML.webp?v=1754298094",
-    "manufacturer": "L'Oreal"
-  },
-  {
-    "id": 69,
-    "name": "L'Oreal Extraordinary Oil",
-    "genericName": "Hair Oil",
-    "category": "ترطيب وعلاج الشعر",
-    "description": "زيت مغذي للشعر الجاف والمتقصف.",
-    "price": 350,
-    "quantity": 22,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQYdOa8ttOq_TlXxiRMo3vXJe7D0O3XvzHRF-D0aoDQelk7GscvGifZBLpokhcKt8BFjbZ8vOH3SUxRh0hs0Muo1sfJ8Lx3jd5bb0YLnoqrVqYDdRIJxq9paDRaMkFpUNywRlwS_S4&usqp=CAc",
-    "manufacturer": "L'Oreal"
-  },
-  {
-    "id": 70,
-    "name": "Mielle Rosemary Mint Oil",
-    "genericName": "Hair Oil",
-    "category": "ترطيب وعلاج الشعر",
-    "description": "زيت لتقوية بصيلات الشعر.",
-    "price": 890,
-    "quantity": 10,
-    "requiresPrescription": false,
-    "image": "https://m.media-amazon.com/images/I/812+NN-pXCL._AC_UF350,350_QL80_.jpg",
-    "manufacturer": "Mielle"
-  },
-  {
-    "id": 71,
-    "name": "Kerastase Genesis Serum",
-    "genericName": "Hair Serum",
-    "category": "ترطيب وعلاج الشعر",
-    "description": "سيروم لتقليل تساقط الشعر.",
-    "price": 1800,
-    "quantity": 8,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcTU1C2lZwabf-ZUVr9rXwY94foOj19nzV6imBuvBQMQUMyLye5iImC0n4VJ9Bqj9_HRp2uJNfMtD3YXpTN90RYRyBZ0S3uwX59SeKuiS8dhy7TayvimnU8NiVmttAN9HEhGy3fTtS0&usqp=CAc",
-    "manufacturer": "Kerastase"
-  },
-  {
-    "id": 72,
-    "name": "Sofi",
-    "genericName": "Sanitary Pads",
-    "category": "العناية النسائية",
-    "description": "فوط صحية للاستخدام اليومي.",
-    "price": 95,
-    "quantity": 80,
-    "requiresPrescription": false,
-    "image": "https://omaleen.com/wp-content/uploads/2024/05/Sofy-Musk-All.jpg",
-    "manufacturer": "P&G"
-  },
-  {
-    "id": 73,
-    "name": "Femfresh Intimate Wash",
-    "genericName": "Intimate Wash",
-    "category": "العناية النسائية",
-    "description": "غسول للمناطق الحساسة.",
-    "price": 210,
-    "quantity": 30,
-    "requiresPrescription": false,
-    "image": "https://eg.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/77/6565331/1.jpg?5207",
-    "manufacturer": "Femfresh"
-  },
-  {
-    "id": 74,
-    "name": "Gillette Fusion Shaving Gel",
-    "genericName": "Shaving Gel",
-    "category": "العناية الرجالية",
-    "description": "جل حلاقة يمنح انزلاقاً سلساً.",
-    "price": 230,
-    "quantity": 35,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQ-Hm69rnWpUZpKkoaVqwN9T0XC8Oi5L3v8z3yFqLLzhsAYBMP8xhL19pQPVOFuDgiYynKUYF3pIinCPzkjU6fhLDlcy4QyAHnOdUky3ugnX83dpoda7yLcPsVXH08p443rMoD_DSk&usqp=CAc",
-    "manufacturer": "Gillette"
-  },
-  {
-    "id": 75,
-    "name": "Nivea Men Sensitive",
-    "genericName": "After Shave Balm",
-    "category": "العناية الرجالية",
-    "description": "بلسم مهدئ بعد الحلاقة.",
-    "price": 260,
-    "quantity": 25,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSvvQ6yb-HeOU1BEN778oF6gaZ-cdxH2S_CYc5gXSLGLNNIksQoZSN0V-DLum32EbRqcziTx3W6fpf0M0wAcgvDqgZW7Jt1-_Lc5uPfA0uc7h7ahbG55wBqgUSwklsId2aSpiFCvYmwlyM&usqp=CAc",
-    "manufacturer": "Nivea"
-  },
-  {
-    "id": 76,
-    "name": "Dettol Hand Sanitizer",
-    "genericName": "Hand Sanitizer",
-    "category": "الحماية",
-    "description": "مطهر لليدين يقضي على 99.9% من الجراثيم.",
-    "price": 85,
-    "quantity": 75,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQvjh9i_GU5Dax15HoF6UjmoJ3bdL2SKZlcw5zxITQk-URcbnqDmJ4_4HL_yhwfLCD694EVlj0QoD-e5LN-NIlFm0h9O3adQbzyPGvOXlsUlDAvh1O0wtXErz6icMDs5-z_zcxbMw&usqp=CAc",
-    "manufacturer": "Dettol"
-  },
-  {
-    "id": 77,
-    "name": "Fine Face Mask",
-    "genericName": "Medical Mask",
-    "category": "الحماية",
-    "description": "كمامات طبية للاستخدام اليومي.",
-    "price": 60,
-    "quantity": 120,
-    "requiresPrescription": false,
-    "image": "https://dkud4u09qff41.cloudfront.net/Products/1977cc95-fe16-4c18-9d9b-3435cb797e80.jpeg",
-    "manufacturer": "Fine"
-  },
-  {
-    "id": 78,
-    "name": "Centrum Multivitamin",
-    "genericName": "Multivitamin Supplement",
-    "category": "الفيتامينات والمكملات",
-    "description": "مكمل غذائي يحتوي على مجموعة متكاملة من الفيتامينات والمعادن.",
-    "price": 420,
-    "quantity": 35,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcRcApMIXs6zQRRzSjbAx1PUbeJSffvKvj5Kq1CJXOV-YBUmdgnNK5HGhMebMXTMjhi6-WZISyc2GZ25m91LPm30GXe-ZctIfKw8WBLOeX3SeRFN4xH8wv2FuUijkLKChyVdcIP_4g&usqp=CAc",
-    "manufacturer": "Centrum"
-  },
-  {
-    "id": 79,
-    "name": "Omega 3 Plus",
-    "genericName": "Omega 3 Supplement",
-    "category": "الفيتامينات والمكملات",
-    "description": "مكمل غذائي لدعم صحة القلب والمفاصل.",
-    "price": 290,
-    "quantity": 40,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcRHhpNEeaoyykFHFpUg-i2fFtknxotkDV4fiOfzsvRg6VyF9d5m84xrdFVooncvydDbzRxnAhMiAdHNIlZvNbYLpYAXlbaSPy_8F1TDOW9CduIKx4Gu3wnPH0gZGsAuAu2dKvFM5c4&usqp=CAc",
-    "manufacturer": "Mepaco"
-  },
-  {
-    "id": 80,
-    "name": "C Retard",
-    "genericName": "Vitamin C",
-    "category": "الفيتامينات والمكملات",
-    "description": "فيتامين سي لدعم المناعة.",
-    "price": 110,
-    "quantity": 60,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSupIevn15bMKt5WlAN_dmaOt0lhA4Zg6OBovu2ghjR-PLNqIzX6qwyZps2gJ8DrydafGdiOrONOeb3f7DCe7PVg7sBjFv_46R1-YGTNJZGYwmgowxzQImYU0-aWXRIwA&usqp=CAc",
-    "manufacturer": "CID"
-  },
-  {
-    "id": 81,
-    "name": "Davalindi D3",
-    "genericName": "Vitamin D3",
-    "category": "الفيتامينات والمكملات",
-    "description": "مكمل فيتامين د3 لدعم صحة العظام.",
-    "price": 145,
-    "quantity": 50,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQFB4S7sHIqU1okMh19W90_u1naiiWBp-l1mNpzAvNml-_mtguXXBDdA-SX5Tad01-N3zglpKp3xkrth6g9ePdJD92yWQBcXjeW8jYbXzPEUEMft5axCsMacKtVs4VOgWY-2mURwA&usqp=CAc",
-    "manufacturer": "Eva Pharma"
-  },
-  {
-    "id": 82,
-    "name": "Dove Deeply Nourishing Body Wash",
-    "genericName": "Body Wash",
-    "category": "العناية بالجسم والاستحمام",
-    "description": "غسول جسم مرطب للاستخدام اليومي.",
-    "price": 190,
-    "quantity": 40,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQHMRQDVufafaeiLl-YfvDWl3cWpxvwTkZTpmZxZAM3IkWC4pacX3_q0l-EnwD_qg447wXgMjnCArs_vDlFkT7c0ESvrkLuo_bRhxhg1V6apAGLNY3y9goaRjEVUQYcT7-Q-hQvGLw&usqp=CAc",
-    "manufacturer": "Dove"
-  },
-  {
-    "id": 83,
-    "name": "Nivea Creme Soft Shower Gel",
-    "genericName": "Shower Gel",
-    "category": "العناية بالجسم والاستحمام",
-    "description": "جل استحمام غني بالترطيب.",
-    "price": 175,
-    "quantity": 35,
-    "requiresPrescription": false,
-    "image": "https://i.makeup.cy/u/uz/uzcmp2sgn4bq.jpg",
-    "manufacturer": "Nivea"
-  },
-  {
-    "id": 84,
-    "name": "Johnson's Body Wash",
-    "genericName": "Body Wash",
-    "category": "العناية بالجسم والاستحمام",
-    "description": "غسول جسم لطيف للبشرة الحساسة.",
-    "price": 150,
-    "quantity": 45,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSSOaXdkyUneqlz4U1ifJ7UTg0cFetDjkwJsA-UN9kKlnPu2ByUKU_pcCGZmlYpSxiKX256YykftgRq7t4BI5LvJTXOY2IujcVwwJxiZENWAoPJ8cbzPYXcpypwArivD5bVRVZ6BGM&usqp=CAc",
-    "manufacturer": "Johnson's"
-  },
-  {
-    "id": 85,
-    "name": "Colgate Total",
-    "genericName": "Toothpaste",
-    "category": "العناية بالفم والأسنان",
-    "description": "معجون أسنان للحماية الكاملة.",
-    "price": 95,
-    "quantity": 80,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTD0D775Up-YM7hwUd_8qdN8IfQCrGdNXWSGmOpFjx8ayHIp6xwa94FfvywzqB9XToZA0rkAjFY1KVkRIvVw75hLhcIJPllrvpNHm51KMk6WJDwa0bAbtkOFnzt6g1Iowwsbf8EtOGn2g&usqp=CAc",
-    "manufacturer": "Colgate"
-  },
-  {
-    "id": 86,
-    "name": "Sensodyne Repair & Protect",
-    "genericName": "Toothpaste",
-    "category": "العناية بالفم والأسنان",
-    "description": "معجون أسنان للأسنان الحساسة.",
-    "price": 130,
-    "quantity": 55,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSit-ERCQQjq_lRT2HLf1gRdA7asjCB66HPrdoJYnybeSMmUKxjiQhN1GL6391SXGh0e8UjnGh1wttk1w9SbwuaM5TIJSOUOOaPAHGsyffWGFag6ijqwiDotQy6n_SIc2CJpA26kw&usqp=CAc",
-    "manufacturer": "Sensodyne"
-  },
-  {
-    "id": 87,
-    "name": "Listerine Cool Mint",
-    "genericName": "Mouthwash",
-    "category": "العناية بالفم والأسنان",
-    "description": "غسول فم يمنح انتعاشاً وحماية من البكتيريا.",
-    "price": 180,
-    "quantity": 42,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcT3iwetHtkPr6lhGuHf3uohnELyb6IvA6Hp4mylZCkaTgC61cJk5YasU4Q9wkR-U3VEVYl5X-iL9P1H1K96KbF9n3l9O2-LU_6Lj3_GOAUNtPfAuR8Crtd7ywWnvcc&usqp=CAc",
-    "manufacturer": "Listerine"
-  },
-  {
-    "id": 88,
-    "name": "Foreo Luna Mini 3",
-    "genericName": "Facial Cleansing Device",
-    "category": "أجهزة البشرة",
-    "description": "جهاز ذكي لتنظيف البشرة بعمق.",
-    "price": 5200,
-    "quantity": 5,
-    "requiresPrescription": false,
-    "image": "https://m.media-amazon.com/images/I/81mLGQws9nL._AC_UF350,350_QL80_.jpg",
-    "manufacturer": "Foreo"
-  },
-  {
-    "id": 89,
-    "name": "Beurer FC45",
-    "genericName": "Facial Brush",
-    "category": "أجهزة البشرة",
-    "description": "فرشاة كهربائية لتنظيف البشرة.",
-    "price": 1450,
-    "quantity": 8,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSQpydLmz3trNuZJRsi8aomDryh0DlbO3fnD7ZhPZxdRLdiNl82GzPl68yv_be2Trz93kpqn-5E7Lqb4FebX7A9wdYz278ccGNoKZYoOpMEceFn5VGwHU1N&usqp=CAc",
-    "manufacturer": "Beurer"
-  },
-  {
-    "id": 90,
-    "name": "Philips Hair Dryer BHD300",
-    "genericName": "Hair Dryer",
-    "category": "أجهزة تصفيف الشعر",
-    "description": "مجفف شعر احترافي للاستخدام المنزلي.",
-    "price": 1250,
-    "quantity": 10,
-    "requiresPrescription": false,
-    "image": "https://essential.mv/cdn/shop/files/PhilipsHairDryerBHD3003.webp?v=1684549354&width=1445",
-    "manufacturer": "Philips"
-  },
-  {
-    "id": 91,
-    "name": "Philips Straightener BHS375",
-    "genericName": "Hair Straightener",
-    "category": "أجهزة تصفيف الشعر",
-    "description": "مكواة شعر سيراميك لفرد الشعر بسهولة.",
-    "price": 1100,
-    "quantity": 12,
-    "requiresPrescription": false,
-    "image": "https://drahmedelezaby.com/wp-content/uploads/2022/07/71Ei8l8yh2L._AC_SY450_.jpg",
-    "manufacturer": "Philips"
-  },
-  {
-    "id": 92,
-    "name": "L'Oreal Excellence Creme",
-    "genericName": "Hair Color",
-    "category": "صبغات الشعر",
-    "description": "صبغة شعر دائمة بتغطية كاملة للشيب.",
-    "price": 320,
-    "quantity": 25,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcRn3aJ5KXONqvlXOMt-NwgG1IHDhDE09M3erfApDqQzdvWRAo26fEMz5NgMibz9psUs0yBVUg5Hl-BqESubKkGJXBMoMVeqEVJxn_TYAInjiDNKUz4IHy5FNaWBMaUUStRfmxmPXQ&usqp=CAc",
-    "manufacturer": "L'Oreal"
-  },
-  {
-    "id": 93,
-    "name": "Garnier Color Naturals",
-    "genericName": "Hair Color",
-    "category": "صبغات الشعر",
-    "description": "صبغة شعر مغذية بزيت الزيتون.",
-    "price": 145,
-    "quantity": 35,
-    "requiresPrescription": false,
-    "image": "https://m.media-amazon.com/images/I/61dGks1S9+L._AC_UF894,1000_QL80_.jpg",
-    "manufacturer": "Garnier"
-  },
-  {
-    "id": 94,
-    "name": "Freeman Charcoal Mask",
-    "genericName": "Face Mask",
-    "category": "الماسكات",
-    "description": "ماسك الفحم لتنقية وتنظيف المسام.",
-    "price": 240,
-    "quantity": 20,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSAbEq2ePE6zBuhPpTBmey5hNogG2hiC1R0MtFedX5dEufsY7Wl3tDMQJr-StZOG4jKnBdjB2YEiNk43bMyC0pwYQLWfF3PLthyG7dyN3-yGct3puNz6nv3ZVp14g-iO2RO8WaGPkIOt1o&usqp=CAc",
-    "manufacturer": "Freeman"
-  },
-  {
-    "id": 95,
-    "name": "L'Oreal Pure Clay Mask",
-    "genericName": "Clay Mask",
-    "category": "الماسكات",
-    "description": "ماسك طيني لتنظيف البشرة بعمق.",
-    "price": 310,
-    "quantity": 18,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSiXVtB7rfX3kQEkSLyIDJYmSnOWDs-FYiG6wFGFRRQ1uEdyEYS9oAZkGRAwJ2phYUF7I6nHAAQYlt20vYuejZrBE8baI2Tg6DywfkysUTeQobMTgJqG2W8LQ&usqp=CAc",
-    "manufacturer": "L'Oreal"
-  },
-  {
-    "id": 96,
-    "name": "Neutrogena Hydro Boost Eye Cream",
-    "genericName": "Eye Cream",
-    "category": "العناية بالعيون",
-    "description": "كريم مرطب لمنطقة تحت العين.",
-    "price": 430,
-    "quantity": 15,
-    "requiresPrescription": false,
-    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQoPAuLMxv6veTHThfDaFdRYQdxpWrX9S3ScZt_jSwCftcxlyoKHrYEvlxaZWLY6opYEYp9qQT6-qkiRDlR0IzZ8UUZJA8MVe5QKKJbhC5yaXGuWTtalBSontMYO5fNUXQTJlWGiw&usqp=CAc",
-    "manufacturer": "Neutrogena"
-  }
+const localPharmacies = [
+
 ];
 
 const initialCategories = [
@@ -1471,9 +324,34 @@ const bannerSlides = [
 ];
 
 export default function Prouducts() {
+  const navigate = useNavigate();
+  const { cartItems, addToCart, removeFromCart, setShowLoginModal } = useContext(CartContext);
+  const { userLogin } = useContext(UserContext);
   const [activeMainCat, setActiveMainCat] = useState("كل المنتجات");
   const [activeSubCat, setActiveSubCat] = useState("الكل");
   const [categoryApiValue, setCategoryApiValue] = useState("");
+
+  const handleAddToCartClick = (med) => {
+    if (!med) return;
+    if (!userLogin) {
+      setShowLoginModal(true);
+      return;
+    }
+    const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+    if (isAdded) {
+      removeFromCart(med.id);
+      triggerToast(`تم إزالة ${med.name} من السلة!`);
+    } else {
+      addToCart({
+        id: med.id,
+        name: med.name,
+        price: med.price,
+        brand: med.manufacturer || med.genericName || 'عام',
+        image: med.image
+      }, 1);
+      triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+    }
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParam = searchParams.get("search") || "";
@@ -1534,11 +412,63 @@ export default function Prouducts() {
 
   // Modals and Toasts
   const [selectedMedicine, setSelectedMedicine] = useState(null);
+  const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showPromo, setShowPromo] = useState(true);
   const [toastMessage, setToastMessage] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentAllPage, setCurrentAllPage] = useState(0);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [isLocationConfirmed, setIsLocationConfirmed] = useState(() => {
+    return localStorage.getItem("dawaya_location_confirmed") === "true";
+  });
+  const [userLocation, setUserLocation] = useState(() => {
+    const saved = localStorage.getItem("dawaya_user_location");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved user location:", e);
+      }
+    }
+    return {
+      lat: 30.0384,
+      lng: 31.2101,
+      name: "الدقي، الجيزة"
+    };
+  });
+
+  // Sync location changes from localStorage (tab/navigation sync)
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem("dawaya_user_location");
+      if (saved) {
+        try {
+          setUserLocation(JSON.parse(saved));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      setIsLocationConfirmed(localStorage.getItem("dawaya_location_confirmed") === "true");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleStorageChange);
+    };
+  }, []);
+
+  const { data: apiResponse, isLoading, isError, refetch } = useQuery({
+    queryKey: ["medicines"],
+    queryFn: async () => {
+      const res = await axios.get("https://dawaya-back-end.vercel.app/api/medicines?limit=200");
+      return res.data;
+    }
+  });
+
+  const apiMedicines = apiResponse?.data?.data || [];
 
   // Client-side filtering, searching, paging
   const filteredMedicines = React.useMemo(() => {
@@ -1557,21 +487,21 @@ export default function Prouducts() {
       const normalized = norm(medCategory);
 
       const medicinesSub = [
-        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي", 
+        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي",
         "ضغط الدم", "السكري", "فيتامينات", "القلب والأوعية", "الربو"
       ].map(norm);
-      
+
       const haircareSub = [
         "شامبو وبلسم", "ترطيب وعلاج الشعر", "أجهزة تصفيف الشعر", "صبغات الشعر"
       ].map(norm);
 
       const skincareSub = [
-        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات", 
+        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات",
         "الوقاية من الشمس", "أجهزة البشرة", "العناية بالعيون"
       ].map(norm);
 
       const dailycareSub = [
-        "العناية بالجسم والاستحمام", "العناية بالفم والأسنان", "العناية النسائية", 
+        "العناية بالجسم والاستحمام", "العناية بالفم والأسنان", "العناية النسائية",
         "العناية الرجالية", "الحماية"
       ].map(norm);
 
@@ -1584,15 +514,18 @@ export default function Prouducts() {
       if (skincareSub.includes(normalized)) return "العناية بالبشرة";
       if (dailycareSub.includes(normalized)) return "العناية اليومية";
       if (vitaminsSub.includes(normalized)) return "الفيتامينات والمكملات";
-      
+
       return "أخرى";
     };
 
-    return localMedicines
+    return apiMedicines
       .map((med) => ({
         ...med,
-        _id: med.id,
-        images: [med.image],
+        id: med._id,
+        _id: med._id,
+        category: med.subCategory || med.category || "",
+        image: med.images && med.images[0] ? med.images[0] : (med.image || "https://via.placeholder.com/400x400?text=No+Image"),
+        images: med.images && med.images.length > 0 ? med.images : [med.image || "https://via.placeholder.com/400x400?text=No+Image"]
       }))
       .filter((med) => {
         // 1. Main category vs Sub category filtering
@@ -1606,10 +539,10 @@ export default function Prouducts() {
           if (categoryApiValue) {
             const normMedCat = norm(med.category);
             const normApiVal = norm(categoryApiValue);
-            
+
             const isMaskMatch = (normMedCat.includes("ماسك") && normApiVal.includes("ماسك"));
             const isVitaminMatch = (normMedCat.includes("فيتامين") && normApiVal.includes("فيتامين"));
-            
+
             if (normMedCat !== normApiVal && !isMaskMatch && !isVitaminMatch) {
               return false;
             }
@@ -1629,7 +562,7 @@ export default function Prouducts() {
 
         return true;
       });
-  }, [activeMainCat, categoryApiValue, searchParam]);
+  }, [activeMainCat, categoryApiValue, searchParam, apiMedicines]);
 
   const sortedMedicines = React.useMemo(() => {
     const sorted = [...filteredMedicines];
@@ -1663,9 +596,7 @@ export default function Prouducts() {
   const endPage = Math.min(startPage + maxVisiblePages - 1, apiData.pages);
   const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-  const isLoading = false;
-  const isError = false;
-  const refetch = () => {};
+  // API states supplied by React Query hook
 
   const detailsData = null;
   const isLoadingDetails = false;
@@ -1747,12 +678,23 @@ export default function Prouducts() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#009eb6]/20 selection:text-[#009eb6]">
 
+      {/* Orange Warning Banner */}
+      {!isLocationConfirmed && (
+        <div
+          onClick={() => setIsMapModalOpen(true)}
+          className="bg-[#d97706] hover:bg-[#b45309] text-white text-base md:text-lg font-black py-4 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors sticky top-0 z-40 select-none text-center shadow-md leading-relaxed"
+        >
+          <MapPin className="w-5 h-5 fill-white text-[#d97706] shrink-0" />
+          <span>تحديد الموقع معطل. اضغط هنا لتفعيله قبل اختيار المنتجات</span>
+        </div>
+      )}
+
       <div className="max-w-[1200px] mx-auto px-4 py-6">
 
         {/* 2. Search Area */}
         <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-6">
           {/* Search bar inside page matching premium layout */}
-          <form onSubmit={handleSearchSubmit} className="relative w-full md:w-[350px]">
+          <form onSubmit={handleSearchSubmit} className="relative w-full md:w-[400px]">
             <input
               type="text"
               value={searchInput}
@@ -1770,9 +712,9 @@ export default function Prouducts() {
                 setPage(1);
               }}
               placeholder="ابحث عن دواء أو مستحضر..."
-              className="w-full bg-slate-50 border border-slate-200 focus:border-[#009eb6] focus:bg-white focus:ring-4 focus:ring-[#009eb6]/10 rounded-xl py-2 px-4 pr-10 text-xs font-bold transition-all outline-none"
+              className="w-full bg-slate-50 border border-slate-200 focus:border-[#009eb6] focus:bg-white focus:ring-4 focus:ring-[#009eb6]/10 rounded-2xl py-3.5 px-5 pr-12 text-base font-bold transition-all outline-none"
             />
-            <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute right-4.5 top-1/2 -translate-y-1/2 w-5.5 h-5.5 text-slate-400" />
             {searchInput && (
               <button
                 type="button"
@@ -1796,16 +738,16 @@ export default function Prouducts() {
         <div className="lg:hidden flex items-center justify-between gap-4 mb-6">
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-sm"
+            className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-xl text-base font-bold text-slate-700 shadow-sm"
           >
-            <SlidersHorizontal className="w-4 h-4 text-[#009eb6]" />
+            <SlidersHorizontal className="w-5 h-5 text-[#009eb6]" />
             <span>تصفح الأقسام ({activeMainCat})</span>
           </button>
 
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-[#009eb6]/20"
+            className="bg-white border border-slate-200 rounded-xl py-3 px-3.5 text-base font-bold text-slate-700 shadow-sm outline-none focus:ring-2 focus:ring-[#009eb6]/20"
           >
             <option value="default">الترتيب الافتراضي</option>
             <option value="price-asc">السعر من الأقل للأعلى</option>
@@ -1829,12 +771,12 @@ export default function Prouducts() {
               </button>
             )}
 
-            <h3 className="text-[15px] font-black pb-3 border-b border-slate-100 mb-4 flex items-center justify-between">
+            <h3 className="text-xl font-black pb-3 border-b border-slate-100 mb-4 flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <span className="w-1.5 h-5 rounded-full bg-gradient-to-b from-[#009eb6] to-[#f06a4f]" />
                 <span className="text-[#102542] font-black">الأقسام</span>
               </span>
-              <span className="text-[10px] text-white bg-gradient-to-r from-[#009eb6] to-[#009eb6]/80 px-2.5 py-0.5 rounded-full font-bold shadow-sm shadow-[#009eb6]/10">
+              <span className="text-sm text-white bg-gradient-to-r from-[#009eb6] to-[#009eb6]/80 px-3 py-1 rounded-full font-bold shadow-sm shadow-[#009eb6]/10">
                 {activeMainCat}
               </span>
             </h3>
@@ -1855,31 +797,28 @@ export default function Prouducts() {
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDrop={(e) => handleDrop(e, index)}
-                    className={`transition-all duration-200 group/item relative rounded-xl ${
-                      isDragged
-                        ? "bg-[#f06a4f]/5 opacity-60 scale-[0.98]"
-                        : isSelected
+                    className={`transition-all duration-200 group/item relative rounded-xl ${isDragged
+                      ? "bg-[#f06a4f]/5 opacity-60 scale-[0.98]"
+                      : isSelected
                         ? "bg-[#009eb6]/5 text-[#009eb6]"
                         : "hover:bg-slate-50 text-slate-700 hover:text-slate-950"
-                    }`}
+                      }`}
                   >
                     {/* Main Category Header */}
                     <div className="flex items-center justify-between py-2 px-3">
                       {/* Active Indicator Line & Selectable Title */}
                       <div className="flex items-center gap-2.5 flex-grow min-w-0">
                         {/* Active indicator badge */}
-                        <span className={`w-1 h-5 rounded-full transition-all duration-300 ${
-                          isSelected 
-                            ? "bg-[#009eb6] scale-110" 
-                            : "bg-transparent group-hover/item:bg-slate-300"
-                        }`} />
+                        <span className={`w-1 h-5 rounded-full transition-all duration-300 ${isSelected
+                          ? "bg-[#009eb6] scale-110"
+                          : "bg-transparent group-hover/item:bg-slate-300"
+                          }`} />
 
                         {/* Category Name Button */}
                         <button
                           onClick={() => handleMainCatChange(cat.name)}
-                          className={`text-xs font-black text-right transition-colors truncate flex-grow py-1 ${
-                            isSelected ? "text-[#009eb6]" : "text-slate-700"
-                          }`}
+                          className={`text-base font-black text-right transition-colors truncate flex-grow py-1.5 ${isSelected ? "text-[#009eb6]" : "text-slate-700"
+                            }`}
                         >
                           <span className="truncate">{cat.name}</span>
                         </button>
@@ -1888,7 +827,7 @@ export default function Prouducts() {
                       {/* Controls: Drag Handle & Expand Chevron */}
                       <div className="flex items-center gap-1.5 shrink-0">
                         {/* Drag Handle (subtle, visible on hover) */}
-                        <div 
+                        <div
                           className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-[#f06a4f] transition-opacity opacity-0 group-hover/item:opacity-100 p-1 rounded hover:bg-slate-100 flex items-center justify-center"
                           title="اسحب لإعادة الترتيب"
                         >
@@ -1923,17 +862,15 @@ export default function Prouducts() {
                             <button
                               key={sub.name}
                               onClick={() => handleSubCatChange(sub, cat.name)}
-                              className={`w-full text-right text-[11px] font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-start gap-2.5 group/sub relative ${
-                                isSubActive
-                                  ? "text-[#009eb6] bg-[#009eb6]/5 font-extrabold"
-                                  : "text-slate-500 hover:text-[#009eb6] hover:bg-slate-100/50"
-                              }`}
+                              className={`w-full text-right text-sm font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-start gap-2.5 group/sub relative ${isSubActive
+                                ? "text-[#009eb6] bg-[#009eb6]/5 font-extrabold"
+                                : "text-slate-500 hover:text-[#009eb6] hover:bg-slate-100/50"
+                                }`}
                             >
-                              <span className={`w-1 h-1 rounded-full transition-all duration-300 ${
-                                isSubActive 
-                                  ? "bg-[#009eb6] scale-125" 
-                                  : "bg-slate-300 group-hover/sub:bg-[#009eb6]/50"
-                              }`} />
+                              <span className={`w-1 h-1 rounded-full transition-all duration-300 ${isSubActive
+                                ? "bg-[#009eb6] scale-125"
+                                : "bg-slate-300 group-hover/sub:bg-[#009eb6]/50"
+                                }`} />
                               <span>{sub.name}</span>
                             </button>
                           );
@@ -1950,7 +887,7 @@ export default function Prouducts() {
           <main className="col-span-12 lg:col-span-9">
 
             {/* 3. Marketing Banner Slider / Carousel */}
-            <div className="relative overflow-hidden rounded-3xl w-full aspect-[3.2/1] h-auto shadow-md mb-8 group border border-slate-100 bg-slate-50">
+            <div className="relative overflow-hidden rounded-3xl w-full aspect-[2.5/1] sm:aspect-[3.2/1] min-h-[140px] sm:min-h-[200px] h-auto shadow-md mb-8 group border border-slate-100 bg-slate-50">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={currentSlide}
@@ -1960,7 +897,7 @@ export default function Prouducts() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -80 }}
                   transition={{ duration: 0.45, ease: "easeInOut" }}
-                  className="w-full h-full object-fill"
+                  className="w-full h-full object-cover"
                 />
               </AnimatePresence>
 
@@ -1997,16 +934,16 @@ export default function Prouducts() {
 
             {/* Desktop Sort Bar */}
             <div className="hidden lg:flex items-center justify-between mb-6 bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
-              <div className="text-slate-500 text-xs font-bold">
-                عرض <span className="text-slate-800 font-extrabold">{(page - 1) * limit + 1} - {Math.min(page * limit, apiData.total)}</span> من أصل <span className="text-slate-800 font-extrabold">{apiData.total}</span> دواء
+              <div className="text-slate-500 text-base font-bold">
+                عرض <span className="text-slate-900 font-black text-[17px]">{(page - 1) * limit + 1} - {Math.min(page * limit, apiData.total)}</span> من أصل <span className="text-slate-900 font-black text-[17px]">{apiData.total}</span> دواء
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-slate-400 text-xs font-bold">ترتيب حسب:</span>
+                <span className="text-slate-400 text-base font-bold">ترتيب حسب:</span>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 focus:border-[#10b981] rounded-xl py-1.5 px-3 text-xs font-bold text-slate-700 outline-none"
+                  className="bg-slate-50 border border-slate-200 focus:border-[#009eb6] rounded-xl py-2 px-3.5 text-base font-bold text-slate-700 outline-none"
                 >
                   <option value="default">الترتيب الافتراضي</option>
                   <option value="price-asc">السعر من الأقل للأعلى</option>
@@ -2050,7 +987,7 @@ export default function Prouducts() {
                 </div>
                 <h3 className="text-base font-black text-slate-800 mb-2">لا توجد أدوية متوفرة</h3>
                 <p className="text-xs text-slate-500 mb-6 leading-relaxed">لم نجد أي منتجات تطابق القسم المحدد أو كلمة البحث.</p>
-                <button onClick={handleReset} className="bg-[#10b981] hover:bg-[#059669] text-white text-xs font-bold py-2.5 px-6 rounded-xl transition-all shadow-md shadow-emerald-500/10">
+                <button onClick={handleReset} className="bg-[#009eb6] hover:bg-[#008fa0] text-white text-xs font-bold py-2.5 px-6 rounded-xl transition-all shadow-md shadow-[#009eb6]/15">
                   إعادة تعيين الفلاتر
                 </button>
               </div>
@@ -2063,8 +1000,8 @@ export default function Prouducts() {
                     {/* 1. All Products Section (Page-by-page Horizontal Grid Carousel) */}
                     <div className="relative group/all-slider flex flex-col mb-12">
                       <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-sm font-black text-[#102542] flex items-center gap-2">
-                          <span className="w-1.5 h-4 rounded-full bg-gradient-to-b from-[#10b981] to-[#059669]" />
+                        <h3 className="text-xl font-black text-[#102542] flex items-center gap-2">
+                          <span className="w-1.5 h-4 rounded-full bg-gradient-to-b from-[#009eb6] to-[#f06a4f]" />
                           جميع المنتجات
                         </h3>
                       </div>
@@ -2122,17 +1059,17 @@ export default function Prouducts() {
                                 {chunk.map((med) => (
                                   <div
                                     key={med._id}
-                                    className="bg-white border border-slate-100 hover:border-[#10b981]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[340px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
-                                    onClick={() => openModal(med)}
+                                    className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[340px] sm:min-h-[380px] md:min-h-[405px] h-full hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
+                                    onClick={() => navigate(`/product/${med.id}`)}
                                   >
                                     {med.requiresPrescription && (
-                                      <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[9px] font-black px-2 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
+                                      <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
                                         <span className="w-1 h-1 rounded-full bg-red-500"></span>
                                         يلزم وصفة
                                       </span>
                                     )}
 
-                                    <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
+                                    <div className="w-full h-28 sm:h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
                                       <img
                                         src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
                                         alt={med.name}
@@ -2142,30 +1079,48 @@ export default function Prouducts() {
 
                                     <div className="text-right flex-grow flex flex-col justify-between">
                                       <div>
-                                        <h4 className="text-xs md:text-sm font-black text-slate-800 line-clamp-2 h-9 leading-snug group-hover:text-[#10b981] transition-colors mb-1">
+                                        <h4 className="text-sm md:text-base font-black text-slate-800 line-clamp-2 h-12 md:h-14 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
                                           {med.name}
                                         </h4>
-                                        <p className="text-[10px] text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                                        <p className="text-xs md:text-sm text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
                                           {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
                                         </p>
                                       </div>
 
                                       <div className="flex items-baseline justify-start gap-1 mb-3">
-                                        <span className="text-[15px] font-black text-slate-900">{med.price}</span>
-                                        <span className="text-[10px] text-slate-500 font-bold">جنيه</span>
+                                        <span className="text-base md:text-lg font-black text-slate-900">{med.price}</span>
+                                        <span className="text-xs md:text-sm text-slate-500 font-bold">جنيه</span>
                                       </div>
                                     </div>
 
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
-                                      }}
-                                      className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
-                                    >
-                                      <ShoppingCart className="w-3.5 h-3.5" />
-                                      <span>أضف إلى العربة</span>
-                                    </button>
+                                    {(() => {
+                                      const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddToCartClick(med);
+                                          }}
+                                          className={`w-full font-bold py-2 sm:py-3.5 rounded-xl text-center text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ${
+                                            isAdded
+                                              ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                                          }`}
+                                        >
+                                          {isAdded ? (
+                                            <>
+                                              <Trash className="w-4 h-4" />
+                                              <span>إزالة من السلة</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <ShoppingCart className="w-4 h-4" />
+                                              <span>أضف إلى السلة</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      );
+                                    })()}
                                   </div>
                                 ))}
                               </div>
@@ -2189,11 +1144,10 @@ export default function Prouducts() {
                                   setCurrentAllPage(idx);
                                 }
                               }}
-                              className={`h-2.5 rounded-full transition-all duration-300 ${
-                                currentAllPage === idx
-                                  ? "bg-[#10b981] w-6 shadow-sm"
-                                  : "bg-slate-200 hover:bg-slate-300 w-2"
-                              }`}
+                              className={`h-2.5 rounded-full transition-all duration-300 ${currentAllPage === idx
+                                ? "bg-[#009eb6] w-6 shadow-sm"
+                                : "bg-slate-200 hover:bg-slate-300 w-2"
+                                }`}
                             />
                           ));
                         })()}
@@ -2212,19 +1166,19 @@ export default function Prouducts() {
                       {medicines.map((med) => (
                         <motion.div
                           key={med._id}
-                          className="bg-white border border-slate-100 hover:border-[#10b981]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[340px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
-                          onClick={() => openModal(med)}
+                          className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[340px] sm:min-h-[380px] md:min-h-[405px] h-full hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
+                          onClick={() => navigate(`/product/${med.id}`)}
                         >
                           {/* Requires Prescription Tag */}
                           {med.requiresPrescription && (
-                            <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[9px] font-black px-2 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
+                            <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
                               <span className="w-1 h-1 rounded-full bg-red-500"></span>
                               يلزم وصفة
                             </span>
                           )}
 
                           {/* Product Image */}
-                          <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
+                          <div className="w-full h-28 sm:h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
                             <img
                               src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
                               alt={med.name}
@@ -2235,54 +1189,72 @@ export default function Prouducts() {
                           {/* Info & Price */}
                           <div className="text-right flex-grow flex flex-col justify-between">
                             <div>
-                              <h4 className="text-xs md:text-sm font-black text-slate-800 line-clamp-2 h-9 leading-snug group-hover:text-[#10b981] transition-colors mb-1">
+                              <h4 className="text-sm md:text-base font-black text-slate-800 line-clamp-2 h-12 md:h-14 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
                                 {med.name}
                               </h4>
-                              <p className="text-[10px] text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                              <p className="text-xs md:text-sm text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
                                 {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
                               </p>
                             </div>
 
                             <div className="flex items-baseline justify-start gap-1 mb-3">
-                              <span className="text-[15px] font-black text-slate-900">{med.price}</span>
-                              <span className="text-[10px] text-slate-500 font-bold">جنيه</span>
+                              <span className="text-base md:text-lg font-black text-slate-900">{med.price}</span>
+                              <span className="text-xs md:text-sm text-slate-500 font-bold">جنيه</span>
                             </div>
                           </div>
 
                           {/* Add to Cart Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
-                            }}
-                            className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
-                          >
-                            <ShoppingCart className="w-3.5 h-3.5" />
-                            <span>أضف إلى العربة</span>
-                          </button>
+                          {(() => {
+                            const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+                            return (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCartClick(med);
+                                }}
+                                className={`w-full font-bold py-2 sm:py-3.5 rounded-xl text-center text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ${
+                                  isAdded
+                                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                                }`}
+                              >
+                                {isAdded ? (
+                                  <>
+                                    <Trash className="w-4 h-4" />
+                                    <span>إزالة من السلة</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ShoppingCart className="w-4 h-4" />
+                                    <span>أضف إلى السلة</span>
+                                  </>
+                                )}
+                              </button>
+                            );
+                          })()}
                         </motion.div>
                       ))}
                     </motion.div>
 
                     {/* 5. Numbered Pagination Bar */}
                     {apiData.pages > 1 && (
-                      <div className="flex items-center justify-center gap-2.5 mt-12 bg-white border border-slate-100 py-3 px-6 rounded-2xl shadow-sm max-w-md mx-auto" dir="ltr">
+                      <div className="flex items-center justify-center gap-3 mt-12 bg-white border border-slate-100 py-3.5 px-6 rounded-2xl shadow-sm max-w-lg mx-auto" dir="ltr">
                         <button
                           onClick={() => setPage(p => Math.max(1, p - 1))}
                           disabled={page === 1}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981] disabled:opacity-40 disabled:pointer-events-none transition-all"
+                          className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#009eb6] hover:text-[#009eb6] disabled:opacity-40 disabled:pointer-events-none transition-all"
                         >
-                          <ChevronLeft className="w-4 h-4" />
+                          <ChevronLeft className="w-5 h-5" />
                         </button>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                           {visiblePages.map((pNum) => (
                             <button
                               key={pNum}
                               onClick={() => setPage(pNum)}
-                              className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-black transition-all ${page === pNum
-                                  ? "bg-[#10b981] text-white shadow-md shadow-[#10b981]/20"
-                                  : "border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981]"
+                              className={`w-10 h-10 flex items-center justify-center rounded-lg text-base font-black transition-all ${page === pNum
+                                ? "bg-[#009eb6] text-white shadow-md shadow-[#009eb6]/20"
+                                : "border border-slate-100 text-slate-600 hover:border-[#009eb6] hover:text-[#009eb6]"
                                 }`}
                             >
                               {pNum}
@@ -2293,9 +1265,9 @@ export default function Prouducts() {
                         <button
                           onClick={() => setPage(p => Math.min(apiData.pages, p + 1))}
                           disabled={page === apiData.pages}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#10b981] hover:text-[#10b981] disabled:opacity-40 disabled:pointer-events-none transition-all"
+                          className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-100 text-slate-600 hover:border-[#009eb6] hover:text-[#009eb6] disabled:opacity-40 disabled:pointer-events-none transition-all"
                         >
-                          <ChevronRight className="w-4 h-4" />
+                          <ChevronRight className="w-5 h-5" />
                         </button>
                       </div>
                     )}
@@ -2314,12 +1286,12 @@ export default function Prouducts() {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-[#005aab] text-white py-3 px-6 text-center text-xs md:text-sm font-black shadow-lg flex items-center justify-between"
+            className="fixed bottom-0 left-0 right-0 z-40 bg-[#005aab] text-white py-4 px-6 text-center text-sm md:text-base font-black shadow-lg flex items-center justify-between"
           >
             <div className="mx-auto flex items-center gap-2">
-              <span className="bg-white/20 px-2 py-0.5 rounded text-[10px]">عرض لفترة محدودة</span>
+              <span className="bg-white/20 px-2.5 py-0.5 rounded text-xs">عرض لفترة محدودة</span>
               <span>خصم إضافي 15% على أول طلب لك باستخدام كود الكوبون:</span>
-              <span className="bg-yellow-400 text-slate-950 font-bold px-2 py-0.5 rounded border border-yellow-300">CH10</span>
+              <span className="bg-yellow-400 text-slate-950 font-bold px-2.5 py-0.5 rounded border border-yellow-300 font-sans">CH10</span>
             </div>
             <button
               onClick={() => setShowPromo(false)}
@@ -2334,7 +1306,7 @@ export default function Prouducts() {
       {/* 7. Floating Chat FAB Button */}
       <button
         onClick={() => triggerToast("خدمة الاستشارات الطبية الفورية متاحة على مدار الساعة عبر واتساب.")}
-        className="fixed bottom-16 right-6 z-40 w-12 h-12 bg-[#10b981] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+        className="fixed bottom-16 right-6 z-40 w-12 h-12 bg-[#009eb6] hover:bg-[#008fa0] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer"
         title="استشر الصيدلي"
       >
         <MessageCircle className="w-6 h-6" />
@@ -2347,9 +1319,9 @@ export default function Prouducts() {
             initial={{ opacity: 0, y: -20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="fixed top-20 left-6 z-50 bg-slate-900/95 text-white py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2.5 border border-slate-800 text-xs font-bold"
+            className="fixed top-20 left-6 z-50 bg-slate-900/95 text-white py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2.5 border border-slate-800 text-sm font-bold"
           >
-            <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white text-xs">
+            <div className="w-5 h-5 rounded-full bg-[#009eb6] flex items-center justify-center text-white text-xs">
               <Check className="w-3.5 h-3.5" />
             </div>
             <span>{toastMessage}</span>
@@ -2373,7 +1345,7 @@ export default function Prouducts() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative z-10 flex flex-col md:flex-row border border-slate-100"
+              className="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative z-10 flex flex-col border border-slate-100"
             >
               {/* Close Button */}
               <button
@@ -2383,115 +1355,324 @@ export default function Prouducts() {
                 <X className="w-4.5 h-4.5" />
               </button>
 
-              {/* Images Column */}
-              <div className="w-full md:w-[45%] bg-slate-50 p-6 flex flex-col justify-between border-l border-slate-100">
-                <div className="flex-grow flex items-center justify-center relative rounded-2xl bg-white border border-slate-100 min-h-[200px] overflow-hidden mb-4 p-4">
-                  <img
-                    src={activeDetails?.images && activeDetails.images[activeImageIndex] ? activeDetails.images[activeImageIndex] : "https://via.placeholder.com/600x600?text=No+Image"}
-                    alt={activeDetails?.name}
-                    className="max-h-56 max-w-full object-contain"
-                  />
+              <div className="flex flex-col md:flex-row flex-grow">
+                {/* Images Column */}
+                <div className="w-full md:w-[45%] bg-slate-50 p-6 flex flex-col justify-between border-l border-slate-100">
+                  <div className="flex-grow flex items-center justify-center relative rounded-2xl bg-white border border-slate-100 min-h-[200px] overflow-hidden mb-4 p-4">
+                    <img
+                      src={activeDetails?.images && activeDetails.images[activeImageIndex] ? activeDetails.images[activeImageIndex] : "https://via.placeholder.com/400x400?text=No+Image"}
+                      alt={activeDetails?.name}
+                      className="max-h-56 max-w-full object-contain"
+                    />
 
-                  {activeDetails?.requiresPrescription && (
-                    <div className="absolute top-3 right-3 bg-red-50 text-red-500 text-[9px] font-black px-2.5 py-1 rounded-lg border border-red-100 shadow-sm flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-red-500"></span>
-                      يلزم وصفة
+                    {activeDetails?.requiresPrescription && (
+                      <div className="absolute top-3 right-3 bg-red-50 text-red-500 text-xs font-black px-2.5 py-1 rounded-lg border border-red-100 shadow-sm flex items-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-red-500"></span>
+                        يلزم وصفة
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Thumbnail selector */}
+                  {activeDetails?.images && activeDetails.images.length > 1 && (
+                    <div className="flex gap-2.5 justify-center overflow-x-auto py-1">
+                      {activeDetails.images.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={`w-12 h-12 rounded-lg border-2 overflow-hidden bg-white p-1 transition-all ${activeImageIndex === idx ? 'border-[#009eb6]' : 'border-transparent opacity-60 hover:opacity-100'
+                            }`}
+                        >
+                          <img src={img} alt="thumbnail" className="w-full h-full object-contain" />
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* Thumbnail selector */}
-                {activeDetails?.images && activeDetails.images.length > 1 && (
-                  <div className="flex gap-2.5 justify-center overflow-x-auto py-1">
-                    {activeDetails.images.map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveImageIndex(idx)}
-                        className={`w-12 h-12 rounded-lg border-2 overflow-hidden bg-white p-1 transition-all ${activeImageIndex === idx ? 'border-[#10b981]' : 'border-transparent opacity-60 hover:opacity-100'
-                          }`}
-                      >
-                        <img src={img} alt="thumbnail" className="w-full h-full object-contain" />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                {/* Details Content Column */}
+                <div className="w-full md:w-[55%] p-6 md:p-8 flex flex-col justify-between">
 
-              {/* Details Content Column */}
-              <div className="w-full md:w-[55%] p-6 md:p-8 flex flex-col justify-between">
+                  {/* Meta details */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="bg-[#009eb6]/10 text-[#009eb6] text-xs font-black px-2.5 py-1 rounded-full">
+                        {activeDetails?.category || "أخرى"}
+                      </span>
+                      {activeDetails?.manufacturer && (
+                        <span className="text-slate-400 text-sm font-bold">{activeDetails.manufacturer}</span>
+                      )}
+                    </div>
 
-                {/* Meta details */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="bg-[#10b981]/10 text-[#10b981] text-[10px] font-black px-2.5 py-1 rounded-full">
-                      {activeDetails?.category || "أخرى"}
-                    </span>
-                    {activeDetails?.manufacturer && (
-                      <span className="text-slate-400 text-xs font-bold">{activeDetails.manufacturer}</span>
-                    )}
-                  </div>
+                    <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-1 leading-snug">
+                      {activeDetails?.name}
+                    </h2>
 
-                  <h2 className="text-lg md:text-xl font-black text-slate-900 mb-1 leading-snug">
-                    {activeDetails?.name}
-                  </h2>
-
-                  {activeDetails?.genericName && (
-                    <p className="text-xs text-slate-400 font-bold mb-4">
-                      المادة الفعالة: {activeDetails.genericName}
-                    </p>
-                  )}
-
-                  {/* Description loader or content */}
-                  <div className="border-t border-slate-100 pt-4 mb-6">
-                    <h3 className="text-xs font-black text-slate-900 mb-2">تفاصيل المنتج:</h3>
-
-                    {isLoadingDetails ? (
-                      <div className="flex items-center gap-2 text-slate-400 text-xs font-bold py-2">
-                        <Loader2 className="w-4.5 h-4.5 animate-spin text-[#10b981]" />
-                        <span>جاري تحميل باقي التفاصيل...</span>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-500 leading-relaxed text-right">
-                        {activeDetails?.description || "لا يوجد وصف متوفر لهذا المنتج حالياً."}
+                    {activeDetails?.genericName && (
+                      <p className="text-sm text-slate-400 font-bold mb-4">
+                        المادة الفعالة: {activeDetails.genericName}
                       </p>
                     )}
-                  </div>
-                </div>
 
-                {/* Bottom Action Area */}
-                <div>
-                  <div className="bg-slate-50 rounded-2xl p-4 mb-5 border border-slate-100 flex justify-between items-center">
-                    <span className="text-slate-400 text-xs font-bold">السعر النهائي:</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black text-slate-900">{activeDetails?.price}</span>
-                      <span className="text-xs text-slate-500 font-bold">جنيه مصري</span>
+                    {/* Description loader or content */}
+                    <div className="border-t border-slate-100 pt-4 mb-6">
+                      <h3 className="text-sm font-black text-slate-900 mb-2">تفاصيل المنتج:</h3>
+
+                      {isLoadingDetails ? (
+                        <div className="flex items-center gap-2 text-slate-400 text-sm font-bold py-2">
+                          <Loader2 className="w-4.5 h-4.5 animate-spin text-[#009eb6]" />
+                          <span>جاري تحميل باقي التفاصيل...</span>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-slate-500 leading-relaxed text-right">
+                          {activeDetails?.description || "لا يوجد وصف متوفر لهذا المنتج حالياً."}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        triggerToast(`تم إضافة ${activeDetails?.name} إلى السلة بنجاح!`);
-                        setSelectedMedicine(null);
-                      }}
-                      className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#10b981]/10 active:scale-95 text-xs"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>إضافة للسلة</span>
-                    </button>
-                    <button
-                      onClick={() => triggerToast("تم الإضافة إلى المفضلة")}
-                      className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100"
-                    >
-                      <Heart className="w-4.5 h-4.5" />
-                    </button>
-                  </div>
-                </div>
+                  {/* Bottom Action Area */}
+                  <div>
+                    <div className="bg-slate-50 rounded-2xl p-4 mb-5 border border-slate-100 flex justify-between items-center">
+                      <span className="text-slate-400 text-sm font-bold">السعر النهائي:</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-black text-slate-900">{activeDetails?.price}</span>
+                        <span className="text-sm text-slate-500 font-bold">جنيه مصري</span>
+                      </div>
+                    </div>
 
+                    <div className="flex gap-3">
+                      {(() => {
+                        const isAdded = activeDetails ? cartItems.some((item) => String(item.id) === String(activeDetails.id)) : false;
+                        return (
+                          <button
+                            onClick={() => {
+                              if (activeDetails) {
+                                handleAddToCartClick(activeDetails);
+                              }
+                            }}
+                            className={`flex-1 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-sm cursor-pointer ${
+                              isAdded
+                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <Trash className="w-4.5 h-4.5" />
+                                <span>إزالة من السلة</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="w-4.5 h-4.5" />
+                                <span>أضف إلى السلة</span>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })()}
+                      <button
+                        onClick={() => triggerToast("تم الإضافة إلى المفضلة")}
+                        className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100"
+                      >
+                        <Heart className="w-4.5 h-4.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Available Pharmacies Section */}
+              <div className="w-full border-t border-slate-100 p-6 md:p-8 bg-slate-50/50">
+                <h3 className="text-sm font-black text-[#102542] mb-4 flex items-center gap-2">
+                  <span className="w-1.5 h-4 rounded-full bg-gradient-to-b from-[#009eb6] to-[#f06a4f]" />
+                  الصيدليات المتاحة التي يتوفر بها هذا الدواء
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {localPharmacies.slice(0, 2).map((pharmacy) => (
+                    <PharmacyCard
+                      key={pharmacy.id}
+                      pharmacy={pharmacy}
+                      onViewDetails={() => setSelectedPharmacy(pharmacy)}
+                    />
+                  ))}
+                </div>
               </div>
 
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* 9. Interactive Pharmacy Details Popup Modal */}
+      <AnimatePresence>
+        {selectedPharmacy && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedPharmacy(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white w-full max-w-[500px] overflow-hidden rounded-3xl shadow-2xl relative z-10 border border-slate-100 flex flex-col"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setSelectedPharmacy(null)}
+                className="absolute top-4 left-4 z-20 w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-full transition-colors text-slate-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Modal Banner Header */}
+              <div className="h-28 bg-gradient-to-l from-[#009eb6] to-[#009eb6]/80 p-6 flex items-end">
+                <div className="flex items-center gap-3 relative z-10 translate-y-8">
+                  <div className="w-16 h-16 bg-white border-2 border-white rounded-2xl p-2 flex items-center justify-center overflow-hidden shadow-md">
+                    <img src={selectedPharmacy.logo} alt={selectedPharmacy.name} className="max-w-full max-h-full object-contain" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-800 bg-white/95 px-3 py-1 rounded-xl shadow-sm leading-snug">
+                      {selectedPharmacy.name}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 pt-12 flex-grow">
+                {/* Meta properties */}
+                <div className="flex items-center gap-3 mb-4 text-xs font-black">
+                  <span className={`px-2.5 py-1 rounded-lg ${selectedPharmacy.isOpen ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
+                    {selectedPharmacy.isOpen ? "مفتوح الآن" : "مغلق حالياً"}
+                  </span>
+                  {selectedPharmacy.is24h && (
+                    <span className="bg-[#009eb6]/10 text-[#009eb6] px-2.5 py-1 rounded-lg">شغال 24 ساعة</span>
+                  )}
+                  <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-2 py-0.5 rounded-lg">
+                    {selectedPharmacy.rating} <Star className="w-3 h-3 fill-current" />
+                  </span>
+                </div>
+
+                {/* About text */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-black text-slate-900 mb-1.5">حول الصيدلية:</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed text-right">{selectedPharmacy.about}</p>
+                </div>
+
+                {/* Contact list & services */}
+                <div className="border-t border-slate-100 pt-4 flex flex-col gap-3.5 mb-6">
+                  <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                    <MapPin className="w-4.5 h-4.5 text-[#009eb6]" />
+                    <span>{selectedPharmacy.address}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                    <Phone className="w-4.5 h-4.5 text-[#009eb6] shrink-0" />
+                    <span>الخط الساخن: {selectedPharmacy.phone}</span>
+                  </div>
+
+                  {/* Services pills list */}
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedPharmacy.hasDelivery && (
+                      <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
+                    )}
+                    {selectedPharmacy.hasParking && (
+                      <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🅿️ موقف سيارات خاص</span>
+                    )}
+                  </div>
+
+                  {/* Cart & Favorites Actions */}
+                  <div className="flex gap-3 mt-3">
+                    {(() => {
+                      const isAdded = activeDetails ? cartItems.some((item) => String(item.id) === String(activeDetails.id)) : false;
+                      return (
+                        <button
+                          onClick={() => {
+                            if (activeDetails) {
+                              handleAddToCartClick(activeDetails);
+                              setSelectedMedicine(null);
+                            }
+                          }}
+                          className={`flex-1 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-xs cursor-pointer ${
+                            isAdded
+                              ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                          }`}
+                        >
+                          {isAdded ? (
+                            <>
+                              <Trash className="w-4.5 h-4.5" />
+                              <span>إزالة من السلة</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-4.5 h-4.5" />
+                              <span>أضف إلى السلة</span>
+                            </>
+                          )}
+                        </button>
+                      );
+                    })()}
+                    <button
+                      onClick={() => triggerToast("تم الإضافة إلى المفضلة")}
+                      className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100 cursor-pointer"
+                    >
+                      <Heart className="w-4.5 h-4.5" />
+                    </button>
+                  </div>
+
+                  {/* Action button */}
+                  <div className="flex gap-3 mt-8">
+                    <a
+                      href={`https://wa.me/${selectedPharmacy.whatsapp || (selectedPharmacy.phone && selectedPharmacy.phone.startsWith("0") ? "20" + selectedPharmacy.phone.slice(1) : selectedPharmacy.phone) || ""}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-500/10 active:scale-[0.98] text-sm"
+                    >
+                      <MessageSquare className="w-4.5 h-4.5" />
+                      <span>طلب بالواتساب</span>
+                    </a>
+
+                    <button
+                      onClick={() => {
+                        triggerToast("تم نسخ الهاتف الساخن!");
+                        navigator.clipboard.writeText(selectedPharmacy.phone);
+                      }}
+                      className="flex-1 bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#009eb6]/10 active:scale-[0.98] text-sm"
+                    >
+                      <Phone className="w-4.5 h-4.5" />
+                      <span>اتصال بالدعم</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Map Selection Modal */}
+      <AnimatePresence>
+        {isMapModalOpen && (
+          <MapModal
+            initialLocation={userLocation}
+            onConfirm={(location) => {
+              setUserLocation(location);
+              setIsLocationConfirmed(true);
+              setIsMapModalOpen(false);
+              localStorage.setItem("dawaya_user_location", JSON.stringify(location));
+              localStorage.setItem("dawaya_location_confirmed", "true");
+              triggerToast(`تم تحديث موقعك إلى: ${location.name}`);
+            }}
+            onClose={() => setIsMapModalOpen(false)}
+          />
         )}
       </AnimatePresence>
 
