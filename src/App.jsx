@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
 import About from "./Pages/About";
+import Prouducts from "./Pages/Prouducts";
 import NotFound from "./Pages/NotFound";
 import "./App.css";
 import Layout from "./Components/Layout/Layout";
@@ -14,6 +15,10 @@ import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 import UserProfile from "./Components/UserProfile/UserProfile";
 import AccountType from "./Components/AccountType/AccountType";
 import PharmacistRegister from "./Components/PharmacistRegister/PharmacistRegister";
@@ -27,6 +32,9 @@ import Reminders from './Pages/Reminders';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
+import AuthCallback from "./Pages/AuthCallback";
+import Pharmacies from './Pages/Adman/Pharmacies';
+import Orders from './Pages/Adman/Orders';
 
 function App() {
   let router = createBrowserRouter([
@@ -71,6 +79,10 @@ function App() {
           element: <Reminders />
         },
         {
+          path: "/products",
+          element: <Prouducts />
+        },
+        {
           path: "/about",
           element: (
             <ProtectedRoure>
@@ -93,6 +105,10 @@ function App() {
         {
           path: "/login",
           element: <Login />,
+        },
+        {
+          path:"/auth/callback" ,
+          element:<AuthCallback />
         },
         {
           path: "/pharmacistRegister",
@@ -133,7 +149,7 @@ function App() {
       ],
     },
 
-    // ─── الـ Admin Dashboard — 
+  // Admin Dashboard
     {
       path: "/admin",
       element: (
@@ -144,20 +160,26 @@ function App() {
       children: [
         { index: true, element: <Dashboard /> },
         { path: "users", element: <Users /> },
+        { path: "pharmacies", element: <Pharmacies /> },
+        { path: "orders", element: <Orders /> },
       ]
     }
   ]);
 
   return (
+
+  <QueryClientProvider client={queryClient}>
     <UserContextProvider>
       <CartContextProvider>
         <FavoritesContextProvider>
           <div dir="rtl">
-            <RouterProvider router={router}></RouterProvider>
+            <RouterProvider router={router} />
           </div>
         </FavoritesContextProvider>
       </CartContextProvider>
     </UserContextProvider>
+  </QueryClientProvider>
+    
   );
 }
 

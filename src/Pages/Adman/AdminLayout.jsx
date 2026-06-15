@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { getUserById } from '../../services/api';
+import { jwtDecode } from "jwt-decode";
 
 const navItems = [
   { path: '/admin', label: 'الرئيسية', icon: '📊', end: true },
@@ -11,11 +13,32 @@ const navItems = [
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
   const handleLogout = () => {
     localStorage.removeItem('userToken');
     navigate('/login');
   };
+  const token = localStorage.getItem("userToken");
+
+  const decoded = token ? jwtDecode(token) : null;
+
+  const userId = decoded?._id;
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await getUserById(userId);
+        setUser(data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (userId) {
+      fetchUser();
+    }
+  }, [userId]);
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)', fontFamily: 'Cairo, sans-serif' }}>
@@ -27,7 +50,7 @@ export default function AdminLayout() {
         {/* Logo */}
         <div className="flex items-center justify-between px-4 py-5" style={{ borderBottom: '1px solid var(--color-border)' }}>
           {!collapsed && (
-             <Link to="/"  style={{display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}>
               <img
                 src="/imges/logo.png"
                 alt="Dawaa Logo"
@@ -84,13 +107,13 @@ export default function AdminLayout() {
         {/* Topbar */}
         <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
           style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
-           
+
           <h1 className="font-bold text-sm" style={{ color: 'var(--color-text-muted)' }}>
             لوحة تحكم الأدمن
           </h1>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
             style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, #0ea5e9 100%)' }}>
-            A
+            {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
         </div>
 
