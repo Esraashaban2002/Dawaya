@@ -1567,7 +1567,6 @@ export default function Prouducts() {
                   </div>
                 </div>
               </div>
-              </div>
             </motion.div>
           </div>
         )}
