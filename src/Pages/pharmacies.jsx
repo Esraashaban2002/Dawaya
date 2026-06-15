@@ -2,16 +2,12 @@ import React, { useState, useRef, useMemo } from "react";
 import {
   Search, SlidersHorizontal, ChevronLeft, ChevronRight, Star,
   MapPin, Clock, Phone, MessageSquare, Info, X, Share2,
-  CheckCircle, Globe, Award, ShieldCheck, Check, Eye
+  CheckCircle, Globe, Award, ShieldCheck, Check, Eye, Compass, ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-// Google Maps API Key - Place your key here to remove the watermark
 const GOOGLE_MAPS_API_KEY = "";
-
-// The pharmacies data is fetched dynamically from the API instead of static localPharmacies.
-
 
 const predefinedLocations = [
   { name: "الدقي، الجيزة", lat: 30.0384, lng: 31.2101 },
@@ -37,7 +33,7 @@ const predefinedLocations = [
 ];
 
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in KM
+  const R = 6371; 
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -50,17 +46,6 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-const partnerLogos = [
-  { name: "النهدي", img: "/imges/PharmcyLogo/02_pharmaoverseas.png" }, // Mocked or named partners
-  { name: "سيف", img: "/imges/PharmcyLogo/04_seif_pharmacy.png" },
-  { name: "الدواء", img: "/imges/PharmcyLogo/05_al_dawaa_pharmacy.png" },
-  { name: "مصر", img: "/imges/PharmcyLogo/01_misr_pharmacies.png" },
-  { name: "العزبي", img: "/imges/PharmcyLogo/03_ezaby_pharmacy.png" },
-  { name: "النيل", img: "/imges/PharmcyLogo/06_al_nile_pharmacy.png" },
-  { name: "الطب", img: "/imges/PharmcyLogo/09_al_teb_pharmacy.png" },
-  { name: "الأمل", img: "/imges/PharmcyLogo/10_al_amal_pharmacy.png" }
-];
-
 export default function Pharmacy() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,10 +53,30 @@ export default function Pharmacy() {
     openNow: false,
     delivery: false,
     is24h: false,
-    parking: false
+    parking: false,
+    onlyNearby: true
   });
-  
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
+
+  const modalTravelTime = useMemo(() => {
+    if (!selectedPharmacy) return null;
+    const dist = selectedPharmacy.distance;
+    const formattedDistance = dist < 1.0 
+      ? `${Math.round(dist * 1000)}m` 
+      : `${dist.toFixed(1)} KM`;
+
+    const travelTimeText = dist < 1.0
+      ? ` مشياً: ${Math.round(dist * 15)} دقيقة`
+      : ` بالسيارة: ${Math.round(dist * 4)} دقيقة`;
+
+    return {
+      formattedDistance,
+      travelTimeText
+    };
+  }, [selectedPharmacy]);
+
   const [toastMessage, setToastMessage] = useState(null);
   const [userLocation, setUserLocation] = useState(() => {
     const saved = localStorage.getItem("dawaya_user_location");
@@ -93,7 +98,6 @@ export default function Pharmacy() {
     return localStorage.getItem("dawaya_location_confirmed") === "true";
   });
 
-  // Sync location changes from localStorage (tab/navigation sync)
   React.useEffect(() => {
     const handleStorageChange = () => {
       const saved = localStorage.getItem("dawaya_user_location");
@@ -115,11 +119,9 @@ export default function Pharmacy() {
     };
   }, []);
 
-  // State for fetched pharmacies
   const [pharmacies, setPharmacies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch pharmacies from the backend API on mount
   React.useEffect(() => {
     let isMounted = true;
     const fetchPharmacies = async () => {
@@ -157,19 +159,17 @@ export default function Pharmacy() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    
-    // Check if the query matches any pharmacy name or address in our list
+
     const hasMatchingPharmacy = pharmacies.some(p => 
       p.name.includes(searchQuery.trim()) || p.address.includes(searchQuery.trim())
     );
 
     if (!hasMatchingPharmacy) {
-      // Navigate to products search for medicines
+
       navigate(`/products?search=${searchQuery.trim()}`);
     }
   };
 
-  // Toggle Service Filters
   const handleFilterToggle = (key) => {
     setSelectedServices(prev => ({
       ...prev,
@@ -177,10 +177,9 @@ export default function Pharmacy() {
     }));
   };
 
-  // 1. Calculate dynamic distance for all pharmacies based on userLocation
   const processedPharmacies = useMemo(() => {
     const sortedList = pharmacies.map(p => {
-      // Parse coordinates safely from p.lat/p.lng or p.mapLink
+
       let lat = p.lat !== undefined ? parseFloat(p.lat) : undefined;
       let lng = p.lng !== undefined ? parseFloat(p.lng) : undefined;
       if ((lat === undefined || isNaN(lat) || lng === undefined || isNaN(lng)) && p.mapLink) {
@@ -191,7 +190,6 @@ export default function Pharmacy() {
         }
       }
 
-      // Fallback: lookup address in predefined Egyptian coordinates if coordinates not found in mapLink
       if (lat === undefined || isNaN(lat) || lng === undefined || isNaN(lng)) {
         const addressCoordinates = {
           "الدقي": { lat: 30.0384, lng: 31.2101 },
@@ -215,7 +213,7 @@ export default function Pharmacy() {
           "أكتوبر": { lat: 29.9720, lng: 30.9440 },
           "أكتوبر الجديدة": { lat: 29.9387, lng: 30.8874 }
         };
-        
+
         if (p.address) {
           const matchedKey = Object.keys(addressCoordinates).find(key => 
             p.address.includes(key) || key.includes(p.address)
@@ -227,8 +225,8 @@ export default function Pharmacy() {
         }
       }
 
-      if (lat === undefined || isNaN(lat)) lat = 30.0444; // default Cairo lat
-      if (lng === undefined || isNaN(lng)) lng = 31.2357; // default Cairo lng
+      if (lat === undefined || isNaN(lat)) lat = 30.0444; 
+      if (lng === undefined || isNaN(lng)) lng = 31.2357; 
 
       const dist = calculateHaversineDistance(userLocation.lat, userLocation.lng, lat, lng);
       const isOpen = p.status ? p.status === "مفتوح الآن" : (p.isOpen !== undefined ? p.isOpen : true);
@@ -249,15 +247,14 @@ export default function Pharmacy() {
       const diff = a.distance - b.distance;
       return isNaN(diff) ? 0 : diff;
     });
-    
+
     console.log("Processed Pharmacies (sorted):", sortedList.map(p => ({ name: p.name, distance: p.distance })));
     return sortedList;
   }, [pharmacies, userLocation]);
 
-  // 2. Filter & Search Logic
   const filteredPharmacies = useMemo(() => {
     return processedPharmacies.filter(pharmacy => {
-      // Search matching
+
       const matchesSearch = 
         pharmacy.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         pharmacy.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -265,17 +262,22 @@ export default function Pharmacy() {
 
       if (!matchesSearch) return false;
 
-      // Service filters matching
       if (selectedServices.openNow && !pharmacy.isOpen) return false;
       if (selectedServices.delivery && !pharmacy.hasDelivery) return false;
       if (selectedServices.is24h && !pharmacy.is24h) return false;
       if (selectedServices.parking && !pharmacy.hasParking) return false;
 
+      if (selectedServices.onlyNearby && pharmacy.distance > 20) {
+        const hasAnyNearby = processedPharmacies.some(p => p.distance <= 20);
+        if (hasAnyNearby) {
+          return false;
+        }
+      }
+
       return true;
     });
   }, [processedPharmacies, searchQuery, selectedServices]);
 
-  // Toast Trigger Helper
   const triggerToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
@@ -288,15 +290,14 @@ export default function Pharmacy() {
         async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
-          
-          // Egypt bounding box validation
+
           if (lat < 22.0 || lat > 31.9 || lng < 24.0 || lng > 37.0) {
             triggerToast("موقعك الحالي خارج حدود جمهورية مصر العربية. يرجى اختيار موقع يدوي داخل مصر.");
             return;
           }
 
           let name = "موقعي الحالي";
-          
+
           try {
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ar`
@@ -366,7 +367,6 @@ export default function Pharmacy() {
     }
   };
 
-  // Carousel scroll handler
   const scrollPartners = (direction) => {
     const container = partnersCarouselRef.current;
     if (container) {
@@ -376,9 +376,8 @@ export default function Pharmacy() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#009eb6]/20 selection:text-[#009eb6]">
-      
-      {/* Orange Warning Banner */}
+    <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#1ab5ea]/20 selection:text-[#1ab5ea]">
+
       {!isLocationConfirmed && (
         <div 
           onClick={() => setIsMapModalOpen(true)}
@@ -388,15 +387,14 @@ export default function Pharmacy() {
           <span>تحديد الموقع معطل. اضغط هنا لتفعيله قبل اختيار المنتجات</span>
         </div>
       )}
-      
-      {/* 1. Hero Search Area */}
-      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-[#009eb6]/12 via-[#009eb6]/4 to-transparent text-center px-4">
-        {/* Subtle background stars/particles */}
+
+      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-[#1ab5ea]/12 via-[#1ab5ea]/4 to-transparent text-center px-4">
+
         <div className="absolute inset-0 pointer-events-none opacity-40">
-          <div className="absolute top-10 left-10 w-2 h-2 bg-[#009eb6] rounded-full animate-ping duration-1000" />
-          <div className="absolute top-20 right-1/4 w-3 h-3 bg-[#f06a4f]/30 rounded-full animate-pulse duration-1000" />
-          <div className="absolute bottom-10 left-1/3 w-2.5 h-2.5 bg-[#009eb6]/50 rounded-full animate-pulse duration-700" />
-          <div className="absolute top-1/2 right-12 w-2 h-2 bg-[#009eb6] rounded-full animate-ping duration-1000" />
+          <div className="absolute top-10 left-10 w-2 h-2 bg-[#1ab5ea] rounded-full animate-ping duration-1000" />
+          <div className="absolute top-20 right-1/4 w-3 h-3 bg-[#0ea5e9]/30 rounded-full animate-pulse duration-1000" />
+          <div className="absolute bottom-10 left-1/3 w-2.5 h-2.5 bg-[#1ab5ea]/50 rounded-full animate-pulse duration-700" />
+          <div className="absolute top-1/2 right-12 w-2 h-2 bg-[#1ab5ea] rounded-full animate-ping duration-1000" />
         </div>
 
         <div className="max-w-[800px] mx-auto relative z-10">
@@ -404,7 +402,7 @@ export default function Pharmacy() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-2xl md:text-4xl font-black text-[#102542] mb-3 leading-snug tracking-arabic"
+            className="text-2xl md:text-4xl font-black text-[#1e293b] mb-3 leading-snug tracking-arabic"
           >
             ابحث عن صيدليتك أو دواءك بسهولة
           </motion.h1>
@@ -417,13 +415,12 @@ export default function Pharmacy() {
             منصتك الذكية للوصول إلى كافة الخدمات الطبية ومستحضرات التجميل والأدوية في منطقتك
           </motion.p>
 
-          {/* Premium Search Bar */}
           <motion.form 
             onSubmit={handleSearchSubmit}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="bg-white border border-slate-100 p-2 rounded-2xl md:rounded-3xl shadow-xl shadow-[#009eb6]/5 flex flex-col md:flex-row items-center max-w-[750px] mx-auto mb-6 gap-2 md:gap-0"
+            className="bg-white border border-slate-100 p-2 rounded-2xl md:rounded-3xl shadow-xl shadow-[#1ab5ea]/5 flex flex-col md:flex-row items-center max-w-[750px] mx-auto mb-6 gap-2 md:gap-0"
           >
             <div className="relative flex-grow flex items-center w-full md:border-l md:border-slate-100 md:pl-2">
               <input
@@ -433,12 +430,11 @@ export default function Pharmacy() {
                 placeholder="ابحث عن صيدلية..."
                 className="w-full bg-transparent border-none py-3 px-4 pr-12 text-xs md:text-sm text-slate-800 placeholder-slate-400 outline-none font-bold text-right"
               />
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[#009eb6]" />
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-[#1ab5ea]" />
             </div>
 
-            {/* Location Selector Dropdown */}
             <div className="flex items-center gap-2.5 w-full md:w-auto px-4 py-2 shrink-0 justify-center md:justify-start">
-              {/* Clickable MapPin Icon */}
+
               <button
                 type="button"
                 onClick={() => setIsMapModalOpen(true)}
@@ -448,63 +444,126 @@ export default function Pharmacy() {
                 <MapPin className="w-5 h-5 text-[#10B981]" />
               </button>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 relative">
                 <span className="text-[10px] text-slate-400 font-extrabold whitespace-nowrap">موقعك:</span>
-                <select
-                  value={userLocation.name}
-                  onChange={(e) => handleLocationSelect(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 focus:border-[#009eb6] rounded-xl py-1.5 px-3 text-xs font-black text-slate-700 outline-none text-right cursor-pointer max-w-[170px] md:max-w-[200px] truncate"
-                >
-                  {userLocation.name === "موقعي الحالي" && (
-                    <option value="موقعي الحالي">📍 موقعي الحالي تلقائياً</option>
-                  )}
-                  {userLocation.name && !predefinedLocations.some(l => l.name === userLocation.name) && userLocation.name !== "موقعي الحالي" && (
-                    <option value={userLocation.name}>📍 {userLocation.name}</option>
-                  )}
-                  <option value="detect">🧭 تحديد موقعي تلقائياً (GPS)</option>
-                  <option value="map">🗺️ تحديد من الخريطة تفاعلياً...</option>
-                  {predefinedLocations.map((loc) => (
-                    <option key={loc.name} value={loc.name}>
-                      {loc.name.split("،")[0]}
-                    </option>
-                  ))}
-                </select>
+
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="bg-slate-50 hover:bg-slate-100 border border-slate-200 focus:border-[#1ab5ea] rounded-xl py-1.5 px-3 text-xs font-black text-slate-700 outline-none text-right cursor-pointer max-w-[170px] md:max-w-[200px] truncate flex items-center gap-1.5 select-none"
+                  >
+                    <span className="truncate text-right flex-grow">
+                      {userLocation.name === "موقعي الحالي" ? " موقعي الحالي تلقائياً" : `${userLocation.name || "اختر موقعك..."}`}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  </button>
+
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <>
+
+                        <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute left-0 mt-1.5 bg-white border border-slate-100 rounded-xl shadow-xl z-50 min-w-[220px] max-h-64 overflow-y-auto py-1 divide-y divide-slate-50 text-right font-bold text-xs"
+                        >
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleLocationSelect("detect");
+                              setIsDropdownOpen(false);
+                            }}
+                            className="w-full text-right px-4 py-2.5 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            <Compass className="w-4 h-4 text-[#1ab5ea]" />
+                            <span>تحديد موقعي تلقائياً (GPS)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleLocationSelect("map");
+                              setIsDropdownOpen(false);
+                            }}
+                            className="w-full text-right px-4 py-2.5 hover:bg-slate-50 text-slate-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            <MapPin className="w-4 h-4 text-emerald-500" />
+                            <span>تحديد من الخريطة تفاعلياً...</span>
+                          </button>
+
+                          <div className="py-1">
+                            {predefinedLocations.map((loc) => (
+                              <button
+                                key={loc.name}
+                                type="button"
+                                onClick={() => {
+                                  handleLocationSelect(loc.name);
+                                  setIsDropdownOpen(false);
+                                }}
+                                className={`w-full text-right px-4 py-2 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer ${
+                                  userLocation.name === loc.name ? "text-[#1ab5ea] bg-[#1ab5ea]/5 font-black" : "text-slate-600"
+                                }`}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                                <span>{loc.name.split("،")[0]}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
             <button
               type="submit"
-              className="bg-[#009eb6] hover:bg-[#008fa0] text-white py-3 px-6 rounded-xl md:rounded-2xl transition-all font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#009eb6]/10 w-full md:w-auto shrink-0 cursor-pointer"
+              className="bg-[#1ab5ea] hover:bg-[#159ccb] text-white py-3 px-6 rounded-xl md:rounded-2xl transition-all font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-[#1ab5ea]/10 w-full md:w-auto shrink-0 cursor-pointer"
             >
               <span>البحث</span>
             </button>
           </motion.form>
 
-          {/* Quick Stats Banner */}
           <div className="flex justify-center gap-6 text-[10px] md:text-xs font-bold text-slate-500 mt-4">
-            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-[#009eb6]" /> صيدليات معتمدة</span>
-            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-[#f06a4f]" /> خدمة على مدار الساعة</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-[#1ab5ea]" /> صيدليات معتمدة</span>
+            <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-[#0ea5e9]" /> خدمة على مدار الساعة</span>
             <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-amber-500" /> رعاية صحية مبتكرة</span>
           </div>
         </div>
       </section>
 
-      {/* 2. Main Page Layout (Grid & Filters) */}
       <section className="max-w-[1200px] mx-auto px-4 mt-4">
-        
-        {/* Quick Filter Badges Row */}
+
         <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 mb-8">
           <span className="text-slate-400 text-xs font-bold flex items-center gap-1.5 ml-2">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-[#009eb6]" />
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#1ab5ea]" />
             تصفية النتائج:
           </span>
+
+          <button
+            onClick={() => handleFilterToggle("onlyNearby")}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
+              selectedServices.onlyNearby
+                ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
+                : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${selectedServices.onlyNearby ? "bg-white" : "bg-[#1ab5ea]"}`} />
+            <span> قريبة مني (تغطية موقعي)</span>
+          </button>
 
           <button
             onClick={() => handleFilterToggle("openNow")}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
               selectedServices.openNow
-                ? "bg-[#009eb6] text-white border-transparent shadow-sm shadow-[#009eb6]/20"
-                : "bg-white text-slate-600 border-slate-200 hover:border-[#009eb6]/30 hover:bg-slate-50"
+                ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
+                : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
             }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${selectedServices.openNow ? "bg-white" : "bg-emerald-500"}`} />
@@ -515,39 +574,39 @@ export default function Pharmacy() {
             onClick={() => handleFilterToggle("delivery")}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
               selectedServices.delivery
-                ? "bg-[#009eb6] text-white border-transparent shadow-sm shadow-[#009eb6]/20"
-                : "bg-white text-slate-600 border-slate-200 hover:border-[#009eb6]/30 hover:bg-slate-50"
+                ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
+                : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
             }`}
           >
-            <span>🛵 خدمة توصيل</span>
+            <span> خدمة توصيل</span>
           </button>
 
           <button
             onClick={() => handleFilterToggle("is24h")}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
               selectedServices.is24h
-                ? "bg-[#009eb6] text-white border-transparent shadow-sm shadow-[#009eb6]/20"
-                : "bg-white text-slate-600 border-slate-200 hover:border-[#009eb6]/30 hover:bg-slate-50"
+                ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
+                : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
             }`}
           >
-            <span>⏰ طوال 24 ساعة</span>
+            <span> طوال 24 ساعة</span>
           </button>
 
           <button
             onClick={() => handleFilterToggle("parking")}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
               selectedServices.parking
-                ? "bg-[#009eb6] text-white border-transparent shadow-sm shadow-[#009eb6]/20"
-                : "bg-white text-slate-600 border-slate-200 hover:border-[#009eb6]/30 hover:bg-slate-50"
+                ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
+                : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
             }`}
           >
-            <span>🅿️ موقف سيارات</span>
+            <span> موقف سيارات</span>
           </button>
 
-          {(selectedServices.openNow || selectedServices.delivery || selectedServices.is24h || selectedServices.parking || searchQuery) && (
+          {(selectedServices.openNow || selectedServices.delivery || selectedServices.is24h || selectedServices.parking || !selectedServices.onlyNearby || searchQuery) && (
             <button
               onClick={() => {
-                setSelectedServices({ openNow: false, delivery: false, is24h: false, parking: false });
+                setSelectedServices({ openNow: false, delivery: false, is24h: false, parking: false, onlyNearby: true });
                 setSearchQuery("");
               }}
               className="text-slate-400 hover:text-slate-600 text-xs font-bold mr-2 border-b border-dashed border-slate-300 hover:border-slate-500 pb-0.5"
@@ -557,22 +616,20 @@ export default function Pharmacy() {
           )}
         </div>
 
-        {/* Section Title */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex flex-col gap-1 text-right">
-            <h2 className="text-base font-black text-[#102542] flex items-center gap-2">
-              <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#009eb6] to-[#f06a4f]" />
+            <h2 className="text-base font-black text-[#1e293b] flex items-center gap-2">
+              <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#1ab5ea] to-[#0ea5e9]" />
               لوحة الصيدليات القريبة منك
             </h2>
             <p className="text-[11px] text-slate-400 font-bold">مرتبة حسب الأقرب إلى موقعك الحالي ({userLocation.name})</p>
           </div>
-          <span className="text-xs text-[#009eb6] bg-[#009eb6]/5 border border-[#009eb6]/10 py-1.5 px-3.5 rounded-xl font-extrabold self-start sm:self-auto">عرض {filteredPharmacies.length} صيدلية قريبة</span>
+          <span className="text-xs text-[#1ab5ea] bg-[#1ab5ea]/5 border border-[#1ab5ea]/10 py-1.5 px-3.5 rounded-xl font-extrabold self-start sm:self-auto">عرض {filteredPharmacies.length} صيدلية قريبة</span>
         </div>
 
-        {/* Cards Grid */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-[#009eb6] animate-spin" />
+            <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-[#1ab5ea] animate-spin" />
             <span className="text-xs font-bold text-slate-500">جاري تحميل الصيدليات من الخادم...</span>
           </div>
         ) : filteredPharmacies.length === 0 ? (
@@ -596,56 +653,6 @@ export default function Pharmacy() {
         )}
       </section>
 
-      {/* 3. Pharmacy Partners Section */}
-      <section className="bg-slate-50/50 border-y border-slate-100 py-16 mt-20 px-4">
-        <div className="max-w-[1200px] mx-auto relative">
-          
-          {/* Header */}
-          <div className="mb-8 text-center max-w-[500px] mx-auto">
-            <h2 className="text-base font-black text-[#102542] flex items-center justify-center gap-2 mb-2">
-              <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#009eb6] to-[#f06a4f]" />
-              شركاؤنا من الصيدليات
-            </h2>
-            <p className="text-[11px] text-slate-400 font-bold leading-relaxed">نسعد بشراكتنا مع أكبر وأوثق السلاسل الصيدلانية لتقديم أفضل رعاية طبية وتغطية دوائية ممتازة.</p>
-          </div>
-
-          <div className="relative flex items-center justify-center w-full px-8">
-            {/* Left Scroll Arrow */}
-            <button
-              onClick={() => scrollPartners("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white hover:bg-[#009eb6] hover:text-white text-slate-600 flex items-center justify-center shadow-md border border-slate-100 transition-all z-10"
-            >
-              <ChevronLeft className="w-4.5 h-4.5" />
-            </button>
-
-            {/* Scroll list */}
-            <div
-              ref={partnersCarouselRef}
-              className="flex items-center gap-6 overflow-x-auto py-4 scroll-smooth w-full no-scrollbar px-1"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {partnerLogos.map((partner, index) => (
-                <div
-                  key={index}
-                  className="bg-white border border-slate-100 rounded-2xl p-4 shrink-0 w-36 h-20 flex items-center justify-center shadow-sm hover:shadow-md hover:border-[#009eb6]/25 transition-all duration-300"
-                >
-                  <img src={partner.img} alt={partner.name} className="max-h-full max-w-full object-contain filter grayscale hover:grayscale-0 transition-all duration-300" />
-                </div>
-              ))}
-            </div>
-
-            {/* Right Scroll Arrow */}
-            <button
-              onClick={() => scrollPartners("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white hover:bg-[#009eb6] hover:text-white text-slate-600 flex items-center justify-center shadow-md border border-slate-100 transition-all z-10"
-            >
-              <ChevronRight className="w-4.5 h-4.5" />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Interactive Details Popup Modal */}
       <AnimatePresence>
         {selectedPharmacy && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -663,7 +670,7 @@ export default function Pharmacy() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white w-full max-w-[500px] overflow-hidden rounded-3xl shadow-2xl relative z-10 border border-slate-100 flex flex-col"
             >
-              {/* Close Button */}
+
               <button
                 onClick={() => setSelectedPharmacy(null)}
                 className="absolute top-4 left-4 z-20 w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-full transition-colors text-slate-500"
@@ -671,8 +678,7 @@ export default function Pharmacy() {
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Modal Banner Header */}
-              <div className="h-28 bg-gradient-to-l from-[#009eb6] to-[#009eb6]/80 p-6 flex items-end">
+              <div className="h-28 bg-gradient-to-l from-[#1ab5ea] to-[#1ab5ea]/80 p-6 flex items-end">
                 <div className="flex items-center gap-3 relative z-10 translate-y-8">
                   <div className="w-16 h-16 bg-white border-2 border-white rounded-2xl p-2 flex items-center justify-center overflow-hidden shadow-md">
                     <img src={selectedPharmacy.image || selectedPharmacy.logo} alt={selectedPharmacy.name} className="max-w-full max-h-full object-contain" />
@@ -685,51 +691,53 @@ export default function Pharmacy() {
                 </div>
               </div>
 
-              {/* Modal Body */}
               <div className="p-6 pt-12 flex-grow">
-                {/* Meta properties */}
+
                 <div className="flex items-center gap-3 mb-4 text-[10px] font-black">
                   <span className={`px-2.5 py-1 rounded-lg ${selectedPharmacy.isOpen ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
                     {selectedPharmacy.isOpen ? "مفتوح الآن" : "مغلق حالياً"}
                   </span>
                   {selectedPharmacy.is24h && (
-                    <span className="bg-[#009eb6]/10 text-[#009eb6] px-2.5 py-1 rounded-lg">شغال 24 ساعة</span>
+                    <span className="bg-[#1ab5ea]/10 text-[#1ab5ea] px-2.5 py-1 rounded-lg">شغال 24 ساعة</span>
                   )}
                   <span className="flex items-center gap-1 bg-amber-50 text-amber-600 px-2 py-0.5 rounded-lg">
                     {selectedPharmacy.rating} <Star className="w-3 h-3 fill-current" />
                   </span>
                 </div>
 
-                {/* About text */}
                 <div className="mb-6">
                   <h3 className="text-xs font-black text-slate-900 mb-1.5">حول الصيدلية:</h3>
                   <p className="text-xs text-slate-500 leading-relaxed text-right">{selectedPharmacy.about}</p>
                 </div>
 
-                {/* Contact list & services */}
                 <div className="border-t border-slate-100 pt-4 flex flex-col gap-3.5 mb-6">
                   <div className="flex items-center gap-3 text-xs text-slate-600 font-bold">
-                    <MapPin className="w-4 h-4 text-[#009eb6]" />
+                    <MapPin className="w-4 h-4 text-[#1ab5ea]" />
                     <span>{selectedPharmacy.address}</span>
                   </div>
 
+                  {modalTravelTime && (
+                    <div className="flex items-center gap-3 text-xs text-slate-600 font-bold">
+                      <Clock className="w-4 h-4 text-[#1ab5ea]" />
+                      <span>{modalTravelTime.travelTimeText} (المسافة: {modalTravelTime.formattedDistance})</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 text-xs text-slate-600 font-bold">
-                    <Phone className="w-4 h-4 text-[#009eb6]" />
+                    <Phone className="w-4 h-4 text-[#1ab5ea]" />
                     <span>الخط الساخن: {selectedPharmacy.phone}</span>
                   </div>
 
-                  {/* Services pills list */}
                   <div className="flex flex-wrap gap-2.5 mt-2">
                     {selectedPharmacy.hasDelivery && (
-                      <span className="text-[10px] bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
+                      <span className="text-[10px] bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl"> خدمة توصيل للمنزل</span>
                     )}
                     {selectedPharmacy.hasParking && (
-                      <span className="text-[10px] bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🅿️ موقف سيارات خاص</span>
+                      <span className="text-[10px] bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl"> موقف سيارات خاص</span>
                     )}
                   </div>
                 </div>
 
-                {/* Action button */}
                 <div className="flex gap-3 mt-8">
                   <a
                     href={`https://wa.me/${selectedPharmacy.whatsapp || (selectedPharmacy.phone && selectedPharmacy.phone.startsWith("0") ? "20" + selectedPharmacy.phone.slice(1) : selectedPharmacy.phone) || ""}`}
@@ -746,7 +754,7 @@ export default function Pharmacy() {
                       triggerToast("تم نسخ الهاتف الساخن!");
                       navigator.clipboard.writeText(selectedPharmacy.phone);
                     }}
-                    className="flex-1 bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#009eb6]/10 active:scale-[0.98] text-xs"
+                    className="flex-1 bg-[#1ab5ea] hover:bg-[#159ccb] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#1ab5ea]/10 active:scale-[0.98] text-xs"
                   >
                     <Phone className="w-4.5 h-4.5" />
                     <span>اتصال بالدعم</span>
@@ -758,7 +766,6 @@ export default function Pharmacy() {
         )}
       </AnimatePresence>
 
-      {/* Map Selection Modal */}
       <AnimatePresence>
         {isMapModalOpen && (
           <MapModal
@@ -776,7 +783,6 @@ export default function Pharmacy() {
         )}
       </AnimatePresence>
 
-      {/* Custom Toast Notification */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -785,60 +791,57 @@ export default function Pharmacy() {
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
             className="fixed top-20 left-6 z-50 bg-slate-900/95 text-white py-3 px-5 rounded-2xl shadow-xl flex items-center gap-2.5 border border-slate-800 text-xs font-bold"
           >
-            <div className="w-5 h-5 rounded-full bg-[#009eb6] flex items-center justify-center text-white text-xs">
+            <div className="w-5 h-5 rounded-full bg-[#1ab5ea] flex items-center justify-center text-white text-xs">
               <Check className="w-3.5 h-3.5" />
             </div>
             <span>{toastMessage}</span>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
     </div>
   );
 }
 
 export function PharmacyCard({ pharmacy, onViewDetails }) {
-  // Convert distance to user-friendly format and calculate travel times
+
   const distance = pharmacy.distance;
   const isNearby = distance < 1.0;
-  
+
   const formattedDistance = distance < 1.0 
     ? `${Math.round(distance * 1000)}m` 
     : `${distance.toFixed(1)} KM`;
 
-  // Estimate travel times
   const travelTimeText = distance < 1.0
-    ? `🚶 مشياً: ${Math.round(distance * 15)} دقيقة`
-    : `🚗 بالسيارة: ${Math.round(distance * 4)} دقيقة`;
+    ? ` مشياً: ${Math.round(distance * 15)} دقيقة`
+    : ` بالسيارة: ${Math.round(distance * 4)} دقيقة`;
 
   return (
     <motion.div
       layout
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25 }}
-      className={`bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-[24px] p-5 flex flex-col justify-between h-[395px] transition-all duration-300 relative group ${
+      className={`bg-white border border-slate-100 hover:border-[#1ab5ea]/30 rounded-[24px] p-5 flex flex-col justify-between h-[330px] transition-all duration-300 relative group ${
         isNearby 
           ? "shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.06)]" 
           : "shadow-md shadow-slate-100/40 hover:shadow-xl hover:shadow-slate-200/40"
       }`}
     >
-      {/* 1. Image & Distance Header Section */}
+
       <div className="flex flex-col items-center justify-center pt-2 mb-4 relative">
-        {/* Nearest Pharmacy Pill Tag */}
+
         {isNearby && (
           <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black px-2.5 py-0.5 rounded-full absolute -top-1.5 shadow-sm shadow-emerald-500/5 animate-pulse z-10">
-            📍 الأقرب إليك
+             الأقرب إليك
           </span>
         )}
 
-        {/* Circular Pharmacy Image Container */}
         <div className="relative">
-          {/* Subtle green pulse glow when pharmacy is within 1 KM */}
+
           {isNearby && (
             <div className="absolute -inset-1 rounded-full bg-emerald-400/20 animate-ping blur-sm" />
           )}
 
-          {/* Pharmacy Image Circle */}
           <div 
             className={`w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center border transition-all duration-300 relative overflow-hidden ${
               isNearby 
@@ -856,33 +859,30 @@ export function PharmacyCard({ pharmacy, onViewDetails }) {
             />
           </div>
 
-          {/* Floating Distance Badge */}
           <span dir="ltr" className={`absolute -top-1.5 -right-2 px-2.5 py-0.5 rounded-full text-[9px] font-black shadow-md flex items-center gap-0.5 z-10 border text-white ${
             isNearby 
               ? "bg-emerald-500 border-emerald-400" 
-              : "bg-[#009eb6] border-[#009eb6]/40"
+              : "bg-[#1ab5ea] border-[#1ab5ea]/40"
           }`}>
             <MapPin className="w-2.5 h-2.5 fill-current" />
             <span>{formattedDistance}</span>
           </span>
         </div>
 
-        {/* Estimated Travel Time */}
         <span className="text-[10px] text-slate-400 font-extrabold mt-2.5 bg-slate-50 px-2.5 py-0.5 rounded-full border border-slate-100">
           {travelTimeText}
         </span>
       </div>
 
-      {/* 2. Pharmacy Info Section */}
       <div className="flex items-center justify-between gap-4 mb-3">
-        {/* Right side: Name, Address, Status */}
+
         <div className="flex-grow min-w-0 flex flex-col gap-1 text-right">
-          <h3 className="text-sm md:text-base font-black text-[#102542] leading-snug group-hover:text-[#009eb6] transition-colors truncate">
+          <h3 className="text-sm md:text-base font-black text-[#1e293b] leading-snug group-hover:text-[#1ab5ea] transition-colors truncate">
             {pharmacy.name}
           </h3>
-          
+
           <div className="flex items-center gap-1 text-[11px] text-slate-400 font-bold">
-            <MapPin className="w-3.5 h-3.5 text-[#009eb6] shrink-0" />
+            <MapPin className="w-3.5 h-3.5 text-[#1ab5ea] shrink-0" />
             <span className="truncate">{pharmacy.address}</span>
           </div>
 
@@ -894,50 +894,21 @@ export function PharmacyCard({ pharmacy, onViewDetails }) {
           </div>
         </div>
 
-        {/* Left side: Rating Badge */}
         <div dir="ltr" className="flex items-center gap-1 bg-amber-50 border border-amber-100 text-amber-600 py-1.5 px-3 rounded-full text-xs font-black shrink-0 shadow-sm shadow-amber-500/5">
           <Star className="w-3.5 h-3.5 fill-current text-amber-500" />
           <span>{pharmacy.rating}</span>
         </div>
       </div>
 
-      {/* 3. Actions & Features Section */}
       <div>
-        {/* View Details Button */}
+
         <button
           onClick={onViewDetails}
-          className="w-full bg-[#f8fdfd] hover:bg-[#009eb6] hover:text-white border border-[#009eb6]/30 text-[#009eb6] font-bold py-2.5 rounded-full text-center text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md hover:shadow-[#009eb6]/15 hover:scale-[1.01] active:scale-[0.99] mb-4 cursor-pointer"
+          className="w-full bg-[#f0faff] hover:bg-[#1ab5ea] hover:text-white border border-[#1ab5ea]/30 text-[#1ab5ea] font-bold py-2.5 rounded-full text-center text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm hover:shadow-md hover:shadow-[#1ab5ea]/15 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
         >
           <Eye className="w-4 h-4 shrink-0" />
           <span>عرض التفاصيل</span>
         </button>
-
-        {/* Features Row */}
-        <div className="flex items-center justify-around border-t border-slate-100 pt-3.5 text-slate-400">
-          <div 
-            className={`flex flex-col items-center gap-1 cursor-help transition-all ${pharmacy.hasDelivery ? "text-[#009eb6]" : "opacity-25 filter grayscale"}`} 
-            title={pharmacy.hasDelivery ? "توصيل متوفر" : "توصيل غير متوفر"}
-          >
-            <span className="text-[18px]">🛵</span>
-            <span className="text-[9px] font-black">Deliver</span>
-          </div>
-
-          <div 
-            className={`flex flex-col items-center gap-1 cursor-help transition-all ${pharmacy.is24h ? "text-[#009eb6]" : "opacity-25 filter grayscale"}`} 
-            title={pharmacy.is24h ? "مفتوح طوال 24 ساعة" : "مواعيد عمل محددة"}
-          >
-            <span className="text-[18px]">⏰</span>
-            <span className="text-[9px] font-black">24h</span>
-          </div>
-
-          <div 
-            className={`flex flex-col items-center gap-1 cursor-help transition-all ${pharmacy.hasParking ? "text-[#009eb6]" : "opacity-25 filter grayscale"}`} 
-            title={pharmacy.hasParking ? "يوجد موقف سيارات" : "لا يوجد موقف سيارات"}
-          >
-            <span className="text-[18px]">🅿️</span>
-            <span className="text-[9px] font-black">Parking</span>
-          </div>
-        </div>
       </div>
     </motion.div>
   );
@@ -954,7 +925,6 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Safely update coordinates and perform reverse geocoding via Nominatim
   const handleCoordsChange = React.useCallback(async (lat, lng) => {
     setSelectedLoc((prev) => ({ ...prev, lat, lng }));
     setIsGeocoding(true);
@@ -999,13 +969,12 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
     }
   }, []);
 
-  // Request actual GPS location from browser, pan map, and reverse-geocode
   const handleLocateMe = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-          
+
           if (latitude < 22.0 || latitude > 31.9 || longitude < 24.0 || longitude > 37.0) {
             alert("موقعك الحالي خارج حدود جمهورية مصر العربية. يرجى اختيار موقع داخل مصر.");
             return;
@@ -1029,7 +998,6 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
     }
   };
 
-  // Dynamic asset loader for Leaflet
   React.useEffect(() => {
     let isMounted = true;
     const loadLeaflet = () => {
@@ -1071,23 +1039,20 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
     };
   }, []);
 
-  // Initialize leaflet map
   React.useEffect(() => {
     if (!leafletLoaded || !mapContainerRef.current) return;
 
     const L = window.L;
 
-    // Define Egypt bounds
     const egyptSouthWest = L.latLng(22.0, 24.0);
     const egyptNorthEast = L.latLng(31.9, 37.0);
     const egyptBounds = L.latLngBounds(egyptSouthWest, egyptNorthEast);
 
-    // Validate if current location is within Egypt bounds, otherwise fallback to Cairo
     let initLat = selectedLoc.lat;
     let initLng = selectedLoc.lng;
     if (initLat < 22.0 || initLat > 31.9 || initLng < 24.0 || initLng > 37.0) {
-      initLat = 30.0444; // Cairo latitude
-      initLng = 31.2357; // Cairo longitude
+      initLat = 30.0444; 
+      initLng = 31.2357; 
     }
 
     const map = L.map(mapContainerRef.current, {
@@ -1102,7 +1067,6 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
     mapRef.current = map;
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Google Maps Tile Layer (Free, Arabic language labels, No popups!)
     L.tileLayer(
       "https://{s}.google.com/vt/lyrs=m&hl=ar&x={x}&y={y}&z={z}",
       {
@@ -1112,7 +1076,6 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
       }
     ).addTo(map);
 
-    // Custom Green Marker Icon with transparent circle surrounding it matching Screenshot 3
     const customIcon = L.divIcon({
       html: `<div class="flex items-center justify-center">
         <div class="relative flex items-center justify-center">
@@ -1163,7 +1126,7 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
       setSearchResults([]);
       return;
     }
-    // If query matches the selected address exactly, don't trigger search
+
     if (searchQuery === selectedLoc.name) {
       return;
     }
@@ -1230,8 +1193,7 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
         const bbox = result.boundingbox;
         const southWest = L.latLng(parseFloat(bbox[0]), parseFloat(bbox[2]));
         const northEast = L.latLng(parseFloat(bbox[1]), parseFloat(bbox[3]));
-        
-        // Clamp search bounds to Egypt coordinates limit
+
         const clampedSW = L.latLng(
           Math.max(22.0, southWest.lat),
           Math.max(24.0, southWest.lng)
@@ -1284,11 +1246,10 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
         }
         .leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover {
           background-color: #f1f5f9 !important;
-          color: #009eb6 !important;
+          color: #1ab5ea !important;
         }
       `}</style>
-      
-      {/* Backdrop */}
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -1297,14 +1258,13 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
       />
 
-      {/* Modal Box */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         className="bg-white w-full max-w-[650px] h-[80vh] md:h-[75vh] rounded-3xl overflow-hidden shadow-2xl relative z-10 border border-slate-100 flex flex-col"
       >
-        {/* Title Bar */}
+
         <div className="p-4 md:p-5 border-b border-slate-100 flex items-center justify-between bg-white">
           <button
             onClick={onClose}
@@ -1312,14 +1272,13 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
           >
             <X className="w-4 h-4" />
           </button>
-          
+
           <h3 className="text-sm md:text-base font-black text-slate-800">
             اختر موقع التوصيل
           </h3>
-          <div className="w-8 h-8" /> {/* Spacer to center the title */}
+          <div className="w-8 h-8" /> 
         </div>
 
-        {/* Yellow notice alert banner */}
         <div className="bg-[#fef3c7] border-b border-[#fde68a] text-[#78350f] px-4 py-3 flex items-start gap-2.5 text-xs font-bold text-right">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4.5 h-4.5 text-amber-600 shrink-0 mt-0.5">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
@@ -1329,10 +1288,8 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
           <span className="leading-relaxed">لأفضل تجربة، تحتاج لتحديد موقعك لنعرض لك المنتجات المتاحة بالقرب منك</span>
         </div>
 
-        {/* Content Area */}
         <div className="flex-grow relative flex flex-col min-h-0">
-          
-          {/* Search Bar styled as per Screenshot 3 */}
+
           <div className="absolute top-4 right-4 left-4 z-[9999] max-w-md">
             <form onSubmit={handleMapSearch} className="relative shadow-md rounded-xl overflow-hidden border border-slate-100 bg-white">
               <input
@@ -1346,13 +1303,12 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
               <button
                 type="submit"
                 disabled={isSearching}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#009eb6] hover:bg-[#008fa0] text-white text-[10px] font-black px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-[#1ab5ea] hover:bg-[#159ccb] text-white text-[10px] font-black px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer"
               >
                 {isSearching ? "بحث..." : "ابحث"}
               </button>
             </form>
 
-            {/* Floating Search Results */}
             <AnimatePresence>
               {searchResults.length > 0 && (
                 <motion.div
@@ -1368,7 +1324,7 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
                       onClick={() => selectSearchResult(res)}
                       className="w-full text-right py-2.5 px-4 hover:bg-slate-50/80 transition-colors flex items-center justify-between text-slate-700"
                     >
-                      <MapPin className="w-3.5 h-3.5 text-[#009eb6] shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-[#1ab5ea] shrink-0" />
                       <span className="truncate pr-2">{res.display_name}</span>
                     </button>
                   ))}
@@ -1377,18 +1333,15 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
             </AnimatePresence>
           </div>
 
-          {/* Map Loading State */}
           {!leafletLoaded && (
             <div className="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center z-[300] gap-3">
-              <div className="w-8 h-8 rounded-full border-4 border-slate-200 border-t-[#009eb6] animate-spin" />
+              <div className="w-8 h-8 rounded-full border-4 border-slate-200 border-t-[#1ab5ea] animate-spin" />
               <span className="text-xs font-bold text-slate-500">جاري تحميل خريطة الموقع...</span>
             </div>
           )}
 
-          {/* Map Container */}
           <div ref={mapContainerRef} className="w-full h-full min-h-[250px] bg-slate-50 flex-grow" />
 
-          {/* Floating GPS 'Locate Me' Button */}
           {leafletLoaded && (
             <button
               type="button"
@@ -1396,7 +1349,7 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
               className="absolute bottom-20 left-4 z-[9999] w-12 h-12 bg-white hover:bg-slate-50 text-slate-700 rounded-full shadow-lg border border-slate-100 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
               title="تحديد موقعي الحالي بدقة"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-[#009eb6]">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-[#1ab5ea]">
                 <circle cx="12" cy="12" r="10" />
                 <circle cx="12" cy="12" r="3" />
                 <line x1="12" y1="1" x2="12" y2="4" />
@@ -1407,10 +1360,8 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
             </button>
           )}
 
-          {/* Address Display & Confirmation Bar styled as per Screenshot 3 */}
           <div className="bg-white border-t border-slate-100 p-4 relative z-[400] flex items-center justify-between gap-4">
-            
-            {/* Cancel Button */}
+
             <button
               type="button"
               onClick={onClose}
@@ -1419,15 +1370,13 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
               إلغاء
             </button>
 
-            {/* Address tooltip displayed in the footer */}
             <div className="hidden sm:flex flex-col text-right max-w-xs truncate pl-2">
-              <span className="text-[10px] text-slate-400 font-extrabold block">📍 العنوان المختار:</span>
+              <span className="text-[10px] text-slate-400 font-extrabold block"> العنوان المختار:</span>
               <span className="text-xs font-black text-slate-700 truncate">
                 {isGeocoding ? "جاري تحديد العنوان..." : selectedLoc.name}
               </span>
             </div>
 
-            {/* Confirm Button */}
             <button
               type="button"
               onClick={() => onConfirm(selectedLoc)}
@@ -1435,7 +1384,7 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
               className={`rounded-xl px-7 py-2.5 font-black text-xs transition-all cursor-pointer ${
                 isGeocoding 
                   ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200" 
-                  : "bg-[#009eb6] hover:bg-[#008fa0] text-white shadow-md shadow-[#009eb6]/15"
+                  : "bg-[#1ab5ea] hover:bg-[#159ccb] text-white shadow-md shadow-[#1ab5ea]/15"
               }`}
             >
               تأكيد الموقع

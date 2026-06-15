@@ -226,8 +226,9 @@
         svg { width: 18px; height: 18px; }
 
         @media (max-width: 768px) {
-          .nb-links, .nb-search, .nb-login { display: none; }
+          .nb-links, .nb-search, .nb-login, .nb-auth-links { display: none; }
           .nb-hamburger { display: flex; }
+          .nb-actions button.nb-icon-btn { display: none; }
         }
         .logo-img {
   width: 120px;
