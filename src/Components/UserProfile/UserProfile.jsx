@@ -109,7 +109,11 @@ export default function UserProfile() {
         password: localPassword,
         phone: apiUser.phone || localUser?.phone || '',
         age: apiUser.age || localUser?.age || "18",
-        gender: apiUser.gender === 'male' || apiUser.gender === 'ذكر' || localUser?.gender === 'male' || localUser?.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+        gender: (apiUser.gender === 'male' || apiUser.gender === 'ذكر' || localUser?.gender === 'male' || localUser?.gender === 'ذكر')
+          ? 'ذكر'
+          : (apiUser.gender === 'female' || apiUser.gender === 'أنثى' || localUser?.gender === 'female' || localUser?.gender === 'أنثى')
+            ? 'أنثى'
+            : ''
       });
     } else if (localUser) {
       setProfile({
@@ -119,7 +123,11 @@ export default function UserProfile() {
         password: localPassword,
         phone: localUser.phone || '',
         age: localUser.age || "18",
-        gender: localUser.gender === 'male' || localUser.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+        gender: (localUser.gender === 'male' || localUser.gender === 'ذكر')
+          ? 'ذكر'
+          : (localUser.gender === 'female' || localUser.gender === 'أنثى')
+            ? 'أنثى'
+            : ''
       });
     } else {
       setProfile({
@@ -129,7 +137,7 @@ export default function UserProfile() {
         password: localPassword,
         phone: '',
         age: "18",
-        gender: 'ذكر'
+        gender: ''
       });
     }
     setIsLoading(false);
@@ -149,7 +157,7 @@ export default function UserProfile() {
         phone: updatedProfile.phone,
         email: updatedProfile.email,
         password: updatedProfile.password,
-        gender: updatedProfile.gender === 'ذكر' ? 'male' : 'female',
+        gender: updatedProfile.gender === 'ذكر' ? 'male' : updatedProfile.gender === 'أنثى' ? 'female' : '',
         age: Number(updatedProfile.age) || 18
       };
       if (index > -1) {
@@ -177,7 +185,7 @@ export default function UserProfile() {
     // 2. Try saving to the backend database
     let apiUser = null;
     try {
-      const genderApi = updatedProfile.gender === 'ذكر' ? 'male' : 'female';
+      const genderApi = updatedProfile.gender === 'ذكر' ? 'male' : updatedProfile.gender === 'أنثى' ? 'female' : '';
       const data = await api.updateProfile({
         username: updatedProfile.username,
         phone: updatedProfile.phone,
@@ -212,7 +220,11 @@ export default function UserProfile() {
         password: updatedProfile.password,
         phone: apiUser.phone || updatedProfile.phone,
         age: apiUser.age || updatedProfile.age,
-        gender: apiUser.gender === 'male' || apiUser.gender === 'ذكر' ? 'ذكر' : 'أنثى'
+        gender: (apiUser.gender === 'male' || apiUser.gender === 'ذكر')
+          ? 'ذكر'
+          : (apiUser.gender === 'female' || apiUser.gender === 'أنثى')
+            ? 'أنثى'
+            : ''
       });
     } else {
       setProfile({
@@ -471,7 +483,7 @@ export default function UserProfile() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <span className="profile-info-label">الجنس</span>
-                          <span className="profile-info-value">{profile.gender}</span>
+                          <span className="profile-info-value">{profile.gender || "غير محدد"}</span>
                         </div>
                       </div>
 

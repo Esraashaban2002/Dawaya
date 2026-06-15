@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../Context/CartContext";
+import { UserContext } from "../Context/UserContext";
 import {
   Search, SlidersHorizontal, ChevronLeft, ChevronRight, ShoppingCart,
   Heart, X, Pill, Stethoscope, AlertCircle, Share2, Activity,
   ChevronDown, ChevronUp, MessageCircle, Check, Loader2, GripVertical,
-  MapPin, Star, Clock, Phone, MessageSquare, Award, ShieldCheck
+  MapPin, Star, Clock, Phone, MessageSquare, Award, ShieldCheck, Trash
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -323,23 +324,33 @@ const bannerSlides = [
 ];
 
 export default function Prouducts() {
-  const { cartItems, addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
+  const { cartItems, addToCart, removeFromCart, setShowLoginModal } = useContext(CartContext);
+  const { userLogin } = useContext(UserContext);
   const [activeMainCat, setActiveMainCat] = useState("كل المنتجات");
   const [activeSubCat, setActiveSubCat] = useState("الكل");
   const [categoryApiValue, setCategoryApiValue] = useState("");
 
   const handleAddToCartClick = (med) => {
     if (!med) return;
-    const existing = cartItems.find((item) => String(item.id) === String(med.id));
-    const newQty = existing ? existing.quantity + 1 : 1;
-    addToCart({
-      id: med.id,
-      name: med.name,
-      price: med.price,
-      brand: med.manufacturer || med.genericName || 'عام',
-      image: med.image
-    }, newQty);
-    triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+    if (!userLogin) {
+      setShowLoginModal(true);
+      return;
+    }
+    const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+    if (isAdded) {
+      removeFromCart(med.id);
+      triggerToast(`تم إزالة ${med.name} من السلة!`);
+    } else {
+      addToCart({
+        id: med.id,
+        name: med.name,
+        price: med.price,
+        brand: med.manufacturer || med.genericName || 'عام',
+        image: med.image
+      }, 1);
+      triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+    }
   };
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -876,7 +887,7 @@ export default function Prouducts() {
           <main className="col-span-12 lg:col-span-9">
 
             {/* 3. Marketing Banner Slider / Carousel */}
-            <div className="relative overflow-hidden rounded-3xl w-full aspect-[3.2/1] h-auto shadow-md mb-8 group border border-slate-100 bg-slate-50">
+            <div className="relative overflow-hidden rounded-3xl w-full aspect-[2.5/1] sm:aspect-[3.2/1] min-h-[140px] sm:min-h-[200px] h-auto shadow-md mb-8 group border border-slate-100 bg-slate-50">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={currentSlide}
@@ -886,7 +897,7 @@ export default function Prouducts() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -80 }}
                   transition={{ duration: 0.45, ease: "easeInOut" }}
-                  className="w-full h-full object-fill"
+                  className="w-full h-full object-cover"
                 />
               </AnimatePresence>
 
@@ -1048,17 +1059,17 @@ export default function Prouducts() {
                                 {chunk.map((med) => (
                                   <div
                                     key={med._id}
-                                    className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[405px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
-                                    onClick={() => openModal(med)}
+                                    className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[340px] sm:min-h-[380px] md:min-h-[405px] h-full hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
+                                    onClick={() => navigate(`/product/${med.id}`)}
                                   >
                                     {med.requiresPrescription && (
-                                      <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-xs font-black px-2.5 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
+                                      <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
                                         <span className="w-1 h-1 rounded-full bg-red-500"></span>
                                         يلزم وصفة
                                       </span>
                                     )}
 
-                                    <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
+                                    <div className="w-full h-28 sm:h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
                                       <img
                                         src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
                                         alt={med.name}
@@ -1068,30 +1079,48 @@ export default function Prouducts() {
 
                                     <div className="text-right flex-grow flex flex-col justify-between">
                                       <div>
-                                        <h4 className="text-base md:text-lg font-black text-slate-800 line-clamp-2 h-14 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
+                                        <h4 className="text-sm md:text-base font-black text-slate-800 line-clamp-2 h-12 md:h-14 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
                                           {med.name}
                                         </h4>
-                                        <p className="text-sm text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                                        <p className="text-xs md:text-sm text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
                                           {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
                                         </p>
                                       </div>
 
                                       <div className="flex items-baseline justify-start gap-1 mb-3">
-                                        <span className="text-xl font-black text-slate-900">{med.price}</span>
-                                        <span className="text-sm text-slate-500 font-bold">جنيه</span>
+                                        <span className="text-base md:text-lg font-black text-slate-900">{med.price}</span>
+                                        <span className="text-xs md:text-sm text-slate-500 font-bold">جنيه</span>
                                       </div>
                                     </div>
 
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAddToCartClick(med);
-                                      }}
-                                      className="w-full bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3.5 rounded-xl text-center text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#009eb6]/15 active:scale-95"
-                                    >
-                                      <ShoppingCart className="w-4.5 h-4.5" />
-                                      <span>أضف إلى العربة</span>
-                                    </button>
+                                    {(() => {
+                                      const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddToCartClick(med);
+                                          }}
+                                          className={`w-full font-bold py-2 sm:py-3.5 rounded-xl text-center text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ${
+                                            isAdded
+                                              ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                                          }`}
+                                        >
+                                          {isAdded ? (
+                                            <>
+                                              <Trash className="w-4 h-4" />
+                                              <span>إزالة من السلة</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <ShoppingCart className="w-4 h-4" />
+                                              <span>أضف إلى السلة</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      );
+                                    })()}
                                   </div>
                                 ))}
                               </div>
@@ -1137,19 +1166,19 @@ export default function Prouducts() {
                       {medicines.map((med) => (
                         <motion.div
                           key={med._id}
-                          className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between h-[405px] hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
-                          onClick={() => openModal(med)}
+                          className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[340px] sm:min-h-[380px] md:min-h-[405px] h-full hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
+                          onClick={() => navigate(`/product/${med.id}`)}
                         >
                           {/* Requires Prescription Tag */}
                           {med.requiresPrescription && (
-                            <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-xs font-black px-2 py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
+                            <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
                               <span className="w-1 h-1 rounded-full bg-red-500"></span>
                               يلزم وصفة
                             </span>
                           )}
 
                           {/* Product Image */}
-                          <div className="w-full h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
+                          <div className="w-full h-28 sm:h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
                             <img
                               src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
                               alt={med.name}
@@ -1160,31 +1189,49 @@ export default function Prouducts() {
                           {/* Info & Price */}
                           <div className="text-right flex-grow flex flex-col justify-between">
                             <div>
-                              <h4 className="text-sm md:text-base font-black text-slate-800 line-clamp-2 h-12 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
+                              <h4 className="text-sm md:text-base font-black text-slate-800 line-clamp-2 h-12 md:h-14 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
                                 {med.name}
                               </h4>
-                              <p className="text-xs text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
+                              <p className="text-xs md:text-sm text-slate-400 font-bold mb-1 truncate" title={med.genericName}>
                                 {med.genericName} {med.manufacturer ? `| ${med.manufacturer}` : ""}
                               </p>
                             </div>
 
                             <div className="flex items-baseline justify-start gap-1 mb-3">
-                              <span className="text-lg font-black text-slate-900">{med.price}</span>
-                              <span className="text-xs text-slate-500 font-bold">جنيه</span>
+                              <span className="text-base md:text-lg font-black text-slate-900">{med.price}</span>
+                              <span className="text-xs md:text-sm text-slate-500 font-bold">جنيه</span>
                             </div>
                           </div>
 
                           {/* Add to Cart Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCartClick(med);
-                            }}
-                            className="w-full bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-2.5 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#009eb6]/15 active:scale-95"
-                          >
-                            <ShoppingCart className="w-4 h-4" />
-                            <span>أضف إلى العربة</span>
-                          </button>
+                          {(() => {
+                            const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+                            return (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCartClick(med);
+                                }}
+                                className={`w-full font-bold py-2 sm:py-3.5 rounded-xl text-center text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ${
+                                  isAdded
+                                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                                }`}
+                              >
+                                {isAdded ? (
+                                  <>
+                                    <Trash className="w-4 h-4" />
+                                    <span>إزالة من السلة</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ShoppingCart className="w-4 h-4" />
+                                    <span>أضف إلى السلة</span>
+                                  </>
+                                )}
+                              </button>
+                            );
+                          })()}
                         </motion.div>
                       ))}
                     </motion.div>
@@ -1395,16 +1442,35 @@ export default function Prouducts() {
                     </div>
 
                     <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          triggerToast(`تم إضافة ${activeDetails?.name} إلى السلة بنجاح!`);
-                          setSelectedMedicine(null);
-                        }}
-                        className="flex-1 bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#009eb6]/15 active:scale-95 text-sm"
-                      >
-                        <ShoppingCart className="w-4.5 h-4.5" />
-                        <span>إضافة للسلة</span>
-                      </button>
+                      {(() => {
+                        const isAdded = activeDetails ? cartItems.some((item) => String(item.id) === String(activeDetails.id)) : false;
+                        return (
+                          <button
+                            onClick={() => {
+                              if (activeDetails) {
+                                handleAddToCartClick(activeDetails);
+                              }
+                            }}
+                            className={`flex-1 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-sm cursor-pointer ${
+                              isAdded
+                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <Trash className="w-4.5 h-4.5" />
+                                <span>إزالة من السلة</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="w-4.5 h-4.5" />
+                                <span>أضف إلى السلة</span>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })()}
                       <button
                         onClick={() => triggerToast("تم الإضافة إلى المفضلة")}
                         className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100"
@@ -1507,39 +1573,59 @@ export default function Prouducts() {
                     <span>{selectedPharmacy.address}</span>
                   </div>
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => {
-                        if (activeDetails) {
-                          handleAddToCartClick(activeDetails);
-                          setSelectedMedicine(null);
-                        }
-                      }}
-                      className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#10b981]/10 active:scale-95 text-xs"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>إضافة للسلة</span>
-                    </button>
+                  <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                    <Phone className="w-4.5 h-4.5 text-[#009eb6] shrink-0" />
+                    <span>الخط الساخن: {selectedPharmacy.phone}</span>
+                  </div>
+
+                  {/* Services pills list */}
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedPharmacy.hasDelivery && (
+                      <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
+                    )}
+                    {selectedPharmacy.hasParking && (
+                      <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🅿️ موقف سيارات خاص</span>
+                    )}
+                  </div>
+
+                  {/* Cart & Favorites Actions */}
+                  <div className="flex gap-3 mt-3">
+                    {(() => {
+                      const isAdded = activeDetails ? cartItems.some((item) => String(item.id) === String(activeDetails.id)) : false;
+                      return (
+                        <button
+                          onClick={() => {
+                            if (activeDetails) {
+                              handleAddToCartClick(activeDetails);
+                              setSelectedMedicine(null);
+                            }
+                          }}
+                          className={`flex-1 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-xs cursor-pointer ${
+                            isAdded
+                              ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/15'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/15'
+                          }`}
+                        >
+                          {isAdded ? (
+                            <>
+                              <Trash className="w-4.5 h-4.5" />
+                              <span>إزالة من السلة</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-4.5 h-4.5" />
+                              <span>أضف إلى السلة</span>
+                            </>
+                          )}
+                        </button>
+                      );
+                    })()}
                     <button
                       onClick={() => triggerToast("تم الإضافة إلى المفضلة")}
-                      className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100"
+                      className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100 cursor-pointer"
                     >
                       <Heart className="w-4.5 h-4.5" />
                     </button>
-                    <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                      <Phone className="w-4.5 h-4.5 text-[#009eb6]" />
-                      <span>الخط الساخن: {selectedPharmacy.phone}</span>
-                    </div>
-
-                    {/* Services pills list */}
-                    <div className="flex flex-wrap gap-2.5 mt-2">
-                      {selectedPharmacy.hasDelivery && (
-                        <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
-                      )}
-                      {selectedPharmacy.hasParking && (
-                        <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🅿️ موقف سيارات خاص</span>
-                      )}
-                    </div>
                   </div>
 
                   {/* Action button */}

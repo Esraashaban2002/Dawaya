@@ -32,7 +32,7 @@ export default function Register() {
             phone: formValues.phone,
             email: formValues.email,
             password: formValues.password,
-            gender: formValues.gender || 'male',
+            gender: formValues.gender || '',
             age: Number(formValues.age) || 25
           };
           if (index > -1) {

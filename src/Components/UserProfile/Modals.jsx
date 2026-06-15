@@ -154,8 +154,8 @@ export function EditProfileModal({ profile, onSave, onClose }) {
                 className="form-input"
                 value={formData.gender}
                 onChange={handleChange}
-                required
               >
+                <option value="">غير محدد</option>
                 <option value="ذكر">ذكر</option>
                 <option value="أنثى">أنثى</option>
               </select>

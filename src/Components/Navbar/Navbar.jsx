@@ -45,7 +45,7 @@ export default function Navbar() {
               <img
                 src="/imges/logo.png"
                 alt="Dawaa Logo"
-                style={{ width: "100px", height: "90px" }}
+                style={{ width: "80px", height: "55px", objectFit: "contain" }}
               />
             </Link>
 
