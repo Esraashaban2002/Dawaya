@@ -65,8 +65,8 @@ export default function Navbar() {
               </Link>
 
               <Link
-                to="/#pharmacies-section"
-                className={`nb-link${(pathname === "/" && hash === "#pharmacies-section") ? " active" : ""}`}
+                to="/pharmacies"
+                className={`nb-link${(pathname === "/" && hash === "pharmacies") ? " active" : ""}`}
               >
                 الصيدليات
               </Link>
