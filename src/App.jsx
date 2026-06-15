@@ -32,6 +32,7 @@ import Reminders from './Pages/Reminders';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
+import AuthCallback from "./Pages/AuthCallback";
 import Pharmacies from './Pages/Adman/Pharmacies';
 import Orders from './Pages/Adman/Orders';
 
@@ -104,6 +105,10 @@ function App() {
         {
           path: "/login",
           element: <Login />,
+        },
+        {
+          path:"/auth/callback" ,
+          element:<AuthCallback />
         },
         {
           path: "/pharmacistRegister",
