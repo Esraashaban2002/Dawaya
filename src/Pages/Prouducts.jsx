@@ -14,7 +14,7 @@ import { PharmacyCard, MapModal } from "./pharmacies";
 
 // Local static data for medicines (100 products)
 const localPharmacies = [
-  
+
 ];
 
 const initialCategories = [
@@ -476,21 +476,21 @@ export default function Prouducts() {
       const normalized = norm(medCategory);
 
       const medicinesSub = [
-        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي", 
+        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي",
         "ضغط الدم", "السكري", "فيتامينات", "القلب والأوعية", "الربو"
       ].map(norm);
-      
+
       const haircareSub = [
         "شامبو وبلسم", "ترطيب وعلاج الشعر", "أجهزة تصفيف الشعر", "صبغات الشعر"
       ].map(norm);
 
       const skincareSub = [
-        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات", 
+        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات",
         "الوقاية من الشمس", "أجهزة البشرة", "العناية بالعيون"
       ].map(norm);
 
       const dailycareSub = [
-        "العناية بالجسم والاستحمام", "العناية بالفم والأسنان", "العناية النسائية", 
+        "العناية بالجسم والاستحمام", "العناية بالفم والأسنان", "العناية النسائية",
         "العناية الرجالية", "الحماية"
       ].map(norm);
 
@@ -503,7 +503,7 @@ export default function Prouducts() {
       if (skincareSub.includes(normalized)) return "العناية بالبشرة";
       if (dailycareSub.includes(normalized)) return "العناية اليومية";
       if (vitaminsSub.includes(normalized)) return "الفيتامينات والمكملات";
-      
+
       return "أخرى";
     };
 
@@ -528,10 +528,10 @@ export default function Prouducts() {
           if (categoryApiValue) {
             const normMedCat = norm(med.category);
             const normApiVal = norm(categoryApiValue);
-            
+
             const isMaskMatch = (normMedCat.includes("ماسك") && normApiVal.includes("ماسك"));
             const isVitaminMatch = (normMedCat.includes("فيتامين") && normApiVal.includes("فيتامين"));
-            
+
             if (normMedCat !== normApiVal && !isMaskMatch && !isVitaminMatch) {
               return false;
             }
@@ -669,7 +669,7 @@ export default function Prouducts() {
 
       {/* Orange Warning Banner */}
       {!isLocationConfirmed && (
-        <div 
+        <div
           onClick={() => setIsMapModalOpen(true)}
           className="bg-[#d97706] hover:bg-[#b45309] text-white text-base md:text-lg font-black py-4 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors sticky top-0 z-40 select-none text-center shadow-md leading-relaxed"
         >
@@ -786,31 +786,28 @@ export default function Prouducts() {
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDrop={(e) => handleDrop(e, index)}
-                    className={`transition-all duration-200 group/item relative rounded-xl ${
-                      isDragged
-                        ? "bg-[#f06a4f]/5 opacity-60 scale-[0.98]"
-                        : isSelected
+                    className={`transition-all duration-200 group/item relative rounded-xl ${isDragged
+                      ? "bg-[#f06a4f]/5 opacity-60 scale-[0.98]"
+                      : isSelected
                         ? "bg-[#009eb6]/5 text-[#009eb6]"
                         : "hover:bg-slate-50 text-slate-700 hover:text-slate-950"
-                    }`}
+                      }`}
                   >
                     {/* Main Category Header */}
                     <div className="flex items-center justify-between py-2 px-3">
                       {/* Active Indicator Line & Selectable Title */}
                       <div className="flex items-center gap-2.5 flex-grow min-w-0">
                         {/* Active indicator badge */}
-                        <span className={`w-1 h-5 rounded-full transition-all duration-300 ${
-                          isSelected 
-                            ? "bg-[#009eb6] scale-110" 
-                            : "bg-transparent group-hover/item:bg-slate-300"
-                        }`} />
+                        <span className={`w-1 h-5 rounded-full transition-all duration-300 ${isSelected
+                          ? "bg-[#009eb6] scale-110"
+                          : "bg-transparent group-hover/item:bg-slate-300"
+                          }`} />
 
                         {/* Category Name Button */}
                         <button
                           onClick={() => handleMainCatChange(cat.name)}
-                          className={`text-base font-black text-right transition-colors truncate flex-grow py-1.5 ${
-                            isSelected ? "text-[#009eb6]" : "text-slate-700"
-                          }`}
+                          className={`text-base font-black text-right transition-colors truncate flex-grow py-1.5 ${isSelected ? "text-[#009eb6]" : "text-slate-700"
+                            }`}
                         >
                           <span className="truncate">{cat.name}</span>
                         </button>
@@ -819,7 +816,7 @@ export default function Prouducts() {
                       {/* Controls: Drag Handle & Expand Chevron */}
                       <div className="flex items-center gap-1.5 shrink-0">
                         {/* Drag Handle (subtle, visible on hover) */}
-                        <div 
+                        <div
                           className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-[#f06a4f] transition-opacity opacity-0 group-hover/item:opacity-100 p-1 rounded hover:bg-slate-100 flex items-center justify-center"
                           title="اسحب لإعادة الترتيب"
                         >
@@ -854,17 +851,15 @@ export default function Prouducts() {
                             <button
                               key={sub.name}
                               onClick={() => handleSubCatChange(sub, cat.name)}
-                              className={`w-full text-right text-sm font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-start gap-2.5 group/sub relative ${
-                                isSubActive
-                                  ? "text-[#009eb6] bg-[#009eb6]/5 font-extrabold"
-                                  : "text-slate-500 hover:text-[#009eb6] hover:bg-slate-100/50"
-                              }`}
+                              className={`w-full text-right text-sm font-bold py-1.5 px-2.5 rounded-lg transition-all flex items-center justify-start gap-2.5 group/sub relative ${isSubActive
+                                ? "text-[#009eb6] bg-[#009eb6]/5 font-extrabold"
+                                : "text-slate-500 hover:text-[#009eb6] hover:bg-slate-100/50"
+                                }`}
                             >
-                              <span className={`w-1 h-1 rounded-full transition-all duration-300 ${
-                                isSubActive 
-                                  ? "bg-[#009eb6] scale-125" 
-                                  : "bg-slate-300 group-hover/sub:bg-[#009eb6]/50"
-                              }`} />
+                              <span className={`w-1 h-1 rounded-full transition-all duration-300 ${isSubActive
+                                ? "bg-[#009eb6] scale-125"
+                                : "bg-slate-300 group-hover/sub:bg-[#009eb6]/50"
+                                }`} />
                               <span>{sub.name}</span>
                             </button>
                           );
@@ -1120,11 +1115,10 @@ export default function Prouducts() {
                                   setCurrentAllPage(idx);
                                 }
                               }}
-                              className={`h-2.5 rounded-full transition-all duration-300 ${
-                                currentAllPage === idx
-                                  ? "bg-[#009eb6] w-6 shadow-sm"
-                                  : "bg-slate-200 hover:bg-slate-300 w-2"
-                              }`}
+                              className={`h-2.5 rounded-full transition-all duration-300 ${currentAllPage === idx
+                                ? "bg-[#009eb6] w-6 shadow-sm"
+                                : "bg-slate-200 hover:bg-slate-300 w-2"
+                                }`}
                             />
                           ));
                         })()}
@@ -1212,8 +1206,8 @@ export default function Prouducts() {
                               key={pNum}
                               onClick={() => setPage(pNum)}
                               className={`w-10 h-10 flex items-center justify-center rounded-lg text-base font-black transition-all ${page === pNum
-                                  ? "bg-[#009eb6] text-white shadow-md shadow-[#009eb6]/20"
-                                  : "border border-slate-100 text-slate-600 hover:border-[#009eb6] hover:text-[#009eb6]"
+                                ? "bg-[#009eb6] text-white shadow-md shadow-[#009eb6]/20"
+                                : "border border-slate-100 text-slate-600 hover:border-[#009eb6] hover:text-[#009eb6]"
                                 }`}
                             >
                               {pNum}
@@ -1395,7 +1389,7 @@ export default function Prouducts() {
                     <div className="bg-slate-50 rounded-2xl p-4 mb-5 border border-slate-100 flex justify-between items-center">
                       <span className="text-slate-400 text-sm font-bold">السعر النهائي:</span>
                       <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">{activeDetails?.price}</span>
+                        <span className="text-3xl font-black text-slate-900">{activeDetails?.price}</span>
                         <span className="text-sm text-slate-500 font-bold">جنيه مصري</span>
                       </div>
                     </div>
@@ -1532,44 +1526,45 @@ export default function Prouducts() {
                     >
                       <Heart className="w-4.5 h-4.5" />
                     </button>
-                  <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
-                    <Phone className="w-4.5 h-4.5 text-[#009eb6]" />
-                    <span>الخط الساخن: {selectedPharmacy.phone}</span>
+                    <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
+                      <Phone className="w-4.5 h-4.5 text-[#009eb6]" />
+                      <span>الخط الساخن: {selectedPharmacy.phone}</span>
+                    </div>
+
+                    {/* Services pills list */}
+                    <div className="flex flex-wrap gap-2.5 mt-2">
+                      {selectedPharmacy.hasDelivery && (
+                        <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
+                      )}
+                      {selectedPharmacy.hasParking && (
+                        <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🅿️ موقف سيارات خاص</span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Services pills list */}
-                  <div className="flex flex-wrap gap-2.5 mt-2">
-                    {selectedPharmacy.hasDelivery && (
-                      <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
-                    )}
-                    {selectedPharmacy.hasParking && (
-                      <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🅿️ موقف سيارات خاص</span>
-                    )}
+                  {/* Action button */}
+                  <div className="flex gap-3 mt-8">
+                    <a
+                      href={`https://wa.me/${selectedPharmacy.whatsapp || (selectedPharmacy.phone && selectedPharmacy.phone.startsWith("0") ? "20" + selectedPharmacy.phone.slice(1) : selectedPharmacy.phone) || ""}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-500/10 active:scale-[0.98] text-sm"
+                    >
+                      <MessageSquare className="w-4.5 h-4.5" />
+                      <span>طلب بالواتساب</span>
+                    </a>
+
+                    <button
+                      onClick={() => {
+                        triggerToast("تم نسخ الهاتف الساخن!");
+                        navigator.clipboard.writeText(selectedPharmacy.phone);
+                      }}
+                      className="flex-1 bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#009eb6]/10 active:scale-[0.98] text-sm"
+                    >
+                      <Phone className="w-4.5 h-4.5" />
+                      <span>اتصال بالدعم</span>
+                    </button>
                   </div>
-                </div>
-
-                {/* Action button */}
-                <div className="flex gap-3 mt-8">
-                  <a
-                    href={`https://wa.me/${selectedPharmacy.whatsapp || (selectedPharmacy.phone && selectedPharmacy.phone.startsWith("0") ? "20" + selectedPharmacy.phone.slice(1) : selectedPharmacy.phone) || ""}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-500/10 active:scale-[0.98] text-sm"
-                  >
-                    <MessageSquare className="w-4.5 h-4.5" />
-                    <span>طلب بالواتساب</span>
-                  </a>
-
-                  <button
-                    onClick={() => {
-                      triggerToast("تم نسخ الهاتف الساخن!");
-                      navigator.clipboard.writeText(selectedPharmacy.phone);
-                    }}
-                    className="flex-1 bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#009eb6]/10 active:scale-[0.98] text-sm"
-                  >
-                    <Phone className="w-4.5 h-4.5" />
-                    <span>اتصال بالدعم</span>
-                  </button>
                 </div>
               </div>
               </div>
