@@ -1,7 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  Clock, Store, ShieldCheck, Plus, Minus, 
+import hexPainImg from '../../assets/موفليكس-كريم-مساج-300x300.webp';
+import {
+  Clock, Store, ShieldCheck, Plus, Minus,
   Share2, Heart, ShoppingCart, Check, ChevronLeft, Trash2
 } from 'lucide-react';
 import { CartContext } from '../../Context/CartContext';
@@ -70,9 +71,7 @@ const PRODUCTS_DB = {
     deliveryTime: "خلال 30-60 دقيقة",
     sellerName: "أقرب صيدلية",
     images: [
-      "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=500&q=80",
-      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&q=80",
-      "https://images.unsplash.com/photo-1550572017-edd951b55104?w=500&q=80"
+      hexPainImg
     ],
     features: [
       "مفعول سريع لتخفيف آلام المفاصل والعضلات والظهر",
@@ -165,8 +164,8 @@ export default function ProductDetails() {
               price: apiProd.price,
               deliveryTime: "خلال 30-60 دقيقة",
               sellerName: "أقرب صيدلية",
-              images: apiProd.images && apiProd.images.length > 0 
-                ? apiProd.images 
+              images: apiProd.images && apiProd.images.length > 0
+                ? apiProd.images
                 : ["https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=500&q=80"],
               features: [apiProd.description || 'لا يوجد وصف متاح للمنتج حالياً.'],
               qa: [
@@ -178,7 +177,7 @@ export default function ProductDetails() {
               specifications: [
                 { key: "العلامة التجارية", value: apiProd.manufacturer || "عام" },
                 { key: "الاسم العلمي", value: apiProd.genericName || "غير محدد" },
-                { key: "الفئة", value: apiProd.category || "غير محدد" },
+                { key: "الفئة", value: apiProd.subCategory || "غير محدد" },
                 { key: "يتطلب وصفة طبية", value: apiProd.requiresPrescription ? "نعم" : "لا" }
               ]
             });
@@ -277,7 +276,7 @@ export default function ProductDetails() {
   return (
     <div className="product-details-page">
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '24px 16px' }}>
-        
+
         {/* Breadcrumbs */}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
@@ -291,14 +290,14 @@ export default function ProductDetails() {
 
         {/* Main Product Card */}
         <div className="product-main-card animate-fade-in">
-          
+
           {/* Right/Center: Media Gallery */}
           <div className="product-gallery">
             {/* Thumbnails list (Vertical, on the right in RTL) */}
             <div className="product-thumbnails">
               {PRODUCT_DATA.images.map((img, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className={`thumbnail-wrapper ${activeImage === img ? 'active' : ''}`}
                   onClick={() => setActiveImage(img)}
                 >
@@ -315,34 +314,34 @@ export default function ProductDetails() {
 
           {/* Left: Product Options & Purchase details */}
           <div className="product-options">
-            
+
             {/* Brand Link and Share Row */}
             <div className="product-header-actions">
               <Link to="/#products-section" className="product-brand-link">
                 مشاهدة كل منتجات {PRODUCT_DATA.brand}
               </Link>
               <div className="actions-buttons">
-                <button 
-                  onClick={handleShare} 
-                  className="action-icon-btn" 
+                <button
+                  onClick={handleShare}
+                  className="action-icon-btn"
                   title="مشاركة المنتج"
                 >
                   <Share2 size={18} />
                 </button>
-                <button 
+                <button
                   onClick={() => toggleFavorite({
                     id: String(PRODUCT_DATA.id),
                     name: PRODUCT_DATA.name,
                     price: PRODUCT_DATA.price,
                     brand: PRODUCT_DATA.brand,
                     image: PRODUCT_DATA.images[0]
-                  })} 
+                  })}
                   className={`action-icon-btn ${isFavorite(PRODUCT_DATA.id) ? 'wishlisted' : ''}`}
                   title="إضافة للمفضلة"
                 >
-                  <Heart 
-                    size={18} 
-                    fill={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "none"} 
+                  <Heart
+                    size={18}
+                    fill={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "none"}
                     color={isFavorite(PRODUCT_DATA.id) ? "var(--color-danger)" : "currentColor"}
                   />
                 </button>
@@ -363,7 +362,7 @@ export default function ProductDetails() {
             <div className="product-purchase-row">
               {/* Quantity Stepper */}
               <div className="qty-stepper">
-                <button 
+                <button
                   className="qty-btn"
                   onClick={() => handleQtyChange(quantity - 1)}
                   disabled={quantity <= 1}
@@ -371,7 +370,7 @@ export default function ProductDetails() {
                   <Minus size={14} />
                 </button>
                 <span className="qty-number">{quantity}</span>
-                <button 
+                <button
                   className="qty-btn"
                   onClick={() => handleQtyChange(quantity + 1)}
                 >
@@ -380,7 +379,7 @@ export default function ProductDetails() {
               </div>
 
               {/* Add To Cart Button */}
-              <button 
+              <button
                 onClick={handleAddToCart}
                 className={`add-to-cart-btn ${cartItems.some((item) => String(item.id) === String(PRODUCT_DATA.id)) ? 'added' : ''}`}
               >
@@ -403,16 +402,16 @@ export default function ProductDetails() {
 
         {/* Description & Specifications Tabs Container */}
         <div className="product-details-tabs-card">
-          
+
           {/* Tabs Navigation Header */}
           <div className="tabs-header-nav">
-            <button 
+            <button
               className={`tab-nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
               onClick={() => setActiveTab('overview')}
             >
               نظرة عامة
             </button>
-            <button 
+            <button
               className={`tab-nav-btn ${activeTab === 'specs' ? 'active' : ''}`}
               onClick={() => setActiveTab('specs')}
             >
@@ -422,11 +421,11 @@ export default function ProductDetails() {
 
           {/* Tab Content Body */}
           <div className="tabs-content-body">
-            
+
             {/* 1. Overview Tab */}
             {activeTab === 'overview' && (
               <div className="tab-pane animate-fade-in">
-                
+
                 {/* Product Features */}
                 <section className="details-section">
                   <h2 className="section-heading">مميزات المنتج</h2>

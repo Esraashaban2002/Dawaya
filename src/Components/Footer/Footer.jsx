@@ -86,7 +86,15 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-white/90">الدعم</h3>
             <ul className="space-y-2">
-              {["التواصل بالدعم", "متجر التطبيقات", "جوجل بلاى"].map((link) => (
+              <li>
+                <NavLink
+                  to="/contact"
+                  className="text-white/45 text-sm hover:text-white/80 transition-colors duration-200"
+                >
+                  التواصل بالدعم
+                </NavLink>
+              </li>
+              {["متجر التطبيقات", "جوجل بلاى"].map((link) => (
                 <li key={link}>
                   <NavLink
                     to="#"

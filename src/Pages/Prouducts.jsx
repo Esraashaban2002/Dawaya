@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { CartContext } from "../Context/CartContext";
+import { UserContext } from "../Context/UserContext";
 import {
   Search, SlidersHorizontal, ChevronLeft, ChevronRight, ShoppingCart,
   Heart, X, Pill, Stethoscope, AlertCircle, Share2, Activity,
   ChevronDown, ChevronUp, MessageCircle, Check, Loader2, GripVertical,
-  MapPin, Star, Clock, Phone, MessageSquare, Award, ShieldCheck
+  MapPin, Star, Clock, Phone, MessageSquare, Award, ShieldCheck, Trash
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -187,9 +189,34 @@ const bannerSlides = [
 ];
 
 export default function Prouducts() {
+  const navigate = useNavigate();
+  const { cartItems, addToCart, removeFromCart, setShowLoginModal } = useContext(CartContext);
+  const { userLogin } = useContext(UserContext);
   const [activeMainCat, setActiveMainCat] = useState("كل المنتجات");
   const [activeSubCat, setActiveSubCat] = useState("الكل");
   const [categoryApiValue, setCategoryApiValue] = useState("");
+
+  const handleAddToCartClick = (med) => {
+    if (!med) return;
+    if (!userLogin) {
+      setShowLoginModal(true);
+      return;
+    }
+    const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+    if (isAdded) {
+      removeFromCart(med.id);
+      triggerToast(`تم إزالة ${med.name} من السلة!`);
+    } else {
+      addToCart({
+        id: med.id,
+        name: med.name,
+        price: med.price,
+        brand: med.manufacturer || med.genericName || 'عام',
+        image: med.image
+      }, 1);
+      triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+    }
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParam = searchParams.get("search") || "";
@@ -319,7 +346,7 @@ export default function Prouducts() {
       const normalized = norm(medCategory);
 
       const medicinesSub = [
-        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي", 
+        "مسكنات", "مضادات حيوية", "أدوية البرد", "الحساسية", "الجهاز الهضمي",
         "ضغط الدم", "السكري", "فيتامينات", "القلب والأوعية", "الربو"
       ].map(norm);
 
@@ -328,7 +355,7 @@ export default function Prouducts() {
       ].map(norm);
 
       const skincareSub = [
-        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات", 
+        "الغسول", "الترطيب", "السيروم", "الماسك", "الماسكات",
         "الوقاية من الشمس", "أجهزة البشرة", "العناية بالعيون"
       ].map(norm);
 
@@ -614,7 +641,7 @@ export default function Prouducts() {
     <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#1ab5ea]/20 selection:text-[#1ab5ea]">
 
       {!isLocationConfirmed && (
-        <div 
+        <div
           onClick={() => setIsMapModalOpen(true)}
           className="bg-[#d97706] hover:bg-[#b45309] text-white text-base md:text-lg font-black py-4 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors sticky top-0 z-40 select-none text-center shadow-md leading-relaxed"
         >
@@ -741,7 +768,7 @@ export default function Prouducts() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -80 }}
                   transition={{ duration: 0.45, ease: "easeInOut" }}
-                  className="w-full h-full object-fill"
+                  className="w-full h-full object-cover"
                 />
               </AnimatePresence>
 
@@ -1205,7 +1232,7 @@ export default function Prouducts() {
                     <div className="bg-slate-50 rounded-2xl p-4 mb-5 border border-slate-100 flex justify-between items-center">
                       <span className="text-slate-400 text-sm font-bold">السعر النهائي:</span>
                       <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-black text-slate-900">{activeDetails?.price}</span>
+                        <span className="text-3xl font-black text-slate-900">{activeDetails?.price}</span>
                         <span className="text-sm text-slate-500 font-bold">جنيه مصري</span>
                       </div>
                     </div>
@@ -1330,7 +1357,6 @@ export default function Prouducts() {
                       <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl"> موقف سيارات خاص</span>
                     )}
                   </div>
-                </div>
 
                 <div className="flex gap-3 mt-8">
                   <a

@@ -60,7 +60,7 @@ export default function AuthCallback() {
         email,
         password: '',
         phone:    decoded?.phone || '',
-        gender:   decoded?.gender || 'male',
+        gender:   decoded?.gender || '',
         age:      decoded?.age || 25,
         role,
         token,
