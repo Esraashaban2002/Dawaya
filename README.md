@@ -57,12 +57,11 @@ src/
 ├── assets/
 ├── components/
 ├── pages/
-├── layouts/
+├── data/
 ├── services/
-├── hooks/
+├── model/
 ├── context/
-├── routes/
-├── utils/
+├── main.jsx
 └── App.jsx
 ```
 
@@ -145,7 +144,6 @@ Completed:
 ## Future Enhancements
 
 * Arabic Full Release
-* English Version
 * Real WhatsApp Integration
 * OCR Prescription Processing
 * Advanced Analytics
