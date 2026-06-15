@@ -43,11 +43,11 @@ export default function AdminLayout() {
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)', fontFamily: 'Cairo, sans-serif' }}>
 
-      {/* Aside */}
+      {}
       <aside className={`${collapsed ? 'w-16' : 'w-60'} flex flex-col transition-all duration-300 flex-shrink-0`}
         style={{ background: 'var(--bg-card)', borderLeft: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}>
 
-        {/* Logo */}
+        {}
         <div className="flex items-center justify-between px-4 py-5" style={{ borderBottom: '1px solid var(--color-border)' }}>
           {!collapsed && (
             <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}>
@@ -57,9 +57,6 @@ export default function AdminLayout() {
                 style={{ width: "80px", height: "50px" }}
               />
             </Link>
-            // <span className="font-extrabold text-xl" style={{ color: 'var(--color-brand)' }}>
-            //   داوايا
-            // </span>
           )}
           <button onClick={() => setCollapsed(!collapsed)}
             className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
@@ -68,7 +65,7 @@ export default function AdminLayout() {
           </button>
         </div>
 
-        {/* Nav */}
+        {}
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {navItems.map(item => (
             <NavLink
@@ -88,7 +85,7 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        {/* Logout */}
+        {}
         <div className="px-2 py-4" style={{ borderTop: '1px solid var(--color-border)' }}>
           <button onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all"
@@ -102,9 +99,9 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main */}
+      {}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
+        {}
         <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
           style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>
 
@@ -117,7 +114,7 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        {/* Page Content */}
+        {}
         <div className="flex-1 overflow-auto p-6">
           <Outlet />
         </div>

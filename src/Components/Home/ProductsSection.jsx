@@ -1,4 +1,3 @@
-// src/components/ProductsSection.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -196,7 +195,7 @@ const ProductsSection = () => {
           </button>
         </div>
 
-        {/* زر عرض جميع المنتجات */}
+        {}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

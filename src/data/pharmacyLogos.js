@@ -1,4 +1,3 @@
-// src/data/pharmacyLogos.js
 export const pharmacyLogos = [
   {
     name: 'صيدلية 1',

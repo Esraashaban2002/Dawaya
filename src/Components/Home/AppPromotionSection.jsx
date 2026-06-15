@@ -1,4 +1,3 @@
-// src/components/AppPromotionSection.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaStore, FaChartLine, FaTruck, FaArrowLeft } from 'react-icons/fa';
@@ -8,7 +7,7 @@ const AppPromotionSection = () => {
     <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto max-w-7xl">
         
-        {/* عنوان القسم - كبير وجذاب */}
+        {}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -28,14 +27,14 @@ const AppPromotionSection = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
-          {/* الجهة اليمين - الموبايل التفاعلي */}
+          {}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            {/* الموبايل المائل */}
+            {}
             <div className="relative flex justify-center">
               <div className="relative transform rotate-6 hover:rotate-3 transition-all duration-500">
                 <div className="absolute -inset-4 bg-gradient-to-r from-blue-400/30 to-purple-400/30 rounded-[3rem] blur-xl"></div>
@@ -50,10 +49,10 @@ const AppPromotionSection = () => {
                       className="w-full h-full object-cover"
                     />
                     
-                    {/* Overlay بالبيانات */}
+                    {}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     
-                    {/* بيانات مباشرة على الشاشة */}
+                    {}
                     <div className="absolute bottom-24 left-2 right-2 bg-white rounded-xl p-3 shadow-xl mx-2">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-xs font-bold text-gray-800">طلبات اليوم</span>
@@ -67,14 +66,14 @@ const AppPromotionSection = () => {
             </div>
           </motion.div>
 
-          {/* الجهة اليسار - المحتوى النصي والصورة الثانية */}
+          {}
         
         
           <motion.div
   initial={{ opacity: 0, x: 50 }}
   whileInView={{ opacity: 1, x: 0 }}
   transition={{ duration: 0.6 }}
-  className="flex-1 text-right flex flex-col justify-center"  // دي أهم حاجة
+  className="flex-1 text-right flex flex-col justify-center"  
 >
   <div className="text-center">  
     <h2 className="text-4xl font-bold text-gray-900  mb-6" >
@@ -85,7 +84,7 @@ const AppPromotionSection = () => {
       تواصل مع آلاف العملاء المحليين من خلال لوحة إدارة صيدليات متطورة.
     </p>
 
-    {/* مميزات على شكل نقاط */}
+    {}
     <div className="space-y-4 mb-8">
       <div className="flex items-center gap-3 justify-end bg-white/50 rounded-xl p-3 max-w-md mx-auto">
         <span className="text-gray-700">لوحة تحكم متطورة</span>
@@ -107,7 +106,7 @@ const AppPromotionSection = () => {
       </div>
     </div>
 
-    {/* الأزرار */}
+    {}
     <div className="flex flex-wrap gap-4 justify-center">
       <button className="px-8 py-4 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
         عرض المميزات

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User, Shield, Lock, MapPin, X } from 'lucide-react';
 
-/* 1. Edit Profile Modal */
 export function EditProfileModal({ profile, onSave, onClose }) {
   const [formData, setFormData] = useState({ ...profile });
   const [validationError, setValidationError] = useState('');
@@ -15,10 +14,8 @@ export function EditProfileModal({ profile, onSave, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Auto-sync fullName to username since Full Name display is removed
     formData.fullName = formData.username;
 
-    // Validate Username
     if (formData.username.trim().length < 2) {
       setValidationError('اسم المستخدم يجب ألا يقل عن حرفين');
       return;
@@ -28,21 +25,18 @@ export function EditProfileModal({ profile, onSave, onClose }) {
       return;
     }
 
-    // Validate Email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setValidationError('البريد الإلكتروني غير صحيح');
       return;
     }
 
-    // Validate Phone Number (Egyptian format)
     const phoneRegex = /^01[0125][0-9]{8}$/;
     if (!phoneRegex.test(formData.phone)) {
       setValidationError('رقم الهاتف غير صحيح. يجب أن يكون رقم هاتف مصري صحيح (مثال: 01012345678)');
       return;
     }
 
-    // Validate Age
     const ageNum = Number(formData.age);
     if (isNaN(ageNum) || !Number.isInteger(ageNum) || ageNum <= 0 || ageNum > 120) {
       setValidationError('يرجى إدخال عمر صحيح (عدد صحيح) بين 1 و 120 سنة');
@@ -176,7 +170,6 @@ export function EditProfileModal({ profile, onSave, onClose }) {
   );
 }
 
-/* 2. Change Password Modal */
 export function ChangePasswordModal({ storedPassword, onSave, onClose }) {
   const [passwords, setPasswords] = useState({
     current: '',
@@ -286,7 +279,6 @@ export function ChangePasswordModal({ storedPassword, onSave, onClose }) {
   );
 }
 
-/* 3. Location Modal (Add / Edit Location) */
 export function LocationModal({ location, onSave, onClose }) {
   const [formData, setFormData] = useState(
     location || { title: '', type: 'home', address: '' }

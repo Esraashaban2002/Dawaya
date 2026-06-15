@@ -21,9 +21,7 @@ const EMPTY_FORM = {
     services: '',
 };
 
-// ── helper: normalize any API shape to { list, total }
 const parsePharmaciesResponse = (res) => {
-    // res might be: { data: [...] } | { data: { data:[...], total:N } } | [...]
     if (Array.isArray(res)) return { list: res, total: res.length };
     if (Array.isArray(res?.data)) return { list: res.data, total: res.total ?? res.data.length };
     if (Array.isArray(res?.data?.data)) return { list: res.data.data, total: res.data.total ?? res.data.data.length };
@@ -38,19 +36,17 @@ export default function Pharmacies() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
 
-    // Modal
     const [modalOpen, setModalOpen] = useState(false);
     const [editTarget, setEditTarget] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState('');
 
-    /* ───────── fetch ───────── */
     const fetchPharmacies = async () => {
         setLoading(true);
         try {
             const res = await getPharmacies({ page, limit: 10 });
-            console.log('[Pharmacies] GET response:', res);       // ← هتشوف الـ shape هنا
+            console.log('[Pharmacies] GET response:', res);       
             const { list, total: t } = parsePharmaciesResponse(res);
             setPharmacies(list);
             setTotal(t);
@@ -63,7 +59,6 @@ export default function Pharmacies() {
 
     useEffect(() => { fetchPharmacies(); }, [page]);
 
-    /* ───────── modal helpers ───────── */
     const openCreate = () => {
         setEditTarget(null);
         setForm(EMPTY_FORM);
@@ -95,7 +90,6 @@ export default function Pharmacies() {
 
     const closeModal = () => { setModalOpen(false); setEditTarget(null); };
 
-    /* ───────── submit ───────── */
     const handleSubmit = async () => {
         if (!form.name.trim() || !form.address.trim() || !form.phone.trim()) {
             setFormError('الاسم والعنوان والهاتف مطلوبين');
@@ -162,7 +156,6 @@ export default function Pharmacies() {
                 console.log('[Pharmacies] POST response:', res);
             }
 
-            // لو السيرفر رجع error message جوّا الـ response
             if (res?.error || res?.message?.toLowerCase().includes('error')) {
                 setFormError(res.message || 'حصل خطأ من السيرفر');
                 return;
@@ -178,7 +171,6 @@ export default function Pharmacies() {
         }
     };
 
-    /* ───────── delete ───────── */
     const handleDelete = async (id) => {
         if (!confirm('متأكد إنك عايز تحذف الصيدلية دي؟')) return;
         try {
@@ -191,22 +183,19 @@ export default function Pharmacies() {
         }
     };
 
-    /* ───────── toggle ───────── */
     const handleToggle = async (id) => {
         try {
             const res = await togglePharmacy(id);
             console.log('[Pharmacies] TOGGLE response:', res);
-            // Optimistic update بدل ما ننتظر refetch
             setPharmacies(prev =>
                 prev.map(p => p._id === id ? { ...p, isOpen: !p.isOpen } : p)
             );
         } catch (err) {
             console.error('[Pharmacies] toggle error:', err);
-            fetchPharmacies(); // fallback
+            fetchPharmacies(); 
         }
     };
 
-    /* ───────── filter client-side ───────── */
     const filtered = pharmacies.filter(p => {
         if (!search.trim()) return true;
         return (
@@ -218,10 +207,9 @@ export default function Pharmacies() {
 
     const totalPages = Math.ceil(total / 10) || 1;
 
-    /* ══════════════════════════════════════════ */
     return (
         <div>
-            {/* Header */}
+            {}
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-extrabold" style={{ color: 'var(--color-text-main)' }}>
@@ -242,7 +230,7 @@ export default function Pharmacies() {
                 </button>
             </div>
 
-            {/* Search */}
+            {}
             <div className="mb-6">
                 <input
                     type="text"
@@ -254,7 +242,7 @@ export default function Pharmacies() {
                 />
             </div>
 
-            {/* Table */}
+            {}
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
 
                 <table className="w-full text-sm">
@@ -320,7 +308,7 @@ export default function Pharmacies() {
                                                 : 'var(--bg-primary)',
                                     }}
                                 >
-                                    {/* اسم الصيدلية */}
+                                    {}
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div
@@ -342,7 +330,7 @@ export default function Pharmacies() {
                                         </div>
                                     </td>
 
-                                    {/* العنوان */}
+                                    {}
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -350,7 +338,7 @@ export default function Pharmacies() {
                                         {ph.address}
                                     </td>
 
-                                    {/* الهاتف */}
+                                    {}
                                     <td
                                         className="px-4 py-3"
                                         style={{
@@ -362,7 +350,7 @@ export default function Pharmacies() {
                                         {ph.phone}
                                     </td>
 
-                                    {/* التقييم */}
+                                    {}
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -370,7 +358,7 @@ export default function Pharmacies() {
                                         {ph.rating ?? '-'}
                                     </td>
 
-                                    {/* المسافة */}
+                                    {}
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -378,7 +366,7 @@ export default function Pharmacies() {
                                         {ph.distance ?? '-'}
                                     </td>
 
-                                    {/* وقت التوصيل */}
+                                    {}
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -386,7 +374,7 @@ export default function Pharmacies() {
                                         {ph.estimatedTime ?? '-'}
                                     </td>
 
-                                    {/* الحالة */}
+                                    {}
                                     <td className="px-4 py-3">
                                         <span
                                             className="text-xs px-3 py-1 rounded-full font-bold"
@@ -406,7 +394,7 @@ export default function Pharmacies() {
                                         </span>
                                     </td>
 
-                                    {/* الإجراءات */}
+                                    {}
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-2">
                                             <button
@@ -460,7 +448,7 @@ export default function Pharmacies() {
 
 
 
-            {/* Pagination */}
+            {}
             <div className="flex items-center justify-between mt-4">
                 <p className="text-xs" style={{ color: 'var(--color-text-light)' }}>
                     صفحة {page} من {totalPages}
@@ -479,7 +467,7 @@ export default function Pharmacies() {
                 </div>
             </div>
 
-            {/* ─── Modal ─── */}
+            {}
             {modalOpen && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center"
@@ -493,7 +481,7 @@ export default function Pharmacies() {
 
                         <div className="space-y-4">
 
-                            {/* ── الاسم ── */}
+                            {}
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     الاسم *
@@ -506,7 +494,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {/* ── العنوان ── */}
+                            {}
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     العنوان *
@@ -519,7 +507,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {/* ── الهاتف ── */}
+                            {}
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     الهاتف *
@@ -533,7 +521,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {/* ── الإيميل + الباسورد ── */}
+                            {}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -563,7 +551,7 @@ export default function Pharmacies() {
                                 </div>
                             </div>
 
-                            {/* ── الصورة ── */}
+                            {}
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     رابط الصورة
@@ -577,7 +565,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {/* ── التقييم + المسافة ── */}
+                            {}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -607,7 +595,7 @@ export default function Pharmacies() {
                                 </div>
                             </div>
 
-                            {/* ── وقت التوصيل + رابط الخريطة ── */}
+                            {}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -634,7 +622,7 @@ export default function Pharmacies() {
                                 </div>
                             </div>
 
-                            {/* ── الخدمات ── */}
+                            {}
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     الخدمات <span style={{ fontWeight: 400 }}>(افصل بفاصلة: Parking, 24h)</span>

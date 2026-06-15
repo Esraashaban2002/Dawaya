@@ -27,10 +27,8 @@ export default function Orders() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
 
-  // Detail drawer
   const [selected, setSelected] = useState(null);
 
-  /* ───────── fetch ───────── */
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -46,20 +44,17 @@ export default function Orders() {
 
   useEffect(() => { fetchOrders(); }, [page, statusFilter]);
 
-  /* ───────── status update ───────── */
   const handleStatusChange = async (id, newStatus) => {
     await updateOrderStatus(id, newStatus);
-    // update local state optimistically
     setOrders(prev => prev.map(o => o._id === id ? { ...o, status: newStatus } : o));
     if (selected?._id === id) setSelected(prev => ({ ...prev, status: newStatus }));
   };
 
   const totalPages = Math.ceil(total / 10) || 1;
 
-  /* ══════════════════════════════════════════ */
   return (
     <div>
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold" style={{ color: 'var(--color-text-main)' }}>
@@ -71,7 +66,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Status filter */}
+      {}
       <div className="flex gap-2 mb-6 flex-wrap">
         <button
           onClick={() => { setStatusFilter(''); setPage(1); }}
@@ -102,7 +97,7 @@ export default function Orders() {
         })}
       </div>
 
-      {/* Table */}
+      {}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="w-full text-sm">
           <thead>
@@ -128,7 +123,7 @@ export default function Orders() {
               <tr key={order._id}
                 style={{ borderBottom: '1px solid var(--color-border)', background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)' }}>
 
-                {/* Order ID */}
+                {}
                 <td className="px-4 py-3">
                   <span className="text-xs font-mono px-2 py-1 rounded-lg"
                     style={{ background: 'var(--bg-primary)', color: 'var(--color-text-muted)' }}>
@@ -136,7 +131,7 @@ export default function Orders() {
                   </span>
                 </td>
 
-                {/* Customer */}
+                {}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -149,30 +144,30 @@ export default function Orders() {
                   </div>
                 </td>
 
-                {/* Pharmacy */}
+                {}
                 <td className="px-4 py-3" style={{ color: 'var(--color-text-muted)' }}>
                   {order.pharmacy?.name || order.pharmacyId?.name || '—'}
                 </td>
 
-                {/* Total */}
+                {}
                 <td className="px-4 py-3 font-bold" style={{ color: 'var(--color-text-main)' }}>
                   {order.totalPrice != null ? `${order.totalPrice} ج` : '—'}
                 </td>
 
-                {/* Status */}
+                {}
                 <td className="px-4 py-3">
                   <StatusBadge status={order.status} />
                 </td>
 
-                {/* Date */}
+                {}
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--color-text-light)' }}>
                   {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ar-EG') : '—'}
                 </td>
 
-                {/* Actions */}
+                {}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    {/* Status quick-change */}
+                    {}
                     <select
                       value={order.status}
                       onChange={e => handleStatusChange(order._id, e.target.value)}
@@ -184,7 +179,7 @@ export default function Orders() {
                       ))}
                     </select>
 
-                    {/* Details */}
+                    {}
                     <button
                       onClick={() => setSelected(order)}
                       className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
@@ -202,7 +197,7 @@ export default function Orders() {
         </table>
       </div>
 
-      {/* Pagination */}
+      {}
       <div className="flex items-center justify-between mt-4">
         <p className="text-xs" style={{ color: 'var(--color-text-light)' }}>
           صفحة {page} من {totalPages}
@@ -221,7 +216,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* ─── Order Detail Drawer ─── */}
+      {}
       {selected && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
@@ -229,7 +224,7 @@ export default function Orders() {
           onClick={e => { if (e.target === e.currentTarget) setSelected(null); }}
         >
           <div className="card w-full max-w-lg mx-4 overflow-y-auto" style={{ padding: '28px', maxHeight: '85vh' }}>
-            {/* Modal header */}
+            {}
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-extrabold" style={{ color: 'var(--color-text-main)' }}>
                 تفاصيل الطلب #{selected._id?.slice(-6).toUpperCase()}
@@ -241,7 +236,7 @@ export default function Orders() {
               </button>
             </div>
 
-            {/* Status change */}
+            {}
             <div className="flex items-center gap-3 mb-5 p-4 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
               <span className="text-sm font-bold" style={{ color: 'var(--color-text-muted)' }}>الحالة:</span>
               <StatusBadge status={selected.status} />
@@ -257,7 +252,7 @@ export default function Orders() {
               </select>
             </div>
 
-            {/* Info grid */}
+            {}
             <div className="grid grid-cols-2 gap-4 mb-5">
               {[
                 { label: 'العميل', value: selected.user?.username || selected.userId?.username || 'مجهول' },
@@ -274,7 +269,7 @@ export default function Orders() {
               ))}
             </div>
 
-            {/* Items */}
+            {}
             {(selected.items || selected.orderItems || []).length > 0 && (
               <div>
                 <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--color-text-muted)' }}>

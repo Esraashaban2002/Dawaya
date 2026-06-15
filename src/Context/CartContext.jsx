@@ -15,7 +15,6 @@ export default function CartContextProvider({ children }) {
   const [cartCount, setCartCount] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // Clear cart if user is not logged in
   useEffect(() => {
     if (!userLogin) {
       setCartItems([]);

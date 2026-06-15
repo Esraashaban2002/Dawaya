@@ -1,11 +1,9 @@
-// worker.js
-import 'dotenv/config'; // Load environment variables from .env file
+import 'dotenv/config'; 
 import mongoose from 'mongoose';
 import cron from 'node-cron';
-import axios from 'axios'; // We use axios to send HTTP requests to WATI
+import axios from 'axios'; 
 import Reminder from './Reminder.js';
 
-// Mongoose Connection
 if (!process.env.MONGODB_URI) {
     console.error("CRITICAL: MONGODB_URI is not defined in the environment variables!");
 }
@@ -14,7 +12,6 @@ mongoose.connection.on('connected', () => console.log("Mongoose connected to Mon
 mongoose.connection.on('error', (err) => console.error("Mongoose connection error:", err));
 mongoose.connection.on('disconnected', () => console.warn("Mongoose disconnected from MongoDB"));
 
-// WATI configurations from environment variables (stripping trailing slash if present)
 const WATI_API_ENDPOINT = process.env.WATI_API_ENDPOINT 
     ? process.env.WATI_API_ENDPOINT.replace(/\/$/, "") 
     : "https://live-api.wati.io/10182028";
@@ -23,7 +20,6 @@ const WATI_ACCESS_TOKEN = process.env.WATI_ACCESS_TOKEN;
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
     .then(() => {
         cron.schedule('* * * * *', async () => {
-            // Fetch date/time components specifically in Egypt (Cairo) timezone
             const options = { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', hour12: false };
             const formatter = new Intl.DateTimeFormat('en-US', options);
             
@@ -35,7 +31,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
                 const hours = partMap.hour === '24' ? '00' : partMap.hour;
                 currentTime = `${hours}:${partMap.minute}`;
             } catch (e) {
-                // Fallback to local machine timezone if formatting fails
                 const now = new Date();
                 const currentHours = String(now.getHours()).padStart(2, '0');
                 const currentMinutes = String(now.getMinutes()).padStart(2, '0');
@@ -75,7 +70,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
  */
 async function sendWatiWhatsAppReminder(reminder, triggerTime) {
     const displayTime = triggerTime || reminder.time;
-    // Format phone number to international format, e.g. +201012345678 (WATI requires the plus symbol)
     const formattedPhone = reminder.phoneNumber.startsWith('+')
         ? reminder.phoneNumber
         : `+20${reminder.phoneNumber.replace(/^0/, '')}`;
@@ -108,7 +102,6 @@ async function sendWatiWhatsAppReminder(reminder, triggerTime) {
             ];
         }
 
-        // Option A: Send Custom Template Message (Required if outside the 24h window)
         const response = await axios.post(
             `${WATI_API_ENDPOINT}/api/v1/sendTemplateMessages`,
             {

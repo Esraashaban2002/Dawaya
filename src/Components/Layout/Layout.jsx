@@ -26,7 +26,7 @@ export default function Layout() {
         </div>
         <Footer />
 
-        {/* Global Login Required Modal */}
+        {}
         {showLoginModal && (
             <div className="modal-overlay" style={{ zIndex: 10000 }}>
                 <div className="modal-content animate-fade-in" style={{ maxWidth: '440px', background: '#fff' }}>

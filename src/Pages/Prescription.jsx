@@ -111,7 +111,6 @@ export default function Prescription() {
     }
   }, [location.state]);
 
-  // State Management
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activePreset, setActivePreset] = useState(null);
@@ -126,7 +125,6 @@ export default function Prescription() {
   const [apiProducts, setApiProducts] = useState([]);
   const fileInputRef = useRef(null);
 
-  // Fetch live products from backend
   useEffect(() => {
     const fetchApiProducts = async () => {
       try {
@@ -150,7 +148,6 @@ export default function Prescription() {
     fetchApiProducts();
   }, []);
 
-  // Combine live API products with local DB
   const allProducts = React.useMemo(() => {
     const combined = [...apiProducts];
     PRODUCTS_DB.forEach(localMed => {
@@ -203,7 +200,6 @@ export default function Prescription() {
     }
   };
 
-  // Simulated / Preset Scanning Steps
   const runPresetSimulation = () => {
     setIsScanning(true);
     setScanStep(0);
@@ -239,7 +235,6 @@ export default function Prescription() {
     });
   };
 
-  // OCR Processing and Matching against allProducts database
   const performOCRAndMatch = async (imageFile) => {
     setIsScanning(true);
     setScanStep(0);
@@ -333,7 +328,6 @@ export default function Prescription() {
       const prodNameLower = product.name.toLowerCase();
       const genericLower = (product.genericName || "").toLowerCase();
       
-      // 1. Direct name match
       if (prodNameLower.length > 4 && ocrTextLower.includes(prodNameLower)) {
         matched.push({
           detectedName: product.name,
@@ -346,7 +340,6 @@ export default function Prescription() {
         return;
       }
       
-      // 2. Token overlap match
       const nameWords = prodNameLower
         .replace(/[^a-z0-9\s]/g, '')
         .split(/\s+/)
@@ -388,7 +381,6 @@ export default function Prescription() {
         }
       }
       
-      // 3. Generic name matching
       if (genericLower) {
         const genericWords = genericLower
           .replace(/[^a-z0-9\s]/g, '')
@@ -526,7 +518,6 @@ export default function Prescription() {
 
     triggerToast(`تم إضافة (${selectedMatches.length}) منتجات بنجاح إلى سلة المشتريات!`, 'success');
     
-    // Optional redirect after brief delay
     setTimeout(() => {
       navigate('/cart');
     }, 1500);
@@ -554,7 +545,7 @@ export default function Prescription() {
     <div className="cart-page" style={{ background: '#f4f6f9', minHeight: '90vh', paddingBottom: '48px' }}>
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
         
-        {/* Navigation Breadcrumb */}
+        {}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -574,14 +565,13 @@ export default function Prescription() {
 
           <div className="grid grid-cols-12 gap-8">
             
-            {/* Right Panel: Upload area / Prescription View */}
+            {}
             <div className="col-span-12 lg:col-span-6 flex flex-col gap-5">
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                 1. حدد مستند الروشتة
               </h3>
 
               {!previewUrl && !activePreset ? (
-                /* File Dropzone Selector */
                 <div 
                   className="prescription-dropzone"
                   onDragOver={handleDragOver}
@@ -611,14 +601,12 @@ export default function Prescription() {
                   />
                 </div>
               ) : (
-                /* Document Preview Area */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div className="prescription-preview-wrapper" style={{ minHeight: '320px' }}>
-                    {/* Glowing Scan Line Animation */}
+                    {}
                     {isScanning && <div className="prescription-scan-line" />}
                     
                     {activePreset ? (
-                      /* Handwritten Styled RX Slip */
                       <div style={{
                         width: '100%',
                         background: '#fefef2',
@@ -632,7 +620,7 @@ export default function Prescription() {
                         backgroundSize: '16px 16px',
                         position: 'relative'
                       }}>
-                        {/* Doctor Pad Header */}
+                        {}
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #3b82f6', paddingBottom: '12px', marginBottom: '16px' }}>
                           <div>
                             <h4 style={{ margin: 0, fontWeight: 900, color: '#1e3a8a', fontSize: '16px' }}>{activePreset.doctor}</h4>
@@ -644,7 +632,7 @@ export default function Prescription() {
                           </div>
                         </div>
 
-                        {/* Prescription body */}
+                        {}
                         <div style={{ minHeight: '180px', paddingTop: '10px' }}>
                           <span style={{ fontSize: '28px', color: '#1e3a8a', fontFamily: 'serif', fontWeight: 'bold', display: 'block', marginBottom: '12px' }}>Rx</span>
                           <div style={{ paddingRight: '20px' }}>
@@ -663,7 +651,7 @@ export default function Prescription() {
                           </div>
                         </div>
 
-                        {/* Signature footer */}
+                        {}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '16px', fontSize: '11px', color: '#64748b' }}>
                           <span>صرف من صيدليات دوايا المعتمدة</span>
                           <div style={{ textAlign: 'center' }}>
@@ -673,7 +661,6 @@ export default function Prescription() {
                         </div>
                       </div>
                     ) : (
-                      /* Uploaded Image Preview */
                       <img 
                         src={previewUrl} 
                         alt="Prescription preview" 
@@ -682,7 +669,7 @@ export default function Prescription() {
                     )}
                   </div>
 
-                  {/* Reset/change file action */}
+                  {}
                   {!isScanning && (
                     <button 
                       onClick={resetAll} 
@@ -696,7 +683,7 @@ export default function Prescription() {
                 </div>
               )}
 
-              {/* Preset prescription items selection */}
+              {}
               {!previewUrl && !isScanning && (
                 <div style={{ marginTop: '10px' }}>
                   <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '10px', fontWeight: 700 }}>
@@ -730,13 +717,13 @@ export default function Prescription() {
               )}
             </div>
 
-            {/* Left Panel: Scanning & Match results */}
+            {}
             <div className="col-span-12 lg:col-span-6 border-t lg:border-t-0 lg:border-r border-slate-200 pt-8 lg:pt-0 lg:pr-8 flex flex-col gap-5">
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                 2. مسح وتحليل الروشتة
               </h3>
 
-              {/* Start Scan Button */}
+              {}
               {!isScanning && !scanFinished && (
                 <div style={{
                   background: '#f8fafc', border: '1px solid var(--color-border)',
@@ -769,7 +756,7 @@ export default function Prescription() {
                 </div>
               )}
 
-              {/* Scan in Progress Animation/Logs */}
+              {}
               {isScanning && (
                 <div style={{
                   background: '#ffffff', border: '1px solid var(--color-primary-light)',
@@ -789,7 +776,7 @@ export default function Prescription() {
                     </div>
                   </div>
 
-                  {/* Log console styling */}
+                  {}
                   <div style={{ background: '#0d1b2e', color: '#38bdf8', padding: '14px', borderRadius: '10px', fontFamily: 'monospace', fontSize: '12px', minHeight: '130px', display: 'flex', flexDirection: 'column', gap: '8px', direction: 'ltr' }}>
                     {scanLogs.map((log) => (
                       <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: log.completed ? '#4ade80' : '#38bdf8' }}>
@@ -804,7 +791,7 @@ export default function Prescription() {
                 </div>
               )}
 
-              {/* Scan Finished Results view */}
+              {}
               {scanFinished && (
                 <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div style={{
@@ -816,7 +803,7 @@ export default function Prescription() {
                     <span>تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة.</span>
                   </div>
 
-                  {/* List of matched items */}
+                  {}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والتطابقات المقترحة:</span>
                     
@@ -839,7 +826,7 @@ export default function Prescription() {
                               </span>
                             </div>
 
-                            {/* Catalog matched product summary layout */}
+                            {}
                             <div 
                               style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px' }}
                               className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
@@ -869,7 +856,7 @@ export default function Prescription() {
                                 </div>
                               </Link>
 
-                              {/* Quantity Stepper inside the item row */}
+                              {}
                               <div className="qty-stepper" style={{ height: '32px', borderRadius: '8px' }}>
                                 <button 
                                   className="qty-btn" 
@@ -897,7 +884,7 @@ export default function Prescription() {
                     ))}
                   </div>
 
-                  {/* Summary card and Add to Cart CTA */}
+                  {}
                   <div style={{
                     background: '#f8fafc', border: '1px solid var(--color-border)',
                     borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px'
@@ -936,7 +923,7 @@ export default function Prescription() {
 
       </div>
 
-      {/* Toast Feedback */}
+      {}
       {toast.show && (
         <div 
           className={`product-toast-notification ${toast.type} animate-fade-in`}

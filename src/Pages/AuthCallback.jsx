@@ -2,7 +2,6 @@ import { useEffect, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { UserContext } from '../Context/UserContext';
 
-// ── helper: قراءة cookie بالاسم ──
 function getCookie(name) {
   const match = document.cookie
     .split('; ')
@@ -10,7 +9,6 @@ function getCookie(name) {
   return match ? decodeURIComponent(match.split('=')[1]) : null;
 }
 
-// ── helper: decode JWT بدون library ──
 function decodeToken(token) {
   try {
     return JSON.parse(atob(token.split('.')[1]));
@@ -19,7 +17,6 @@ function decodeToken(token) {
   }
 }
 
-// ── helper: redirect بناءً على الـ role ──
 function getRedirectPath(role) {
   switch (role) {
     case 'admin':      return '/admin';
@@ -34,7 +31,6 @@ export default function AuthCallback() {
   const { setUserLogin } = useContext(UserContext);
 
   useEffect(() => {
-  // اقرأ الـ token من الـ URL مباشرة بدل الـ cookie
   const token = searchParams.get('token');
   const roleFromQuery = searchParams.get('role');
 
@@ -80,7 +76,6 @@ export default function AuthCallback() {
   navigate(getRedirectPath(role), { replace: true });
 }, []);
 
-  // شاشة loading بسيطة ريثما بيتحول
   return (
     <div style={{
       display: 'flex',

@@ -1,10 +1,8 @@
-// src/components/PharmacyLogosSection.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import { pharmacyLogos } from '../../data/pharmacyLogos';
 
 const PharmacyLogosSection = () => {
-  // Duplicate logos for seamless infinite scroll
   const duplicatedLogos = [...pharmacyLogos, ...pharmacyLogos, ...pharmacyLogos];
 
   return (

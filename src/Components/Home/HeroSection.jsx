@@ -7,26 +7,25 @@ const HeroSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
-  // صور مناسبة للمحتوى (نواقص الأدوية، توصيل سريع، نمو رقمي)
   const slides = [
     {
-      image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg", // نمو رقمي
+      image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg", 
       title: "نمكن الصيدليات من النمو الرقمي",
       subtitle: "حلول رقمية ذكية لزيادة المبيعات"
     },
     {
-      image: "/imges/HeroImage/DriveFast.png", // توصيل سريع
+      image: "/imges/HeroImage/DriveFast.png", 
       title: "توصيلات سريعة",
       subtitle: "وصل طلبك في أقل من ساعة"
     },
     {
-      image: "/imges/HeroImage/Medicine.png", // نواقص الأدوية
+      image: "/imges/HeroImage/Medicine.png", 
       title: "نوفر نواقص الأدوية",
       subtitle: "منصة ذكية لتأمين احتياجات صيدليتك"
     },
    
     {
-      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop", // صيدلية حديثة
+      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop", 
       title: "صيدليتك الذكية",
       subtitle: "إدارة متكاملة للمخزون والطلبات"
     }
@@ -44,7 +43,7 @@ const HeroSection = () => {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* LEFT COLUMN - Small cards */}
+          {}
           <div className="order-2 lg:order-1 lg:w-[38%] flex flex-col gap-6">
             <div 
               onClick={() => navigate('/prescription')}
@@ -99,11 +98,11 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN - Hero Banner */}
+          {}
           <div className="order-1 lg:order-2 lg:w-[62%]">
             <div className="relative rounded-[30px] overflow-hidden shadow-2xl min-h-[300px] sm:min-h-[450px] lg:min-h-[560px] h-full">
               
-              {/* Background Image Slider */}
+              {}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
@@ -122,7 +121,7 @@ const HeroSection = () => {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Content */}
+              {}
               <div className="absolute inset-0 z-10 flex flex-col items-end justify-center px-8 md:px-12 lg:px-10">
                 <div className="max-w-md text-right w-full">
                   <AnimatePresence mode="wait">
@@ -159,7 +158,7 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              {/* Slide Indicators */}
+              {}
               <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-3">
                 {slides.map((_, idx) => (
                   <button

@@ -23,7 +23,6 @@ export default function Register() {
       );
 
       if (data.success) {
-        // Persist user registration details locally
         try {
           const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
           const index = users.findIndex(u => u.email.toLowerCase() === formValues.email.toLowerCase());
@@ -42,7 +41,6 @@ export default function Register() {
           }
           localStorage.setItem("dawaya_users", JSON.stringify(users));
 
-          // Save active password and email session
           localStorage.setItem("dawaya_current_email", formValues.email);
           localStorage.setItem("dawaya_current_password", formValues.password);
         } catch (e) {

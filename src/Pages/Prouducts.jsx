@@ -13,7 +13,6 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { PharmacyCard, MapModal } from "./pharmacies";
 
-// Local static data for medicines (100 products)
 const localPharmacies = [
 
 ];
@@ -357,10 +356,9 @@ export default function Prouducts() {
   const searchParam = searchParams.get("search") || "";
   const [searchInput, setSearchInput] = useState(searchParam);
   const [page, setPage] = useState(1);
-  const [limit] = useState(12); // Displays 12 cards per page as requested
+  const [limit] = useState(12); 
   const [sortBy, setSortBy] = useState("default");
 
-  // Dynamic categories state for Drag & Drop
   const [categories, setCategories] = useState(initialCategories);
   const [expandedCats, setExpandedCats] = useState({ "الأدوية": true, "كل المنتجات": true });
   const [draggedIndex, setDraggedIndex] = useState(null);
@@ -372,7 +370,6 @@ export default function Prouducts() {
     }));
   };
 
-  // Drag and Drop handlers
   const handleDragStart = (e, index) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = "move";
@@ -401,7 +398,6 @@ export default function Prouducts() {
     setSearchInput(searchParam);
   }, [searchParam]);
 
-  // Marketing banner auto-slider state and effect
   const [currentSlide, setCurrentSlide] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => {
@@ -410,7 +406,6 @@ export default function Prouducts() {
     return () => clearInterval(timer);
   }, []);
 
-  // Modals and Toasts
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -438,7 +433,6 @@ export default function Prouducts() {
     };
   });
 
-  // Sync location changes from localStorage (tab/navigation sync)
   React.useEffect(() => {
     const handleStorageChange = () => {
       const saved = localStorage.getItem("dawaya_user_location");
@@ -470,7 +464,6 @@ export default function Prouducts() {
 
   const apiMedicines = apiResponse?.data?.data || [];
 
-  // Client-side filtering, searching, paging
   const filteredMedicines = React.useMemo(() => {
     const norm = (str) => {
       if (!str) return "";
@@ -528,14 +521,12 @@ export default function Prouducts() {
         images: med.images && med.images.length > 0 ? med.images : [med.image || "https://via.placeholder.com/400x400?text=No+Image"]
       }))
       .filter((med) => {
-        // 1. Main category vs Sub category filtering
         if (activeMainCat !== "كل المنتجات") {
           const medMainCat = getProductMainCategory(med.category);
           if (norm(medMainCat) !== norm(activeMainCat)) {
             return false;
           }
 
-          // 2. Category filter
           if (categoryApiValue) {
             const normMedCat = norm(med.category);
             const normApiVal = norm(categoryApiValue);
@@ -549,7 +540,6 @@ export default function Prouducts() {
           }
         }
 
-        // 3. Search filter
         if (searchParam) {
           const query = searchParam.toLowerCase();
           const matchesName = med.name?.toLowerCase().includes(query);
@@ -572,7 +562,6 @@ export default function Prouducts() {
     return sorted;
   }, [filteredMedicines, sortBy]);
 
-  // Pagination
   const paginatedMedicines = React.useMemo(() => {
     const startIndex = (page - 1) * limit;
     return sortedMedicines.slice(startIndex, startIndex + limit);
@@ -589,19 +578,16 @@ export default function Prouducts() {
   };
   const medicines = apiData.data;
 
-  // Pagination group calculations (displays 8 pages at a time in the bar)
   const maxVisiblePages = 8;
   const currentGroup = Math.ceil(page / maxVisiblePages);
   const startPage = (currentGroup - 1) * maxVisiblePages + 1;
   const endPage = Math.min(startPage + maxVisiblePages - 1, apiData.pages);
   const visiblePages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
 
-  // API states supplied by React Query hook
 
   const detailsData = null;
   const isLoadingDetails = false;
 
-  // Handle main horizontal category change
   const handleMainCatChange = (catName) => {
     setActiveMainCat(catName);
     setPage(1);
@@ -613,7 +599,6 @@ export default function Prouducts() {
 
     const selectedCatObj = categories.find(c => c.name === catName);
     if (selectedCatObj) {
-      // Set to first subcategory if available
       const firstSub = selectedCatObj.subcategories?.[0];
       setActiveSubCat(firstSub ? firstSub.name : catName);
       setCategoryApiValue(firstSub ? firstSub.apiValue : "");
@@ -624,7 +609,6 @@ export default function Prouducts() {
     }
   };
 
-  // Handle sidebar subcategory change
   const handleSubCatChange = (subCat, parentCatName) => {
     setActiveMainCat(parentCatName);
     setActiveSubCat(subCat.name);
@@ -672,13 +656,12 @@ export default function Prouducts() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Combine list product basic data and fetched full details
   const activeDetails = detailsData || selectedMedicine;
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#009eb6]/20 selection:text-[#009eb6]">
 
-      {/* Orange Warning Banner */}
+      {}
       {!isLocationConfirmed && (
         <div
           onClick={() => setIsMapModalOpen(true)}
@@ -691,9 +674,9 @@ export default function Prouducts() {
 
       <div className="max-w-[1200px] mx-auto px-4 py-6">
 
-        {/* 2. Search Area */}
+        {}
         <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-6">
-          {/* Search bar inside page matching premium layout */}
+          {}
           <form onSubmit={handleSearchSubmit} className="relative w-full md:w-[400px]">
             <input
               type="text"
@@ -734,7 +717,7 @@ export default function Prouducts() {
           </form>
         </div>
 
-        {/* Responsive Mobile Filters Button */}
+        {}
         <div className="lg:hidden flex items-center justify-between gap-4 mb-6">
           <button
             onClick={() => setIsSidebarOpen(true)}
@@ -756,10 +739,10 @@ export default function Prouducts() {
           </select>
         </div>
 
-        {/* 4. Two-Column Layout */}
+        {}
         <div className="grid grid-cols-12 gap-8 items-start">
 
-          {/* Right Sidebar: Categories Column */}
+          {}
           <aside className={`col-span-12 lg:col-span-3 bg-white border border-slate-100 rounded-2xl p-5 shadow-md shadow-[#009eb6]/3 sticky top-20 z-20 transition-all ${isSidebarOpen ? "fixed inset-0 z-50 overflow-y-auto block pt-20" : "hidden lg:block"
             }`}>
             {isSidebarOpen && (
@@ -781,7 +764,7 @@ export default function Prouducts() {
               </span>
             </h3>
 
-            {/* List of Main Categories (Sidebar collapsible style with Drag & Drop) */}
+            {}
             <div className="flex flex-col gap-2">
               {categories.map((cat, index) => {
                 const isSelected = activeMainCat === cat.name;
@@ -804,17 +787,17 @@ export default function Prouducts() {
                         : "hover:bg-slate-50 text-slate-700 hover:text-slate-950"
                       }`}
                   >
-                    {/* Main Category Header */}
+                    {}
                     <div className="flex items-center justify-between py-2 px-3">
-                      {/* Active Indicator Line & Selectable Title */}
+                      {}
                       <div className="flex items-center gap-2.5 flex-grow min-w-0">
-                        {/* Active indicator badge */}
+                        {}
                         <span className={`w-1 h-5 rounded-full transition-all duration-300 ${isSelected
                           ? "bg-[#009eb6] scale-110"
                           : "bg-transparent group-hover/item:bg-slate-300"
                           }`} />
 
-                        {/* Category Name Button */}
+                        {}
                         <button
                           onClick={() => handleMainCatChange(cat.name)}
                           className={`text-base font-black text-right transition-colors truncate flex-grow py-1.5 ${isSelected ? "text-[#009eb6]" : "text-slate-700"
@@ -824,9 +807,9 @@ export default function Prouducts() {
                         </button>
                       </div>
 
-                      {/* Controls: Drag Handle & Expand Chevron */}
+                      {}
                       <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Drag Handle (subtle, visible on hover) */}
+                        {}
                         <div
                           className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-[#f06a4f] transition-opacity opacity-0 group-hover/item:opacity-100 p-1 rounded hover:bg-slate-100 flex items-center justify-center"
                           title="اسحب لإعادة الترتيب"
@@ -834,7 +817,7 @@ export default function Prouducts() {
                           <GripVertical className="w-3.5 h-3.5" />
                         </div>
 
-                        {/* Expand/Collapse Chevron */}
+                        {}
                         {cat.subcategories && cat.subcategories.length > 0 && (
                           <button
                             onClick={(e) => {
@@ -853,7 +836,7 @@ export default function Prouducts() {
                       </div>
                     </div>
 
-                    {/* Subcategories (Collapsible list) */}
+                    {}
                     {isExpanded && cat.subcategories && cat.subcategories.length > 0 && (
                       <div className="mr-6 border-r border-[#009eb6]/15 pr-3 pb-2 mt-0.5 flex flex-col gap-0.5 animate-fadeIn">
                         {cat.subcategories.map((sub) => {
@@ -883,10 +866,10 @@ export default function Prouducts() {
             </div>
           </aside>
 
-          {/* Left Column: Products Column */}
+          {}
           <main className="col-span-12 lg:col-span-9">
 
-            {/* 3. Marketing Banner Slider / Carousel */}
+            {}
             <div className="relative overflow-hidden rounded-3xl w-full aspect-[2.5/1] sm:aspect-[3.2/1] min-h-[140px] sm:min-h-[200px] h-auto shadow-md mb-8 group border border-slate-100 bg-slate-50">
               <AnimatePresence mode="wait">
                 <motion.img
@@ -901,7 +884,7 @@ export default function Prouducts() {
                 />
               </AnimatePresence>
 
-              {/* Navigation Arrows (visible on hover) */}
+              {}
               <button
                 type="button"
                 onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
@@ -918,7 +901,7 @@ export default function Prouducts() {
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
-              {/* Dot Indicators */}
+              {}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10" dir="ltr">
                 {bannerSlides.map((_, idx) => (
                   <button
@@ -932,7 +915,7 @@ export default function Prouducts() {
               </div>
             </div>
 
-            {/* Desktop Sort Bar */}
+            {}
             <div className="hidden lg:flex items-center justify-between mb-6 bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
               <div className="text-slate-500 text-base font-bold">
                 عرض <span className="text-slate-900 font-black text-[17px]">{(page - 1) * limit + 1} - {Math.min(page * limit, apiData.total)}</span> من أصل <span className="text-slate-900 font-black text-[17px]">{apiData.total}</span> دواء
@@ -953,9 +936,8 @@ export default function Prouducts() {
               </div>
             </div>
 
-            {/* Content States */}
+            {}
             {isLoading ? (
-              /* Skeleton Loader */
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
                 {[...Array(limit)].map((_, i) => (
                   <div key={i} className="bg-white border border-slate-100 rounded-2xl p-4 animate-pulse flex flex-col justify-between h-[310px]">
@@ -970,7 +952,6 @@ export default function Prouducts() {
                 ))}
               </div>
             ) : isError ? (
-              /* Error State */
               <div className="bg-rose-50/50 border border-rose-100 rounded-2xl p-12 text-center flex flex-col items-center max-w-md mx-auto">
                 <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
                 <h3 className="text-sm font-black text-slate-800 mb-1">عذراً، تعذر تحميل البيانات</h3>
@@ -980,7 +961,6 @@ export default function Prouducts() {
                 </button>
               </div>
             ) : sortedMedicines.length === 0 ? (
-              /* Empty State */
               <div className="bg-white border border-slate-100 rounded-2xl p-16 text-center flex flex-col items-center max-w-md mx-auto shadow-sm">
                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
                   <Search className="w-7 h-7 text-slate-400" />
@@ -992,12 +972,10 @@ export default function Prouducts() {
                 </button>
               </div>
             ) : (
-              /* Products Display */
               <>
                 {categoryApiValue === "" && !searchParam ? (
-                  /* Default View: Horizontal Carousel of Grids (12 Cards Per slide) + Category Sliders */
                   <>
-                    {/* 1. All Products Section (Page-by-page Horizontal Grid Carousel) */}
+                    {}
                     <div className="relative group/all-slider flex flex-col mb-12">
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-xl font-black text-[#102542] flex items-center gap-2">
@@ -1007,7 +985,7 @@ export default function Prouducts() {
                       </div>
 
                       <div className="relative flex items-center w-full">
-                        {/* Left scroll arrow */}
+                        {}
                         <button
                           type="button"
                           onClick={() => {
@@ -1021,7 +999,7 @@ export default function Prouducts() {
                           <ChevronLeft className="w-5 h-5" />
                         </button>
 
-                        {/* Right scroll arrow */}
+                        {}
                         <button
                           type="button"
                           onClick={() => {
@@ -1035,7 +1013,7 @@ export default function Prouducts() {
                           <ChevronRight className="w-5 h-5" />
                         </button>
 
-                        {/* Scroll Container of Grids */}
+                        {}
                         <div
                           id="all-products-carousel"
                           className="flex overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory w-full"
@@ -1129,7 +1107,7 @@ export default function Prouducts() {
                         </div>
                       </div>
 
-                      {/* Dot indicators acting as the slider navigation at the bottom */}
+                      {}
                       <div className="flex items-center justify-center gap-2.5 mt-4" dir="ltr">
                         {(() => {
                           const pageCount = Math.ceil(sortedMedicines.length / 12);
@@ -1156,7 +1134,6 @@ export default function Prouducts() {
 
                   </>
                 ) : (
-                  /* Standard Grid View */
                   <>
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -1169,7 +1146,7 @@ export default function Prouducts() {
                           className="bg-white border border-slate-100 hover:border-[#009eb6]/30 rounded-2xl p-3 md:p-4 flex flex-col justify-between min-h-[340px] sm:min-h-[380px] md:min-h-[405px] h-full hover:shadow-lg transition-all duration-300 relative group cursor-pointer"
                           onClick={() => navigate(`/product/${med.id}`)}
                         >
-                          {/* Requires Prescription Tag */}
+                          {}
                           {med.requiresPrescription && (
                             <span className="absolute top-3 right-3 bg-red-50 text-red-500 text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-lg border border-red-100 z-10 flex items-center gap-1">
                               <span className="w-1 h-1 rounded-full bg-red-500"></span>
@@ -1177,7 +1154,7 @@ export default function Prouducts() {
                             </span>
                           )}
 
-                          {/* Product Image */}
+                          {}
                           <div className="w-full h-28 sm:h-32 md:h-36 bg-slate-50/50 rounded-xl mb-3 flex items-center justify-center p-2 overflow-hidden group-hover:bg-slate-50 transition-colors">
                             <img
                               src={med.images && med.images[0] ? med.images[0] : "https://via.placeholder.com/400x400?text=No+Image"}
@@ -1186,7 +1163,7 @@ export default function Prouducts() {
                             />
                           </div>
 
-                          {/* Info & Price */}
+                          {}
                           <div className="text-right flex-grow flex flex-col justify-between">
                             <div>
                               <h4 className="text-sm md:text-base font-black text-slate-800 line-clamp-2 h-12 md:h-14 leading-snug group-hover:text-[#009eb6] transition-colors mb-1">
@@ -1203,7 +1180,7 @@ export default function Prouducts() {
                             </div>
                           </div>
 
-                          {/* Add to Cart Button */}
+                          {}
                           {(() => {
                             const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
                             return (
@@ -1236,7 +1213,7 @@ export default function Prouducts() {
                       ))}
                     </motion.div>
 
-                    {/* 5. Numbered Pagination Bar */}
+                    {}
                     {apiData.pages > 1 && (
                       <div className="flex items-center justify-center gap-3 mt-12 bg-white border border-slate-100 py-3.5 px-6 rounded-2xl shadow-sm max-w-lg mx-auto" dir="ltr">
                         <button
@@ -1279,7 +1256,7 @@ export default function Prouducts() {
         </div>
       </div>
 
-      {/* 6. Bottom Promo Announcement Bar */}
+      {}
       <AnimatePresence>
         {showPromo && (
           <motion.div
@@ -1303,7 +1280,7 @@ export default function Prouducts() {
         )}
       </AnimatePresence>
 
-      {/* 7. Floating Chat FAB Button */}
+      {}
       <button
         onClick={() => triggerToast("خدمة الاستشارات الطبية الفورية متاحة على مدار الساعة عبر واتساب.")}
         className="fixed bottom-16 right-6 z-40 w-12 h-12 bg-[#009eb6] hover:bg-[#008fa0] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer"
@@ -1312,7 +1289,7 @@ export default function Prouducts() {
         <MessageCircle className="w-6 h-6" />
       </button>
 
-      {/* Custom Toast Notification */}
+      {}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -1329,7 +1306,7 @@ export default function Prouducts() {
         )}
       </AnimatePresence>
 
-      {/* 8. Detailed Modal with /api/medicines/{id} fetch */}
+      {}
       <AnimatePresence>
         {selectedMedicine && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1347,7 +1324,7 @@ export default function Prouducts() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl relative z-10 flex flex-col border border-slate-100"
             >
-              {/* Close Button */}
+              {}
               <button
                 onClick={() => setSelectedMedicine(null)}
                 className="absolute top-4 left-4 z-20 w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-rose-50 hover:text-rose-500 rounded-full transition-colors text-slate-500"
@@ -1356,7 +1333,7 @@ export default function Prouducts() {
               </button>
 
               <div className="flex flex-col md:flex-row flex-grow">
-                {/* Images Column */}
+                {}
                 <div className="w-full md:w-[45%] bg-slate-50 p-6 flex flex-col justify-between border-l border-slate-100">
                   <div className="flex-grow flex items-center justify-center relative rounded-2xl bg-white border border-slate-100 min-h-[200px] overflow-hidden mb-4 p-4">
                     <img
@@ -1373,7 +1350,7 @@ export default function Prouducts() {
                     )}
                   </div>
 
-                  {/* Thumbnail selector */}
+                  {}
                   {activeDetails?.images && activeDetails.images.length > 1 && (
                     <div className="flex gap-2.5 justify-center overflow-x-auto py-1">
                       {activeDetails.images.map((img, idx) => (
@@ -1390,10 +1367,10 @@ export default function Prouducts() {
                   )}
                 </div>
 
-                {/* Details Content Column */}
+                {}
                 <div className="w-full md:w-[55%] p-6 md:p-8 flex flex-col justify-between">
 
-                  {/* Meta details */}
+                  {}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <span className="bg-[#009eb6]/10 text-[#009eb6] text-xs font-black px-2.5 py-1 rounded-full">
@@ -1414,7 +1391,7 @@ export default function Prouducts() {
                       </p>
                     )}
 
-                    {/* Description loader or content */}
+                    {}
                     <div className="border-t border-slate-100 pt-4 mb-6">
                       <h3 className="text-sm font-black text-slate-900 mb-2">تفاصيل المنتج:</h3>
 
@@ -1431,7 +1408,7 @@ export default function Prouducts() {
                     </div>
                   </div>
 
-                  {/* Bottom Action Area */}
+                  {}
                   <div>
                     <div className="bg-slate-50 rounded-2xl p-4 mb-5 border border-slate-100 flex justify-between items-center">
                       <span className="text-slate-400 text-sm font-bold">السعر النهائي:</span>
@@ -1483,7 +1460,7 @@ export default function Prouducts() {
                 </div>
               </div>
 
-              {/* Available Pharmacies Section */}
+              {}
               <div className="w-full border-t border-slate-100 p-6 md:p-8 bg-slate-50/50">
                 <h3 className="text-sm font-black text-[#102542] mb-4 flex items-center gap-2">
                   <span className="w-1.5 h-4 rounded-full bg-gradient-to-b from-[#009eb6] to-[#f06a4f]" />
@@ -1505,7 +1482,7 @@ export default function Prouducts() {
         )}
       </AnimatePresence>
 
-      {/* 9. Interactive Pharmacy Details Popup Modal */}
+      {}
       <AnimatePresence>
         {selectedPharmacy && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -1523,7 +1500,7 @@ export default function Prouducts() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-white w-full max-w-[500px] overflow-hidden rounded-3xl shadow-2xl relative z-10 border border-slate-100 flex flex-col"
             >
-              {/* Close Button */}
+              {}
               <button
                 onClick={() => setSelectedPharmacy(null)}
                 className="absolute top-4 left-4 z-20 w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-full transition-colors text-slate-500"
@@ -1531,7 +1508,7 @@ export default function Prouducts() {
                 <X className="w-4 h-4" />
               </button>
 
-              {/* Modal Banner Header */}
+              {}
               <div className="h-28 bg-gradient-to-l from-[#009eb6] to-[#009eb6]/80 p-6 flex items-end">
                 <div className="flex items-center gap-3 relative z-10 translate-y-8">
                   <div className="w-16 h-16 bg-white border-2 border-white rounded-2xl p-2 flex items-center justify-center overflow-hidden shadow-md">
@@ -1545,9 +1522,9 @@ export default function Prouducts() {
                 </div>
               </div>
 
-              {/* Modal Body */}
+              {}
               <div className="p-6 pt-12 flex-grow">
-                {/* Meta properties */}
+                {}
                 <div className="flex items-center gap-3 mb-4 text-xs font-black">
                   <span className={`px-2.5 py-1 rounded-lg ${selectedPharmacy.isOpen ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
                     {selectedPharmacy.isOpen ? "مفتوح الآن" : "مغلق حالياً"}
@@ -1560,13 +1537,13 @@ export default function Prouducts() {
                   </span>
                 </div>
 
-                {/* About text */}
+                {}
                 <div className="mb-6">
                   <h3 className="text-sm font-black text-slate-900 mb-1.5">حول الصيدلية:</h3>
                   <p className="text-sm text-slate-500 leading-relaxed text-right">{selectedPharmacy.about}</p>
                 </div>
 
-                {/* Contact list & services */}
+                {}
                 <div className="border-t border-slate-100 pt-4 flex flex-col gap-3.5 mb-6">
                   <div className="flex items-center gap-3 text-sm text-slate-600 font-bold">
                     <MapPin className="w-4.5 h-4.5 text-[#009eb6]" />
@@ -1578,7 +1555,7 @@ export default function Prouducts() {
                     <span>الخط الساخن: {selectedPharmacy.phone}</span>
                   </div>
 
-                  {/* Services pills list */}
+                  {}
                   <div className="flex flex-wrap gap-2 mt-1">
                     {selectedPharmacy.hasDelivery && (
                       <span className="text-xs bg-slate-50 border border-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-xl">🛵 خدمة توصيل للمنزل</span>
@@ -1588,7 +1565,7 @@ export default function Prouducts() {
                     )}
                   </div>
 
-                  {/* Cart & Favorites Actions */}
+                  {}
                   <div className="flex gap-3 mt-3">
                     {(() => {
                       const isAdded = activeDetails ? cartItems.some((item) => String(item.id) === String(activeDetails.id)) : false;
@@ -1628,7 +1605,7 @@ export default function Prouducts() {
                     </button>
                   </div>
 
-                  {/* Action button */}
+                  {}
                   <div className="flex gap-3 mt-8">
                     <a
                       href={`https://wa.me/${selectedPharmacy.whatsapp || (selectedPharmacy.phone && selectedPharmacy.phone.startsWith("0") ? "20" + selectedPharmacy.phone.slice(1) : selectedPharmacy.phone) || ""}`}
@@ -1658,7 +1635,7 @@ export default function Prouducts() {
         )}
       </AnimatePresence>
 
-      {/* Map Selection Modal */}
+      {}
       <AnimatePresence>
         {isMapModalOpen && (
           <MapModal

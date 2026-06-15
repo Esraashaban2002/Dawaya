@@ -42,7 +42,7 @@ export default function UserProfile() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'orders'
+  const [activeTab, setActiveTab] = useState('profile'); 
   const [userOrders, setUserOrders] = useState([]);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 
@@ -76,7 +76,6 @@ export default function UserProfile() {
     try {
       const data = await api.getProfile();
 
-      // Robust user object extraction from backend response
       if (data) {
         if (data.user) {
           apiUser = data.user;
@@ -97,7 +96,6 @@ export default function UserProfile() {
     const localEmail = localStorage.getItem("dawaya_current_email") || '';
     const localPassword = localStorage.getItem("dawaya_current_password") || '';
 
-    // Check if we have local user registry details
     const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
     const localUser = users.find(u => u.email.toLowerCase() === localEmail.toLowerCase());
 
@@ -148,7 +146,6 @@ export default function UserProfile() {
   }, [userLogin]);
 
   const handleSaveProfile = async (updatedProfile) => {
-    // 1. Always save to local storage registry first
     try {
       const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
       const index = users.findIndex(u => u.email.toLowerCase() === updatedProfile.email.toLowerCase());
@@ -169,7 +166,6 @@ export default function UserProfile() {
       localStorage.setItem("dawaya_current_email", updatedProfile.email);
       localStorage.setItem("dawaya_current_password", updatedProfile.password);
 
-      // Sync local storage reminders that use the profile phone number
       const savedReminders = localStorage.getItem("dawaya_reminders");
       if (savedReminders) {
         const list = JSON.parse(savedReminders);
@@ -182,7 +178,6 @@ export default function UserProfile() {
       console.error("Local storage registry update failed", e);
     }
 
-    // 2. Try saving to the backend database
     let apiUser = null;
     try {
       const genderApi = updatedProfile.gender === 'ذكر' ? 'male' : updatedProfile.gender === 'أنثى' ? 'female' : '';
@@ -193,7 +188,6 @@ export default function UserProfile() {
         gender: genderApi
       });
 
-      // Robust user object extraction from backend response
       if (data) {
         if (data.user) {
           apiUser = data.user;
@@ -211,7 +205,6 @@ export default function UserProfile() {
       console.warn('Database save failed, using local registry as fallback:', err);
     }
 
-    // 3. Always update active state from the latest data input to ensure seamless UI update
     if (apiUser) {
       setProfile({
         fullName: apiUser.username || updatedProfile.username,
@@ -243,7 +236,6 @@ export default function UserProfile() {
 
   const handleChangePassword = async (oldPassword, newPassword) => {
     try {
-      // Always change password in the database
       await api.changePassword(oldPassword, newPassword);
 
       localStorage.setItem("dawaya_current_password", newPassword);
@@ -399,7 +391,7 @@ export default function UserProfile() {
                 </div>
               </div>
 
-              {/* Tab switcher */}
+              {}
               <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--color-border)', paddingBottom: '0px', marginBottom: '8px' }} className="animate-fade-in">
                 <button
                   type="button"
@@ -454,7 +446,7 @@ export default function UserProfile() {
                     </div>
 
                     <div className="profile-info-grid">
-                      {/* Username */}
+                      {}
                       <div className="profile-info-card">
                         <div className="profile-info-icon-wrapper icon-wrapper-username">
                           <User size={20} />
@@ -465,7 +457,7 @@ export default function UserProfile() {
                         </div>
                       </div>
 
-                      {/* Phone */}
+                      {}
                       <div className="profile-info-card">
                         <div className="profile-info-icon-wrapper icon-wrapper-phone">
                           <Phone size={20} />
@@ -476,7 +468,7 @@ export default function UserProfile() {
                         </div>
                       </div>
 
-                      {/* Gender */}
+                      {}
                       <div className="profile-info-card">
                         <div className="profile-info-icon-wrapper icon-wrapper-gender">
                           <User size={20} />
@@ -487,7 +479,7 @@ export default function UserProfile() {
                         </div>
                       </div>
 
-                      {/* Age */}
+                      {}
                       <div className="profile-info-card">
                         <div className="profile-info-icon-wrapper icon-wrapper-age">
                           <Cake size={20} />
@@ -498,7 +490,7 @@ export default function UserProfile() {
                         </div>
                       </div>
 
-                      {/* Email */}
+                      {}
                       <div className="profile-info-card full-width">
                         <div className="profile-info-icon-wrapper icon-wrapper-email">
                           <Mail size={20} />
@@ -743,7 +735,6 @@ export default function UserProfile() {
                           const isExpanded = expandedOrderId === order.id;
                           const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
-                          // Status colors & texts
                           let statusText = 'قيد الانتظار';
                           let statusColor = '#f59e0b';
                           let statusBg = 'rgba(245, 158, 11, 0.08)';
@@ -769,7 +760,7 @@ export default function UserProfile() {
                           return (
                             <div key={order.id} style={{ border: '1px solid var(--color-border)', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#ffffff', transition: 'all 0.2s ease', boxShadow: isExpanded ? 'var(--shadow-md)' : 'none' }}>
 
-                              {/* Order Main Header Row */}
+                              {}
                               <div
                                 onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
                                 style={{ padding: '18px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isExpanded ? '#f8fafc' : '#ffffff', transition: 'all 0.2s ease', flexWrap: 'wrap', gap: '12px' }}
@@ -800,14 +791,14 @@ export default function UserProfile() {
                                 </div>
                               </div>
 
-                              {/* Expanded Details Panel */}
+                              {}
                               {isExpanded && (
                                 <div style={{ padding: '24px', borderTop: '1px solid var(--color-border)', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade-in">
 
-                                  {/* Split details grid */}
+                                  {}
                                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }} className="form-row">
 
-                                    {/* Delivery information */}
+                                    {}
                                     <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: '#f8fafc', border: '1px solid var(--color-border)' }}>
                                       <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '850', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         <MapPin size={14} style={{ color: 'var(--color-brand)' }} />
@@ -823,7 +814,7 @@ export default function UserProfile() {
                                       </div>
                                     </div>
 
-                                    {/* Payment information */}
+                                    {}
                                     <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: '#f8fafc', border: '1px solid var(--color-border)' }}>
                                       <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '850', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                         <CreditCard size={14} style={{ color: 'var(--color-brand)' }} />
@@ -859,7 +850,7 @@ export default function UserProfile() {
 
                                   </div>
 
-                                  {/* Order Status Tracker */}
+                                  {}
                                   <div style={{ padding: '16px', borderRadius: '12px', border: '1px solid var(--color-border)', backgroundColor: '#ffffff' }}>
                                     <h4 style={{ margin: '0 0 16px 0', fontSize: '13px', fontWeight: '850', color: 'var(--color-text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                       <Clock size={14} style={{ color: 'var(--color-brand)' }} />
@@ -868,13 +859,13 @@ export default function UserProfile() {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginTop: '10px', padding: '0 12px' }}>
                                       <div style={{ position: 'absolute', top: '10px', left: '25px', right: '25px', height: '2px', backgroundColor: '#e2e8f0', zIndex: 1 }} />
 
-                                      {/* Placed step */}
+                                      {}
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2, flex: 1 }}>
                                         <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '10px', fontWeight: 'bold' }}>✓</div>
                                         <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-main)' }}>تم الطلب</span>
                                       </div>
 
-                                      {/* Verification step */}
+                                      {}
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2, flex: 1 }}>
                                         <div style={{
                                           width: '22px',
@@ -896,7 +887,7 @@ export default function UserProfile() {
                                         </span>
                                       </div>
 
-                                      {/* Preparing step */}
+                                      {}
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2, flex: 1 }}>
                                         <div style={{
                                           width: '22px',
@@ -916,7 +907,7 @@ export default function UserProfile() {
                                         <span style={{ fontSize: '10px', fontWeight: '800', color: (order.status === 'preparing' || order.status === 'shipped' || order.status === 'completed' || order.status === 'delivered') ? 'var(--color-text-main)' : 'var(--color-text-muted)' }}>جاري التجهيز</span>
                                       </div>
 
-                                      {/* Shipped step */}
+                                      {}
                                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2, flex: 1 }}>
                                         <div style={{
                                           width: '22px',
@@ -938,7 +929,7 @@ export default function UserProfile() {
                                     </div>
                                   </div>
 
-                                  {/* Products Purchased Table */}
+                                  {}
                                   <div>
                                     <h4 style={{ margin: '0 0 12px 0', fontSize: '13px', fontWeight: '850', color: 'var(--color-text-main)' }}>المنتجات المطلوبة</h4>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

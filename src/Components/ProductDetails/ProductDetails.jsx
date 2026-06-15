@@ -199,18 +199,16 @@ export default function ProductDetails() {
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
   const [activeImage, setActiveImage] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'specs'
+  const [activeTab, setActiveTab] = useState('overview'); 
   const [toastMessage, setToastMessage] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
 
-  // Reset active image when product ID or productData changes
   useEffect(() => {
     if (PRODUCT_DATA && PRODUCT_DATA.images && PRODUCT_DATA.images.length > 0) {
       setActiveImage(PRODUCT_DATA.images[0]);
     }
   }, [id, productData]);
 
-  // Sync details page quantity stepper with cartItems
   useEffect(() => {
     if (!PRODUCT_DATA) return;
     const existing = cartItems.find((item) => String(item.id) === String(PRODUCT_DATA.id));
@@ -226,7 +224,6 @@ export default function ProductDetails() {
     if (val < 1) return;
     setQuantity(val);
 
-    // Automatically sync with cart and update navbar count if already added
     const existing = cartItems.find((item) => String(item.id) === String(PRODUCT_DATA.id));
     if (existing) {
       addToCart({
@@ -277,7 +274,7 @@ export default function ProductDetails() {
     <div className="product-details-page">
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '24px 16px' }}>
 
-        {/* Breadcrumbs */}
+        {}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -288,12 +285,12 @@ export default function ProductDetails() {
           <span className="current text-truncate">{PRODUCT_DATA.name}</span>
         </nav>
 
-        {/* Main Product Card */}
+        {}
         <div className="product-main-card animate-fade-in">
 
-          {/* Right/Center: Media Gallery */}
+          {}
           <div className="product-gallery">
-            {/* Thumbnails list (Vertical, on the right in RTL) */}
+            {}
             <div className="product-thumbnails">
               {PRODUCT_DATA.images.map((img, index) => (
                 <div
@@ -306,16 +303,16 @@ export default function ProductDetails() {
               ))}
             </div>
 
-            {/* Main Preview (Center) */}
+            {}
             <div className="product-main-preview">
               <img src={activeImage} alt={PRODUCT_DATA.name} />
             </div>
           </div>
 
-          {/* Left: Product Options & Purchase details */}
+          {}
           <div className="product-options">
 
-            {/* Brand Link and Share Row */}
+            {}
             <div className="product-header-actions">
               <Link to="/#products-section" className="product-brand-link">
                 مشاهدة كل منتجات {PRODUCT_DATA.brand}
@@ -348,19 +345,19 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Product Title */}
+            {}
             <h1 className="product-title-text">{PRODUCT_DATA.name}</h1>
 
-            {/* Price */}
+            {}
             <div className="product-price-tag">
               <span className="price-label">السعر:</span>
               <span className="price-value">{PRODUCT_DATA.price} جنيه</span>
             </div>
 
 
-            {/* Interactive Buy & Quantity Row */}
+            {}
             <div className="product-purchase-row">
-              {/* Quantity Stepper */}
+              {}
               <div className="qty-stepper">
                 <button
                   className="qty-btn"
@@ -378,7 +375,7 @@ export default function ProductDetails() {
                 </button>
               </div>
 
-              {/* Add To Cart Button */}
+              {}
               <button
                 onClick={handleAddToCart}
                 className={`add-to-cart-btn ${cartItems.some((item) => String(item.id) === String(PRODUCT_DATA.id)) ? 'added' : ''}`}
@@ -400,10 +397,10 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        {/* Description & Specifications Tabs Container */}
+        {}
         <div className="product-details-tabs-card">
 
-          {/* Tabs Navigation Header */}
+          {}
           <div className="tabs-header-nav">
             <button
               className={`tab-nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
@@ -419,14 +416,14 @@ export default function ProductDetails() {
             </button>
           </div>
 
-          {/* Tab Content Body */}
+          {}
           <div className="tabs-content-body">
 
-            {/* 1. Overview Tab */}
+            {}
             {activeTab === 'overview' && (
               <div className="tab-pane animate-fade-in">
 
-                {/* Product Features */}
+                {}
                 <section className="details-section">
                   <h2 className="section-heading">مميزات المنتج</h2>
                   <ul className="features-list-bullets">
@@ -436,7 +433,7 @@ export default function ProductDetails() {
                   </ul>
                 </section>
 
-                {/* About this Product Q&A Accordion */}
+                {}
                 <section className="details-section">
                   <h2 className="section-heading">عن هذا المنتج</h2>
                   <div className="qa-accordion-list">
@@ -452,7 +449,7 @@ export default function ProductDetails() {
               </div>
             )}
 
-            {/* 2. Specifications Tab */}
+            {}
             {activeTab === 'specs' && (
               <div className="tab-pane animate-fade-in">
                 <section className="details-section">
@@ -479,7 +476,7 @@ export default function ProductDetails() {
 
       </div>
 
-      {/* Cart Feedback Toast */}
+      {}
       {toastMessage && (
         <div className="product-toast-notification success animate-fade-in" style={{ background: toastMessage.includes('إزالة') ? '#ef4444' : '', borderColor: toastMessage.includes('إزالة') ? '#dc2626' : '' }}>
           {toastMessage.includes('إزالة') ? <Trash2 size={16} /> : <Check size={16} />}
@@ -487,7 +484,7 @@ export default function ProductDetails() {
         </div>
       )}
 
-      {/* Share clipboard Toast */}
+      {}
       {showShareToast && (
         <div className="product-toast-notification info animate-fade-in">
           <Check size={16} />

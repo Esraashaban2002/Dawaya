@@ -3,13 +3,11 @@ const REMINDERS_BASE_URL = typeof window !== 'undefined' && (window.location.hos
   ? 'http://localhost:5000/api'
   : 'https://dawaya-back-end.vercel.app/api';
 
-// Helper to check if a token is a valid JWT format
 function isValidJWT(token) {
   if (!token) return false;
   return token.split('.').length === 3;
 }
 
-// Helper to check if JWT token is expired
 function isJWTExpired(token) {
   try {
     const parts = token.split('.');
@@ -34,7 +32,6 @@ function isJWTExpired(token) {
   }
 }
 
-// Helper to get auth headers
 function getHeaders() {
   const headers = {
     'Content-Type': 'application/json',
@@ -60,44 +57,13 @@ function getHeaders() {
 
 export const api = {
 
-  // Get Profile
-  // async getProfile() {
-  //   const headers = getHeaders();
-  //   console.log('Fetching profile with headers:', headers);
 
-  //   const response = await fetch(`${BASE_URL}/api/user/profile`, {
-  //     method: 'GET',
-  //     headers: headers,
-  //   });
 
-  //   if (!response.ok) {
   //     console.warn(`Profile fetch failed with status: ${response.status}`);
-  //     let errorText = '';
-  //     let errorData = {};
-  //     try {
-  //       errorText = await response.text();
-  //       errorData = JSON.parse(errorText);
-  //     } catch (e) {
-  //       errorData = { message: errorText || `HTTP Error ${response.status}` };
-  //     }
 
-  //     console.error('Detailed Server Error payload:', errorData);
 
-  //     const isAuthError = response.status === 401 || 
-  //       (response.status === 500 && errorData.message && /jwt|token|expired|malformed|auth/i.test(errorData.message));
 
-  //     if (isAuthError) {
-  //       localStorage.removeItem('userToken');
-  //       window.dispatchEvent(new Event('storage')); // Trigger session reload/logout
-  //       throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى.');
-  //     }
-  //     throw new Error(errorData.message || 'فشل في تحميل بيانات الملف الشخصي من الخادم السحابي.');
-  //   }
-  //   console.log(response);
 
-  //   return response.json();
-  // },
-  // Get Profile
   async getProfile() {
     const headers = getHeaders();
     console.log('Fetching profile with headers:', headers);
@@ -120,7 +86,6 @@ export const api = {
 
       console.error('Detailed Server Error payload:', errorData);
 
-      // Handle auth errors (401) OR backend crash (500) with token-related message
       const isAuthError =
         response.status === 401 ||
         (response.status === 500 &&
@@ -133,7 +98,6 @@ export const api = {
         throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى.');
       }
 
-      // Generic 500 fallback
       if (response.status === 500) {
         throw new Error('حدث خطأ في الخادم، يرجى المحاولة لاحقاً.');
       }
@@ -143,7 +107,6 @@ export const api = {
 
     return response.json();
   },
-  // Update Profile
   async updateProfile(profileData) {
     const response = await fetch(`${BASE_URL}/user/profile`, {
       method: 'PUT',
@@ -169,7 +132,6 @@ export const api = {
     return response.json();
   },
 
-  // Change Password
   async changePassword(oldPassword, newPassword) {
     const response = await fetch(`${BASE_URL}/user/changepassword`, {
       method: 'PATCH',
@@ -195,17 +157,14 @@ export const api = {
     return response.json();
   },
 
-  // Logout
   logout() {
     localStorage.removeItem('userToken');
   },
 
-  // Check if user is logged in
   isLoggedIn() {
     return !!localStorage.getItem('userToken');
   },
 
-  // ─── REMINDERS ───
   async getReminders() {
     const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
       method: 'GET',
@@ -245,15 +204,12 @@ export const api = {
   }
 };
 
-//  Adman Dashoard
 
-// ─── STATS ───
 export const getStats = async () => {
   const res = await fetch(`${BASE_URL}/admin/stats`, { headers: getHeaders() });
   return res.json();
 };
 
-// ─── USERS ───
 export const getUsers = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
 
@@ -310,9 +266,7 @@ async function authFetch(url, options = {}) {
   return text ? JSON.parse(text) : {};
 }
 
-// ─── PHARMACIES ───────────────────────────────────────
 
-// ✅ صحّحنا المسار: /admin/pharmacies بدل /pharmacies
 export const getPharmacies = (params = {}) => {
   const query = new URLSearchParams(params).toString();
   return authFetch(`${BASE_URL}/pharmacies?${query}`);
@@ -340,7 +294,6 @@ export const togglePharmacy = (id) =>
     method: 'PATCH',
   });
 
-// ─── ORDERS ───────────────────────────────────────────
 
 export const getOrders = async (params = {}) => {
   const query = new URLSearchParams(params).toString();

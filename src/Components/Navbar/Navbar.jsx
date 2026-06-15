@@ -112,7 +112,7 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Auth Section */}
+            {}
             {userLogin == null ? (
               <div className="nb-auth-links">
                 <NavLink to="/AccountType" className="nb-link">
@@ -146,7 +146,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile Menu */}
+          {}
           {menuOpen && (
             <div className="nb-mobile-menu">
               <Link to="/" className="nb-mobile-link">الرئيسية</Link>

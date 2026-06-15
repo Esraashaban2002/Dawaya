@@ -68,7 +68,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
 
-      {/* Stat Cards */}
+      {}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card, i) => (
           <div key={i} className="card" style={{ padding: '20px' }}>
@@ -88,10 +88,10 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Charts Row 1 */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-        {/* Line Chart */}
+        {}
         <div className="card" style={{ padding: '20px' }}>
           <h3 className="font-bold mb-4 text-sm" style={{ color: 'var(--color-text-main)' }}>
             نشاط آخر 7 أيام
@@ -109,7 +109,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Pie Chart */}
+        {}
         <div className="card" style={{ padding: '20px' }}>
           <h3 className="font-bold mb-4 text-sm" style={{ color: 'var(--color-text-main)' }}>
             توزيع المستخدمين بالدور
@@ -127,7 +127,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bar Chart */}
+      {}
       <div className="card" style={{ padding: '20px' }}>
         <h3 className="font-bold mb-4 text-sm" style={{ color: 'var(--color-text-main)' }}>
           حالة الطلبات

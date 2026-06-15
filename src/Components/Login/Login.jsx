@@ -17,7 +17,6 @@ export default function Login() {
  async function handelLogin(formValues) {
   setIsLoading(true);
 
-  // ── helper: decode JWT payload بدون library ──────────────────
   const decodeToken = (token) => {
     try {
       const payload = token.split('.')[1];
@@ -27,7 +26,6 @@ export default function Login() {
     }
   };
 
-  // ── helper: redirect بناءً على الـ role ──────────────────────
   const redirectByRole = (role) => {
     switch (role) {
       case 'admin':       navigate('/admin'); break;
@@ -36,7 +34,6 @@ export default function Login() {
     }
   };
 
-  // ── 1. تحقق من الـ local registry أولاً ─────────────────────
   try {
     const users = JSON.parse(localStorage.getItem('dawaya_users') || '[]');
     const matchedUser = users.find(
@@ -50,7 +47,6 @@ export default function Login() {
       localStorage.setItem('dawaya_current_password', matchedUser.password);
       setIsLoading(false);
 
-      // لو عنده role محفوظ استخدمه، غير كده روح الـ home
       redirectByRole(matchedUser.role || 'user');
       return;
     }
@@ -58,7 +54,6 @@ export default function Login() {
     console.error('Local login intercept failed', e);
   }
 
-  // ── 2. Fallback to server API ─────────────────────────────────
   try {
     const { data } = await axios.post(
       'https://dawaya-back-end.vercel.app/api/auth/login',
@@ -67,20 +62,17 @@ export default function Login() {
 
     if (data.success) {
       const token    = data.data.accessToken;
-      // الـ role ممكن يكون في data.data.user.role أو جوا الـ token نفسه
       const userRole = data.data.user?.role
                     || data.data.role
                     || decodeToken(token)?.role
                     || 'user';
 
-      // حفظ الـ token والـ role
       localStorage.setItem('userToken', token);
       localStorage.setItem('userRole', userRole);
       setUserLogin(token);
       localStorage.setItem('dawaya_current_email', formValues.email);
       localStorage.setItem('dawaya_current_password', formValues.password);
 
-      // حفّظ في الـ local registry مع الـ role
       try {
         const users = JSON.parse(localStorage.getItem('dawaya_users') || '[]');
         const index = users.findIndex(

@@ -1,4 +1,3 @@
-// src/components/Home/TestimonialsSection.jsx
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -10,7 +9,6 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const TestimonialsSection = () => {
-  // تعريف البيانات هنا مباشرة
   const testimonials = [
     {
       name: "أحمد محمد",
