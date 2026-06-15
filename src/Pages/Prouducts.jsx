@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { CartContext } from "../Context/CartContext";
 import {
   Search, SlidersHorizontal, ChevronLeft, ChevronRight, ShoppingCart,
   Heart, X, Pill, Stethoscope, AlertCircle, Share2, Activity,
@@ -1471,9 +1472,24 @@ const bannerSlides = [
 ];
 
 export default function Prouducts() {
+  const { cartItems, addToCart } = useContext(CartContext);
   const [activeMainCat, setActiveMainCat] = useState("كل المنتجات");
   const [activeSubCat, setActiveSubCat] = useState("الكل");
   const [categoryApiValue, setCategoryApiValue] = useState("");
+
+  const handleAddToCartClick = (med) => {
+    if (!med) return;
+    const existing = cartItems.find((item) => String(item.id) === String(med.id));
+    const newQty = existing ? existing.quantity + 1 : 1;
+    addToCart({
+      id: med.id,
+      name: med.name,
+      price: med.price,
+      brand: med.manufacturer || med.genericName || 'عام',
+      image: med.image
+    }, newQty);
+    triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchParam = searchParams.get("search") || "";
@@ -2159,7 +2175,7 @@ export default function Prouducts() {
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+                                        handleAddToCartClick(med);
                                       }}
                                       className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
                                     >
@@ -2253,7 +2269,7 @@ export default function Prouducts() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+                              handleAddToCartClick(med);
                             }}
                             className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2 rounded-xl text-center text-[11px] transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#10b981]/10 active:scale-95"
                           >
@@ -2471,8 +2487,10 @@ export default function Prouducts() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
-                        triggerToast(`تم إضافة ${activeDetails?.name} إلى السلة بنجاح!`);
-                        setSelectedMedicine(null);
+                        if (activeDetails) {
+                          handleAddToCartClick(activeDetails);
+                          setSelectedMedicine(null);
+                        }
                       }}
                       className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#10b981]/10 active:scale-95 text-xs"
                     >
