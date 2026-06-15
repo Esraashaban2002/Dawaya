@@ -1,4 +1,3 @@
-// src/pages/Home/Home.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 import HeroSection from '../Components/Home/HeroSection';
@@ -9,9 +8,7 @@ import ProductsSection from '../components/Home/ProductsSection';
 import PharmacyLogosSection from '../components/Home/PharmacyLogosSection';
 import AppPromotionSection from '../components/Home/AppPromotionSection';
 import FeaturesSection from '../components/Home/FeaturesSection';
-// import TestimonialsSection from '../components/Home/TestimonialsSection';
 import FAQSection from '../components/Home/FAQSection';
-// import CTASection from '../components/Home/CTASection';
 
 const Home = () => {
   return (

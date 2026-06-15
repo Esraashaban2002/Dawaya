@@ -25,7 +25,7 @@ import Checkout from './Pages/Checkout';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
-
+import Contact from './pages/Adman/Contact';
 function App() {
   let router = createBrowserRouter([
     {
@@ -112,10 +112,14 @@ function App() {
           path: "/resetpassword",
           element: <ResetPassword />,
         },
-        {
-          path: "*",
+        
+        {path:"/contact",
+         element:<Contact />
+        }
+        ,
+        { path: "*",
           element: <NotFound />,
-        },
+        }
       ],
     },
 

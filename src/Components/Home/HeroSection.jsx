@@ -5,7 +5,6 @@ import { FaCloudUploadAlt, FaWhatsapp } from 'react-icons/fa';
 const HeroSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // صور مناسبة للمحتوى (نواقص الأدوية، توصيل سريع، نمو رقمي)
   const slides = [
     {
       image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg", // نمو رقمي
@@ -42,7 +41,7 @@ const HeroSection = () => {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* LEFT COLUMN - Small cards */}
+          {/*  Small cards */}
           <div className="order-2 lg:order-1 lg:w-[38%] flex flex-col gap-6">
             <div className="bg-white rounded-[30px] p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
               <div className="flex flex-col items-center text-center">
@@ -70,7 +69,7 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN - Hero Banner */}
+          {/* Hero Banner */}
           <div className="order-1 lg:order-2 lg:w-[62%]">
             <div className="relative rounded-[30px] overflow-hidden shadow-2xl" style={{ minHeight: '560px', height: '100%' }}>
               
