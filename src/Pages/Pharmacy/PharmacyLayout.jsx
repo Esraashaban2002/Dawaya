@@ -2,19 +2,31 @@ import { useState } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   FaHouse,
-  FaUsers,
+  FaUser,
   FaStore,
   FaCartShopping,
   FaRightFromBracket,
 } from "react-icons/fa6";
 const navItems = [
-  { path: "/admin", label: "الرئيسية", icon: <FaHouse />, end: true },
-  { path: "/admin/users", label: "المستخدمين", icon: <FaUsers /> },
-  { path: "/admin/pharmacies", label: "الصيدليات", icon: <FaStore /> },
-  { path: "/admin/orders", label: "الطلبات", icon: <FaCartShopping /> },
+  { path: "/pharmacy", label: "الرئيسية", icon: <FaHouse />, end: true },
+  {
+    path: "/pharmacy/pharmacyprofile",
+    label: "الملف الشخصي",
+    icon: <FaUser />,
+  },
+  {
+    path: "/pharmacy/pharmacystock",
+    label: " إدارة المخزون",
+    icon: <FaStore />,
+  },
+  {
+    path: "/pharmacy/pharmacyorders",
+    label: "الطلبات",
+    icon: <FaCartShopping />,
+  },
 ];
 
-export default function AdminLayout() {
+export default function PharmacyLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
 
@@ -31,7 +43,6 @@ export default function AdminLayout() {
         fontFamily: "Cairo, sans-serif",
       }}
     >
-      {/* Aside */}
       <aside
         className={`${collapsed ? "w-16" : "w-60"} flex flex-col transition-all duration-300 flex-shrink-0`}
         style={{
@@ -40,7 +51,6 @@ export default function AdminLayout() {
           boxShadow: "var(--shadow-md)",
         }}
       >
-        {/* Logo */}
         <div
           className="flex items-center justify-between px-4 py-5"
           style={{ borderBottom: "1px solid var(--color-border)" }}
@@ -61,9 +71,7 @@ export default function AdminLayout() {
                 style={{ width: "80px", height: "50px" }}
               />
             </Link>
-            // <span className="font-extrabold text-xl" style={{ color: 'var(--color-brand)' }}>
-            //   داوايا
-            // </span>
+
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -77,7 +85,6 @@ export default function AdminLayout() {
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <NavLink
@@ -101,14 +108,13 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        {/* Logout */}
         <div
           className="px-2 py-4"
           style={{ borderTop: "1px solid var(--color-border)" }}
         >
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all cursor-pointer"
             style={{ color: "var(--color-danger)" }}
             onMouseEnter={(e) =>
               (e.currentTarget.style.background = "var(--color-danger-light)")
@@ -125,9 +131,8 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
+
         <div
           className="px-6 py-4 flex items-center justify-between flex-shrink-0"
           style={{
@@ -140,20 +145,10 @@ export default function AdminLayout() {
             className="font-bold text-sm"
             style={{ color: "var(--color-text-muted)" }}
           >
-            لوحة تحكم الأدمن
+            لوحة تحكم الصيدليه
           </h1>
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--color-primary) 0%, #0ea5e9 100%)",
-            }}
-          >
-            A
-          </div>
         </div>
 
-        {/* Page Content */}
         <div className="flex-1 overflow-scroll p-6">
           <Outlet />
         </div>
