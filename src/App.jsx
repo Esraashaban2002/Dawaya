@@ -70,6 +70,8 @@ function App() {
         {
           path: "/pharmacies",
           element: <Pharmacy />
+        },
+        {
           path: "/prescription",
           element: <Prescription />
         },
