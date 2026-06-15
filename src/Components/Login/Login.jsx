@@ -14,55 +14,107 @@ export default function Login() {
 
   let { setUserLogin } = useContext(UserContext);
 
-  async function handelLogin(formValues) {
-    setIsLoading(true);
+ async function handelLogin(formValues) {
+  setIsLoading(true);
 
-    // 2. Fallback to server API if no local match is found
+  // ── helper: decode JWT payload بدون library ──────────────────
+  const decodeToken = (token) => {
     try {
-      let { data } = await axios.post(
-        `https://dawaya-back-end.vercel.app/api/auth/login`,
-        formValues,
-      );
-      if (data.success) {
-        const token = data.data.accessToken;
-        localStorage.setItem("userToken", token);
-        setUserLogin(token);
-
-        // Store active session parameters
-        localStorage.setItem("dawaya_current_email", formValues.email);
-        localStorage.setItem("dawaya_current_password", formValues.password);
-
-        // Save or update user credentials in the local registry
-        try {
-          const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
-          const index = users.findIndex(u => u.email.toLowerCase() === formValues.email.toLowerCase());
-          if (index > -1) {
-            users[index].password = formValues.password;
-            users[index].token = token;
-          } else {
-            users.push({
-              username: formValues.email.split('@')[0].slice(0, 12),
-              email: formValues.email,
-              password: formValues.password,
-              phone: '01012345678',
-              gender: 'male',
-              age: 25,
-              token: token
-            });
-          }
-          localStorage.setItem("dawaya_users", JSON.stringify(users));
-        } catch (e) {
-          console.error("Saving to local user directory failed", e);
-        }
-
-        setIsLoading(false);
-        navigate("/");
-      }
-    } catch (error) {
-      setIsLoading(false);
-      setApiError(error.response?.data?.message || "خطأ في تسجيل الدخول. يرجى التحقق من البيانات.");
+      const payload = token.split('.')[1];
+      return JSON.parse(atob(payload));
+    } catch {
+      return null;
     }
+  };
+
+  // ── helper: redirect بناءً على الـ role ──────────────────────
+  const redirectByRole = (role) => {
+    switch (role) {
+      case 'admin':       navigate('/admin'); break;
+      case 'pharmacist':  navigate('/pharmacy'); break;
+      default:            navigate('/');
+    }
+  };
+
+  // ── 1. تحقق من الـ local registry أولاً ─────────────────────
+  try {
+    const users = JSON.parse(localStorage.getItem('dawaya_users') || '[]');
+    const matchedUser = users.find(
+      u => u.email.toLowerCase() === formValues.email.toLowerCase()
+    );
+    if (matchedUser && matchedUser.password === formValues.password) {
+      const activeToken = matchedUser.token || localStorage.getItem('userToken') || 'mock_token_for_dawaya_auth';
+      localStorage.setItem('userToken', activeToken);
+      setUserLogin(activeToken);
+      localStorage.setItem('dawaya_current_email', matchedUser.email);
+      localStorage.setItem('dawaya_current_password', matchedUser.password);
+      setIsLoading(false);
+
+      // لو عنده role محفوظ استخدمه، غير كده روح الـ home
+      redirectByRole(matchedUser.role || 'user');
+      return;
+    }
+  } catch (e) {
+    console.error('Local login intercept failed', e);
   }
+
+  // ── 2. Fallback to server API ─────────────────────────────────
+  try {
+    const { data } = await axios.post(
+      'https://dawaya-back-end.vercel.app/api/auth/login',
+      formValues,
+    );
+
+    if (data.success) {
+      const token    = data.data.accessToken;
+      // الـ role ممكن يكون في data.data.user.role أو جوا الـ token نفسه
+      const userRole = data.data.user?.role
+                    || data.data.role
+                    || decodeToken(token)?.role
+                    || 'user';
+
+      // حفظ الـ token والـ role
+      localStorage.setItem('userToken', token);
+      localStorage.setItem('userRole', userRole);
+      setUserLogin(token);
+      localStorage.setItem('dawaya_current_email', formValues.email);
+      localStorage.setItem('dawaya_current_password', formValues.password);
+
+      // حفّظ في الـ local registry مع الـ role
+      try {
+        const users = JSON.parse(localStorage.getItem('dawaya_users') || '[]');
+        const index = users.findIndex(
+          u => u.email.toLowerCase() === formValues.email.toLowerCase()
+        );
+        const userData = {
+          username: data.data.user?.username || formValues.email.split('@')[0].slice(0, 12),
+          email:    formValues.email,
+          phone:    data.data.user?.phone || '01012345678',
+          gender:   data.data.user?.gender || 'male',
+          age:      data.data.user?.age || 25,
+          role:     userRole,
+          token,
+        };
+        if (index > -1) {
+          users[index] = { ...users[index], ...userData };
+        } else {
+          users.push(userData);
+        }
+        localStorage.setItem('dawaya_users', JSON.stringify(users));
+      } catch (e) {
+        console.error('Saving to local user directory failed', e);
+      }
+
+      setIsLoading(false);
+      redirectByRole(userRole);
+    }
+  } catch (error) {
+    setIsLoading(false);
+    setApiError(
+      error.response?.data?.message || 'خطأ في تسجيل الدخول. يرجى التحقق من البيانات.'
+    );
+  }
+}
 
   let validationSchema = yup.object().shape({
     email: yup
