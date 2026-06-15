@@ -91,6 +91,13 @@ export default function Prescription() {
   const location = useLocation();
 
   useEffect(() => {
+    if (!userLogin) {
+      setShowLoginModal(true);
+      navigate("/", { replace: true });
+    }
+  }, [userLogin, navigate, setShowLoginModal]);
+
+  useEffect(() => {
     if (location.state?.file) {
       const file = location.state.file;
       setSelectedFile(file);

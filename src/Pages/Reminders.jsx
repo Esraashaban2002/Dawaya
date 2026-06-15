@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell, Clock, Calendar, Check, AlertCircle, Trash2,
   Plus, MessageSquare, Smartphone, User, Phone, CheckCircle, RefreshCw, X, Edit
 } from 'lucide-react';
 import { UserContext } from '../Context/UserContext';
+import { CartContext } from '../Context/CartContext';
 import { api } from '../services/api';
 
 const DEFAULT_REMINDERS = [
@@ -37,7 +38,16 @@ const DEFAULT_REMINDERS = [
 
 export default function Reminders() {
   const { userLogin } = useContext(UserContext);
+  const { setShowLoginModal } = useContext(CartContext);
+  const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!userLogin) {
+      setShowLoginModal(true);
+      navigate("/", { replace: true });
+    }
+  }, [userLogin, navigate, setShowLoginModal]);
 
   // State Management
   const [profilePhone, setProfilePhone] = useState("");
