@@ -323,23 +323,27 @@ const bannerSlides = [
 ];
 
 export default function Prouducts() {
-  const { cartItems, addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
   const [activeMainCat, setActiveMainCat] = useState("كل المنتجات");
   const [activeSubCat, setActiveSubCat] = useState("الكل");
   const [categoryApiValue, setCategoryApiValue] = useState("");
 
   const handleAddToCartClick = (med) => {
     if (!med) return;
-    const existing = cartItems.find((item) => String(item.id) === String(med.id));
-    const newQty = existing ? existing.quantity + 1 : 1;
-    addToCart({
-      id: med.id,
-      name: med.name,
-      price: med.price,
-      brand: med.manufacturer || med.genericName || 'عام',
-      image: med.image
-    }, newQty);
-    triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+    const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+    if (isAdded) {
+      removeFromCart(med.id);
+      triggerToast(`تم إزالة ${med.name} من السلة!`);
+    } else {
+      addToCart({
+        id: med.id,
+        name: med.name,
+        price: med.price,
+        brand: med.manufacturer || med.genericName || 'عام',
+        image: med.image
+      }, 1);
+      triggerToast(`تم إضافة ${med.name} إلى السلة بنجاح!`);
+    }
   };
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1082,16 +1086,34 @@ export default function Prouducts() {
                                       </div>
                                     </div>
 
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAddToCartClick(med);
-                                      }}
-                                      className="w-full bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3.5 rounded-xl text-center text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#009eb6]/15 active:scale-95"
-                                    >
-                                      <ShoppingCart className="w-4.5 h-4.5" />
-                                      <span>أضف إلى العربة</span>
-                                    </button>
+                                    {(() => {
+                                      const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddToCartClick(med);
+                                          }}
+                                          className={`w-full font-bold py-3.5 rounded-xl text-center text-sm transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ${
+                                            isAdded
+                                              ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/15'
+                                              : 'bg-[#009eb6] hover:bg-[#008fa0] text-white shadow-[#009eb6]/15'
+                                          }`}
+                                        >
+                                          {isAdded ? (
+                                            <>
+                                              <X className="w-4.5 h-4.5" />
+                                              <span>إزالة من السلة</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <ShoppingCart className="w-4.5 h-4.5" />
+                                              <span>أضف إلى العربة</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      );
+                                    })()}
                                   </div>
                                 ))}
                               </div>
@@ -1175,16 +1197,34 @@ export default function Prouducts() {
                           </div>
 
                           {/* Add to Cart Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCartClick(med);
-                            }}
-                            className="w-full bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-2.5 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-[#009eb6]/15 active:scale-95"
-                          >
-                            <ShoppingCart className="w-4 h-4" />
-                            <span>أضف إلى العربة</span>
-                          </button>
+                          {(() => {
+                            const isAdded = cartItems.some((item) => String(item.id) === String(med.id));
+                            return (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAddToCartClick(med);
+                                }}
+                                className={`w-full font-bold py-2.5 rounded-xl text-center text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ${
+                                  isAdded
+                                    ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/15'
+                                    : 'bg-[#009eb6] hover:bg-[#008fa0] text-white shadow-[#009eb6]/15'
+                                }`}
+                              >
+                                {isAdded ? (
+                                  <>
+                                    <X className="w-4 h-4" />
+                                    <span>إزالة من السلة</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ShoppingCart className="w-4 h-4" />
+                                    <span>أضف إلى العربة</span>
+                                  </>
+                                )}
+                              </button>
+                            );
+                          })()}
                         </motion.div>
                       ))}
                     </motion.div>
@@ -1395,16 +1435,35 @@ export default function Prouducts() {
                     </div>
 
                     <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          triggerToast(`تم إضافة ${activeDetails?.name} إلى السلة بنجاح!`);
-                          setSelectedMedicine(null);
-                        }}
-                        className="flex-1 bg-[#009eb6] hover:bg-[#008fa0] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-[#009eb6]/15 active:scale-95 text-sm"
-                      >
-                        <ShoppingCart className="w-4.5 h-4.5" />
-                        <span>إضافة للسلة</span>
-                      </button>
+                      {(() => {
+                        const isAdded = activeDetails ? cartItems.some((item) => String(item.id) === String(activeDetails.id)) : false;
+                        return (
+                          <button
+                            onClick={() => {
+                              if (activeDetails) {
+                                handleAddToCartClick(activeDetails);
+                              }
+                            }}
+                            className={`flex-1 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 text-sm cursor-pointer ${
+                              isAdded
+                                ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/15'
+                                : 'bg-[#009eb6] hover:bg-[#008fa0] text-white shadow-[#009eb6]/15'
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <X className="w-4.5 h-4.5" />
+                                <span>إزالة من السلة</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="w-4.5 h-4.5" />
+                                <span>إضافة للسلة</span>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })()}
                       <button
                         onClick={() => triggerToast("تم الإضافة إلى المفضلة")}
                         className="w-11 h-11 bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all border border-slate-100"
