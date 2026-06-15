@@ -13,7 +13,7 @@ const DEFAULT_REMINDERS = [
     medicineName: "بانادول اكسترا اوبتيزورب",
     dosage: "قرص واحد",
     frequency: "مرتين يومياً",
-    time: "08:00",
+    time: "08:00,20:00",
     useApp: true,
     useWhatsapp: true,
     phoneType: "profile",
@@ -26,7 +26,7 @@ const DEFAULT_REMINDERS = [
     medicineName: "هيكس ألم جل موضعي",
     dosage: "دهان خفيف للمفصل",
     frequency: "3 مرات يومياً",
-    time: "14:00",
+    time: "08:00,14:00,20:00",
     useApp: false,
     useWhatsapp: true,
     phoneType: "custom",
@@ -48,7 +48,9 @@ export default function Reminders() {
   const [medicineName, setMedicineName] = useState("");
   const [dosage, setDosage] = useState("قرص واحد");
   const [frequency, setFrequency] = useState("مرة واحدة يومياً");
-  const [time, setTime] = useState("08:00");
+  const [time1, setTime1] = useState("08:00");
+  const [time2, setTime2] = useState("20:00");
+  const [time3, setTime3] = useState("14:00");
   const [useApp, setUseApp] = useState(true);
   const [useWhatsapp, setUseWhatsapp] = useState(location.pathname === '/whatsapp');
   const [phoneType, setPhoneType] = useState("profile");
@@ -86,7 +88,8 @@ export default function Reminders() {
       const currentTimeStr = `${currentHour}:${currentMin}`;
 
       reminders.forEach(rem => {
-        if (rem.active && rem.useApp && rem.time === currentTimeStr) {
+        const times = (rem.time || "").split(',').map(t => t.trim());
+        if (rem.active && rem.useApp && times.includes(currentTimeStr)) {
           const alertKey = `${rem._id || rem.id}-${currentTimeStr}`;
           if (!alertedKeysRef.current.has(alertKey)) {
             // Play notification sound
@@ -217,7 +220,12 @@ export default function Reminders() {
     setMedicineName(rem.medicineName);
     setDosage(rem.dosage);
     setFrequency(rem.frequency);
-    setTime(rem.time);
+    
+    const timeParts = (rem.time || "").split(',');
+    setTime1(timeParts[0] || "08:00");
+    setTime2(timeParts[1] || "20:00");
+    setTime3(timeParts[2] || "14:00");
+
     setUseApp(rem.useApp);
     setUseWhatsapp(rem.useWhatsapp);
     setPhoneType(rem.phoneType || (profilePhone ? "profile" : "custom"));
@@ -239,7 +247,9 @@ export default function Reminders() {
     setMedicineName("");
     setDosage("قرص واحد");
     setFrequency("مرة واحدة يومياً");
-    setTime("08:00");
+    setTime1("08:00");
+    setTime2("20:00");
+    setTime3("14:00");
     setUseApp(true);
     setUseWhatsapp(false);
     setPhoneType(profilePhone ? "profile" : "custom");
@@ -281,11 +291,18 @@ export default function Reminders() {
       }
     }
 
+    let finalTime = time1;
+    if (frequency === "مرتين يومياً") {
+      finalTime = `${time1},${time2}`;
+    } else if (frequency === "3 مرات يومياً") {
+      finalTime = `${time1},${time2},${time3}`;
+    }
+
     const finalReminderData = {
       medicineName,
       dosage,
       frequency,
-      time,
+      time: finalTime,
       useApp,
       useWhatsapp,
       phoneType: useWhatsapp ? phoneType : "",
@@ -355,7 +372,9 @@ export default function Reminders() {
     setMedicineName("");
     setDosage("قرص واحد");
     setFrequency("مرة واحدة يومياً");
-    setTime("08:00");
+    setTime1("08:00");
+    setTime2("20:00");
+    setTime3("14:00");
     if (!profilePhone) {
       setPhoneType("custom");
     } else {
@@ -513,17 +532,59 @@ export default function Reminders() {
 
               {/* Timing */}
               <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label" style={{ marginBottom: '8px' }}>توقيت أخذ الجرعة</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Clock size={16} style={{ color: 'var(--color-primary)' }} />
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="form-input"
-                    style={{ maxWidth: '140px', padding: '8px 12px' }}
-                    required
-                  />
+                <label className="form-label" style={{ marginBottom: '8px' }}>
+                  {frequency === "مرتين يومياً"
+                    ? "توقيتات أخذ الجرعات (مرتين)"
+                    : frequency === "3 مرات يومياً"
+                    ? "توقيتات أخذ الجرعات (3 مرات)"
+                    : "توقيت أخذ الجرعة"}
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* First Time Input */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Clock size={16} style={{ color: 'var(--color-primary)' }} />
+                    <span style={{ fontSize: '12px', minWidth: '70px', color: 'var(--color-text-muted)' }}>الجرعة الأولى:</span>
+                    <input
+                      type="time"
+                      value={time1}
+                      onChange={(e) => setTime1(e.target.value)}
+                      className="form-input"
+                      style={{ maxWidth: '140px', padding: '8px 12px' }}
+                      required
+                    />
+                  </div>
+
+                  {/* Second Time Input (if Twice or 3 Times) */}
+                  {(frequency === "مرتين يومياً" || frequency === "3 مرات يومياً") && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="animate-fade-in">
+                      <Clock size={16} style={{ color: 'var(--color-primary)' }} />
+                      <span style={{ fontSize: '12px', minWidth: '70px', color: 'var(--color-text-muted)' }}>الجرعة الثانية:</span>
+                      <input
+                        type="time"
+                        value={time2}
+                        onChange={(e) => setTime2(e.target.value)}
+                        className="form-input"
+                        style={{ maxWidth: '140px', padding: '8px 12px' }}
+                        required
+                      />
+                    </div>
+                  )}
+
+                  {/* Third Time Input (if 3 Times) */}
+                  {frequency === "3 مرات يومياً" && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="animate-fade-in">
+                      <Clock size={16} style={{ color: 'var(--color-primary)' }} />
+                      <span style={{ fontSize: '12px', minWidth: '70px', color: 'var(--color-text-muted)' }}>الجرعة الثالثة:</span>
+                      <input
+                        type="time"
+                        value={time3}
+                        onChange={(e) => setTime3(e.target.value)}
+                        className="form-input"
+                        style={{ maxWidth: '140px', padding: '8px 12px' }}
+                        required
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -719,7 +780,7 @@ export default function Reminders() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
                         <div>
                           <span>⏰ الموعد: </span>
-                          <strong style={{ color: 'var(--color-text-main)' }}>{rem.time} ({rem.frequency})</strong>
+                          <strong style={{ color: 'var(--color-text-main)' }}>{(rem.time || "").split(',').join(' | ')} ({rem.frequency})</strong>
                         </div>
                         <div>
                           <span>💊 الجرعة: </span>
@@ -848,12 +909,12 @@ export default function Reminders() {
                   <br />
                   🔹 الجرعة: *{simulatedReminder.dosage}*
                   <br />
-                  📅 الموعد: *{simulatedReminder.time} ({simulatedReminder.frequency})*
+                  📅 الموعد: *{(simulatedReminder.time || "").split(',').join(' | ')} ({simulatedReminder.frequency})*
                   <br />
                   <br />
                   نتمنى لك دوام الصحة والعافية! 💚
                   <span className="whatsapp-msg-time">
-                    {simulatedReminder.time} ✓✓
+                    {(simulatedReminder.time || "").split(',')[0]} ✓✓
                   </span>
                 </div>
               </div>
@@ -933,7 +994,7 @@ export default function Reminders() {
                 </div>
                 <div>
                   <span style={{ fontSize: '11px', color: '#94a3b8' }}>الموعد:</span>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>{activeInAppAlert.time}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>{(activeInAppAlert.time || "").split(',').join(' | ')}</div>
                 </div>
               </div>
             </div>

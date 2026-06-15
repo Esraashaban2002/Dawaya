@@ -45,10 +45,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
             console.log(`Checking reminders for Cairo time: ${currentTime}`);
 
             try {
-                const dueReminders = await Reminder.find({
-                    time: currentTime,
+                const activeReminders = await Reminder.find({
                     active: true,
                     useWhatsapp: true
+                });
+
+                const dueReminders = activeReminders.filter(rem => {
+                    if (!rem.time) return false;
+                    const times = rem.time.split(',').map(t => t.trim());
+                    return times.includes(currentTime);
                 });
 
                 if (dueReminders.length === 0) return;
@@ -56,7 +61,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
                 console.log(`Found ${dueReminders.length} active due reminders scheduled for ${currentTime}.`);
 
                 for (const reminder of dueReminders) {
-                    await sendWatiWhatsAppReminder(reminder);
+                    await sendWatiWhatsAppReminder(reminder, currentTime);
                 }
             } catch (error) {
                 console.error('Error fetching due reminders:', error);
@@ -68,7 +73,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
 /**
  * Sends a real WhatsApp message using WATI API
  */
-async function sendWatiWhatsAppReminder(reminder) {
+async function sendWatiWhatsAppReminder(reminder, triggerTime) {
+    const displayTime = triggerTime || reminder.time;
     // Format phone number to international format, e.g. +201012345678 (WATI requires the plus symbol)
     const formattedPhone = reminder.phoneNumber.startsWith('+')
         ? reminder.phoneNumber
@@ -81,7 +87,7 @@ async function sendWatiWhatsAppReminder(reminder) {
             customParams = [
                 { name: "name", value: "Patient" },
                 { name: "place", value: `${reminder.medicineName} (${reminder.dosage})` },
-                { name: "date", value: reminder.time }
+                { name: "date", value: displayTime }
             ];
         } else if (templateName === "medicine_reminder_ar") {
             customParams = [
@@ -89,8 +95,8 @@ async function sendWatiWhatsAppReminder(reminder) {
                 { name: "medicine_name", value: reminder.medicineName },
                 { name: "2", value: reminder.dosage },
                 { name: "dosage", value: reminder.dosage },
-                { name: "3", value: reminder.time },
-                { name: "time", value: reminder.time },
+                { name: "3", value: displayTime },
+                { name: "time", value: displayTime },
                 { name: "4", value: reminder.frequency || "مرة واحدة يومياً" },
                 { name: "frequency", value: reminder.frequency || "مرة واحدة يومياً" }
             ];
@@ -98,7 +104,7 @@ async function sendWatiWhatsAppReminder(reminder) {
             customParams = [
                 { name: "medicine_name", value: reminder.medicineName },
                 { name: "dosage", value: reminder.dosage },
-                { name: "time", value: reminder.time }
+                { name: "time", value: displayTime }
             ];
         }
 
