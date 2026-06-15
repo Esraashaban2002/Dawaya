@@ -149,7 +149,7 @@ export default function Navbar() {
           {/* Mobile Menu */}
           {menuOpen && (
             <div className="nb-mobile-menu">
-               <Link to="/" className="nb-mobile-link">الرئيسية</Link>
+              <Link to="/" className="nb-mobile-link">الرئيسية</Link>
               <Link to="/#products-section" className="nb-mobile-link">المنتجات</Link>
               <Link to="/#pharmacies-section" className="nb-mobile-link">الصيدليات</Link>
 
