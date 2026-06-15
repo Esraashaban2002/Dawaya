@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FaSearch,
@@ -17,11 +17,16 @@ import { FavoritesContext } from "../../Context/FavoritesContext";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { pathname } = useLocation();
+  const { pathname, hash , search: urlSearch } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
   const { cartCount } = useContext(CartContext);
   const { favorites } = useContext(FavoritesContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const query = new URLSearchParams(urlSearch).get("search") || "";
+    setSearch(query);
+  }, [urlSearch]);
 
   function logout() {
     localStorage.removeItem("userToken");
@@ -54,29 +59,42 @@ export default function Navbar() {
 
               <Link
                 to="/products"
-                className={`nb-link${pathname === "/products" ? " active" : ""}`}
+                className={`nb-link${(pathname === "/products") ? " active" : ""}`}
               >
                 المنتجات
               </Link>
 
               <Link
-                to="/pharmacies"
-                className={`nb-link${pathname === "/pharmacies" ? " active" : ""}`}
+                to="/#pharmacies-section"
+                className={`nb-link${(pathname === "/" && hash === "#pharmacies-section") ? " active" : ""}`}
               >
                 الصيدليات
               </Link>
             </div>
 
-            <div className="nb-search">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                navigate(`/products?search=${search}`);
+              }} 
+              className="nb-search"
+            >
               <input
-                placeholder="ابحث..."
+                placeholder="إبحث باسم الدواء"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  navigate(`/products?search=${e.target.value}`);
+                }}
               />
-              <span className="nb-search-icon">
+              <span 
+                className="nb-search-icon"
+                onClick={() => navigate(`/products?search=${search}`)}
+                style={{ cursor: "pointer" }}
+              >
                 <FaSearch />
               </span>
-            </div>
+            </form>
 
             <div className="nb-actions">
               <button className="nb-icon-btn">
@@ -131,9 +149,9 @@ export default function Navbar() {
           {/* Mobile Menu */}
           {menuOpen && (
             <div className="nb-mobile-menu">
-              <Link to="/" className="nb-mobile-link">الرئيسية</Link>
-              <Link to="/products" className="nb-mobile-link">المنتجات</Link>
-              <Link to="/pharmacies" className="nb-mobile-link">الصيدليات</Link>
+               <Link to="/" className="nb-mobile-link">الرئيسية</Link>
+              <Link to="/#products-section" className="nb-mobile-link">المنتجات</Link>
+              <Link to="/#pharmacies-section" className="nb-mobile-link">الصيدليات</Link>
 
               {userLogin == null ? (
                 <>

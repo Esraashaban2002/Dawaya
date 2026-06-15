@@ -13,6 +13,7 @@ export default function CartContextProvider({ children }) {
   });
 
   const [cartCount, setCartCount] = useState(0);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Clear cart if user is not logged in
   useEffect(() => {
@@ -31,7 +32,10 @@ export default function CartContextProvider({ children }) {
   }, [cartItems, userLogin]);
 
   const addToCart = (product, quantity) => {
-    if (!userLogin) return;
+    if (!userLogin) {
+      setShowLoginModal(true);
+      return;
+    }
     setCartItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex((item) => item.id === product.id);
       if (existingItemIndex > -1) {
@@ -70,6 +74,8 @@ export default function CartContextProvider({ children }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        showLoginModal,
+        setShowLoginModal,
       }}
     >
       {children}

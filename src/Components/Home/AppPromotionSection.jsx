@@ -45,7 +45,7 @@ const AppPromotionSection = () => {
                   
                   <div className="relative w-full h-full pt-8">
                     <img 
-                      src="public/imges/center/Map.png" 
+                      src="/imges/center/Map.png" 
                       alt="لوحة تحكم دوایا"
                       className="w-full h-full object-cover"
                     />

@@ -633,7 +633,15 @@ export default function Checkout() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '200px', overflowY: 'auto', marginBottom: '20px', paddingLeft: '4px' }}>
                 {cartItems.map((item) => (
                   <div key={item.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={item.image} alt={item.name} style={{ width: '48px', height: '48px', objectFit: 'contain', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '4px' }} />
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                      }}
+                      style={{ width: '48px', height: '48px', objectFit: 'contain', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '4px' }}
+                    />
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-main)', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.name}</span>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-muted)' }}>
