@@ -5,6 +5,10 @@
 @plugin "flowbite/plugin";
 @source "../node_modules/flowbite";
 
+@theme {
+  --font-sans: "Cairo", system-ui, -apple-system, sans-serif;
+}
+
 :root {
   /* HSL / Tailored Glassmorphism Colors */
   --bg-primary: #f4f7fb;
@@ -19,9 +23,9 @@
   --color-text-light: #94a3b8;
   --color-border: #e2e8f0;
 
-  --color-success: #10b981;
-  --color-success-light: #d1fae5;
-  --color-success-dark: #065f46;
+  --color-success: #009eb6;
+  --color-success-light: #e0f5f7;
+  --color-success-dark: #006878;
 
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
