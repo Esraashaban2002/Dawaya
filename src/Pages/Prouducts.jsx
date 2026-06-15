@@ -1572,6 +1572,7 @@ export default function Prouducts() {
                   </button>
                 </div>
               </div>
+              </div>
             </motion.div>
           </div>
         )}
