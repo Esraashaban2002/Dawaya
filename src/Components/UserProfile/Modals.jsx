@@ -96,14 +96,14 @@ export function EditProfileModal({ profile, onSave, onClose }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">البريد الإلكتروني</label>
+            <label className="form-label">البريد الإلكتروني (لا يمكن تعديله)</label>
             <input
               type="email"
               name="email"
               className="form-input"
-              style={{ direction: 'ltr', textAlign: 'left' }}
+              style={{ direction: 'ltr', textAlign: 'left', backgroundColor: '#e2e8f0', cursor: 'not-allowed' }}
               value={formData.email}
-              onChange={handleChange}
+              disabled
               required
             />
           </div>
