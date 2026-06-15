@@ -17,7 +17,7 @@ import { FavoritesContext } from "../../Context/FavoritesContext";
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { pathname, search: urlSearch } = useLocation();
+  const { pathname, hash , search: urlSearch } = useLocation();
   const { userLogin, setUserLogin } = useContext(UserContext);
   const { cartCount } = useContext(CartContext);
   const { favorites } = useContext(FavoritesContext);
@@ -59,14 +59,14 @@ export default function Navbar() {
 
               <Link
                 to="/products"
-                className={`nb-link${pathname === "/products" ? " active" : ""}`}
+                className={`nb-link${(pathname === "/products") ? " active" : ""}`}
               >
                 المنتجات
               </Link>
 
               <Link
-                to="/pharmacies"
-                className={`nb-link${pathname === "/pharmacies" ? " active" : ""}`}
+                to="/#pharmacies-section"
+                className={`nb-link${(pathname === "/" && hash === "#pharmacies-section") ? " active" : ""}`}
               >
                 الصيدليات
               </Link>
@@ -150,8 +150,8 @@ export default function Navbar() {
           {menuOpen && (
             <div className="nb-mobile-menu">
               <Link to="/" className="nb-mobile-link">الرئيسية</Link>
-              <Link to="/products" className="nb-mobile-link">المنتجات</Link>
-              <Link to="/pharmacies" className="nb-mobile-link">الصيدليات</Link>
+              <Link to="/#products-section" className="nb-mobile-link">المنتجات</Link>
+              <Link to="/#pharmacies-section" className="nb-mobile-link">الصيدليات</Link>
 
               {userLogin == null ? (
                 <>

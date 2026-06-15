@@ -26,9 +26,14 @@ import ProductDetails from './Components/ProductDetails/ProductDetails';
 import Cart from './Pages/Cart';
 import Favorites from './Pages/Favorites';
 import Checkout from './Pages/Checkout';
+import Prescription from './Pages/Prescription';
+import Reminders from './Pages/Reminders';
 import Users from './Pages/Adman/User';
 import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
+import AuthCallback from "./Pages/AuthCallback";
+import Pharmacies from './Pages/Adman/Pharmacies';
+import Orders from './Pages/Adman/Orders';
 
 const queryClient = new QueryClient();
 
@@ -65,6 +70,16 @@ function App() {
         {
           path: "/pharmacies",
           element: <Pharmacy />
+          path: "/prescription",
+          element: <Prescription />
+        },
+        {
+          path: "/reminders",
+          element: <Reminders />
+        },
+        {
+          path: "/whatsapp",
+          element: <Reminders />
         },
         {
           path: "/products",
@@ -93,6 +108,10 @@ function App() {
         {
           path: "/login",
           element: <Login />,
+        },
+        {
+          path:"/auth/callback" ,
+          element:<AuthCallback />
         },
         {
           path: "/pharmacistRegister",
@@ -133,7 +152,7 @@ function App() {
       ],
     },
 
-    // ─── الـ Admin Dashboard — 
+  // Admin Dashboard
     {
       path: "/admin",
       element: (
@@ -144,22 +163,26 @@ function App() {
       children: [
         { index: true, element: <Dashboard /> },
         { path: "users", element: <Users /> },
+        { path: "pharmacies", element: <Pharmacies /> },
+        { path: "orders", element: <Orders /> },
       ]
     }
   ]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <UserContextProvider>
-        <CartContextProvider>
-          <FavoritesContextProvider>
-            <div dir="rtl">
-              <RouterProvider router={router}></RouterProvider>
-            </div>
-          </FavoritesContextProvider>
-        </CartContextProvider>
-      </UserContextProvider>
-    </QueryClientProvider>
+
+  <QueryClientProvider client={queryClient}>
+    <UserContextProvider>
+      <CartContextProvider>
+        <FavoritesContextProvider>
+          <div dir="rtl">
+            <RouterProvider router={router} />
+          </div>
+        </FavoritesContextProvider>
+      </CartContextProvider>
+    </UserContextProvider>
+  </QueryClientProvider>
+    
   );
 }
 

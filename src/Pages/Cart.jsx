@@ -37,7 +37,7 @@ export default function Cart() {
               <p className="empty-desc">
                 يبدو أنك لم تقم بإضافة أي منتجات إلى عربة التسوق الخاصة بك بعد. ابدأ بالتسوق الآن واكتشف أفضل العروض الطبية.
               </p>
-              <Link to="/products" className="checkout-btn" style={{ maxWidth: '240px', marginTop: '12px', textDecoration: 'none' }}>
+              <Link to="/#products-section" className="checkout-btn" style={{ maxWidth: '240px', marginTop: '12px', textDecoration: 'none' }}>
                 <ArrowRight size={18} />
                 <span>العودة للمنتجات</span>
               </Link>
@@ -67,7 +67,14 @@ export default function Cart() {
                     
                     {/* Image */}
                     <div className="cart-item-image">
-                      <img src={item.image} alt={item.name} />
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                        }}
+                      />
                     </div>
 
                     {/* Details */}
@@ -123,7 +130,7 @@ export default function Cart() {
 
               {/* Bottom Actions Row */}
               <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between' }}>
-                <Link to="/products" className="continue-shopping-link">
+                <Link to="/#products-section" className="continue-shopping-link">
                   <ArrowRight size={16} />
                   <span>مواصلة التسوق</span>
                 </Link>
