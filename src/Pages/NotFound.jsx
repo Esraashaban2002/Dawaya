@@ -31,14 +31,28 @@ export default function NotFound() {
           عذراً، الصفحة التي تبحث عنها غير متوفرة حالياً، ربما تم نقلها أو حذفها نهائياً. يرجى التحقق من الرابط أو العودة للرئيسية.
         </p>
 
-        {/* Action Button */}
-        <Link
-          to="/"
-          className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-extrabold py-3 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md shadow-[#10b981]/25 hover:shadow-lg active:scale-[0.98] text-xs md:text-sm cursor-pointer"
-        >
-          <Home className="w-4.5 h-4.5" />
-          <span>العودة إلى الصفحة الرئيسية</span>
-        </Link>
+      {/* أزرار */}
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-all duration-300 shadow-md"
+          >
+            <FaHome className="h-3.5 w-3.5" />
+            <span>الرئيسية</span>
+          </Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-all duration-300"
+          >
+            <FaArrowRight className="h-3.5 w-3.5" />
+            <span>رجوع</span>
+          </button>
+        </div>
+
+        {/* عبارة */}
+        <p className="text-gray-400 text-xs mt-6">
+          🫀 نهتم بصحتك
+        </p>
       </motion.div>
     </div>
   );
