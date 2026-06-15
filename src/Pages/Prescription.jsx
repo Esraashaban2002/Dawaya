@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { CartContext } from '../Context/CartContext';
 import { UserContext } from '../Context/UserContext';
+import axios from 'axios';
+import Tesseract from 'tesseract.js';
+import hexPainImg from '../assets/موفليكس-كريم-مساج-300x300.webp';
 
 const PRODUCTS_DB = [
   {
@@ -24,7 +27,7 @@ const PRODUCTS_DB = [
     genericName: "Diclofenac Sodium",
     category: "مسكنات",
     price: 12.50,
-    image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&q=80",
+    image: hexPainImg,
     manufacturer: "الشركة العربية للأدوية (ADCO)"
   },
   {
@@ -120,7 +123,43 @@ export default function Prescription() {
   
   const [matches, setMatches] = useState([]);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [apiProducts, setApiProducts] = useState([]);
   const fileInputRef = useRef(null);
+
+  // Fetch live products from backend
+  useEffect(() => {
+    const fetchApiProducts = async () => {
+      try {
+        const res = await axios.get("https://dawaya-back-end.vercel.app/api/medicines?limit=200");
+        if (res.data?.success && Array.isArray(res.data?.data?.data)) {
+          const mapped = res.data.data.data.map(med => ({
+            id: med._id,
+            name: med.name,
+            genericName: med.genericName || "",
+            category: med.category || med.subCategory || "عام",
+            price: med.price,
+            image: med.images?.[0] || med.image || "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&q=80",
+            manufacturer: med.manufacturer || ""
+          }));
+          setApiProducts(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products from backend:", err);
+      }
+    };
+    fetchApiProducts();
+  }, []);
+
+  // Combine live API products with local DB
+  const allProducts = React.useMemo(() => {
+    const combined = [...apiProducts];
+    PRODUCTS_DB.forEach(localMed => {
+      if (!combined.some(med => String(med.id) === String(localMed.id))) {
+        combined.push(localMed);
+      }
+    });
+    return combined;
+  }, [apiProducts]);
 
   const triggerToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -164,23 +203,18 @@ export default function Prescription() {
     }
   };
 
-  // Simulated Scanning Steps
-  const startScan = () => {
-    if (!previewUrl && !activePreset) {
-      triggerToast('الرجاء رفع روشتة أو اختيار روشتة جاهزة أولاً!', 'error');
-      return;
-    }
-
+  // Simulated / Preset Scanning Steps
+  const runPresetSimulation = () => {
     setIsScanning(true);
     setScanStep(0);
     setScanFinished(false);
     setScanLogs([]);
 
     const steps = [
-      { text: "تحميل الصورة وبدء المعالجة الرقمية...", duration: 800 },
-      { text: "تحليل بنية الروشتة وتحديد خط الطبيب...", duration: 1000 },
-      { text: "استخراج النصوص الطبية والمواد الفعالة بذكاء...", duration: 1200 },
-      { text: "مطابقة الأدوية المكتشفة مع المنتجات المتوفرة بقاعدة البيانات...", duration: 800 }
+      { text: "تحميل الصورة وبدء المعالجة الرقمية...", duration: 600 },
+      { text: "تحليل بنية الروشتة وتحديد خط الطبيب...", duration: 800 },
+      { text: "استخراج النصوص الطبية والمواد الفعالة بذكاء...", duration: 900 },
+      { text: "مطابقة الأدوية المكتشفة مع المنتجات المتوفرة بقاعدة البيانات...", duration: 600 }
     ];
 
     let currentLog = [];
@@ -194,20 +228,10 @@ export default function Prescription() {
         setScanLogs(currentLog);
 
         if (idx === steps.length - 1) {
-          // Finished Scanning
           setTimeout(() => {
             setIsScanning(false);
             setScanFinished(true);
-            
-            // Populate matching results
-            if (activePreset) {
-              setMatches(activePreset.matches.map(m => ({ ...m })));
-            } else if (selectedFile) {
-              const fileName = selectedFile.name;
-              // Simple filename matcher for wow effect
-              const matchedProducts = parseFileNameForProducts(fileName);
-              setMatches(matchedProducts);
-            }
+            setMatches(activePreset.matches.map(m => ({ ...m })));
             triggerToast('اكتمل مسح الروشتة بنجاح وتمت مطابقة الأدوية!', 'success');
           }, 400);
         }
@@ -215,57 +239,246 @@ export default function Prescription() {
     });
   };
 
-  const parseFileNameForProducts = (fileName) => {
-    const nameLower = fileName.toLowerCase();
+  // OCR Processing and Matching against allProducts database
+  const performOCRAndMatch = async (imageFile) => {
+    setIsScanning(true);
+    setScanStep(0);
+    setScanFinished(false);
+    setScanLogs([{ text: "جاري تشغيل محرك OCR والاتصال بالخادم اللغوي...", id: 'init', completed: false }]);
+
+    try {
+      const result = await Tesseract.recognize(
+        imageFile,
+        'eng',
+        {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              const progressPct = Math.round(m.progress * 100);
+              setScanLogs(prev => {
+                const filtered = prev.filter(l => l.id !== 'progress');
+                return [
+                  ...filtered,
+                  { text: `تحليل نصوص الروشتة: جاري القراءة (${progressPct}%)`, id: 'progress', completed: progressPct === 100 }
+                ];
+              });
+              setScanStep(3);
+            } else if (m.status === 'loading tesseract core') {
+              setScanLogs(prev => {
+                if (prev.some(l => l.id === 'core')) return prev;
+                return [
+                  ...prev,
+                  { text: "تحميل نواة المعالجة الطبية...", id: 'core', completed: true }
+                ];
+              });
+              setScanStep(1);
+            } else if (m.status === 'loading language traineddata') {
+              setScanLogs(prev => {
+                if (prev.some(l => l.id === 'lang')) return prev;
+                return [
+                  ...prev,
+                  { text: "تحميل المعاجم الطبية واللغوية...", id: 'lang', completed: true }
+                ];
+              });
+              setScanStep(2);
+            } else if (m.status === 'initializing api') {
+              setScanLogs(prev => {
+                if (prev.some(l => l.id === 'api')) return prev;
+                return [
+                  ...prev,
+                  { text: "تهيئة واجهة قراءة الوصفة...", id: 'api', completed: true }
+                ];
+              });
+            }
+          }
+        }
+      );
+
+      const ocrText = result.data.text || "";
+      console.log("OCR Extracted Text:\n", ocrText);
+
+      setScanLogs(prev => [
+        ...prev.filter(l => l.id !== 'progress'),
+        { text: "اكتملت القراءة الرقمية بنجاح!", id: 'done-read', completed: true },
+        { text: "جاري مطابقة الأدوية المستخرجة مع قاعدة البيانات...", id: 'matching', completed: false }
+      ]);
+      setScanStep(4);
+
+      const matchedResults = matchOcrTextToProducts(ocrText);
+
+      setTimeout(() => {
+        setIsScanning(false);
+        setScanFinished(true);
+        setMatches(matchedResults);
+        triggerToast('اكتمل مسح الروشتة بنجاح وتمت مطابقة الأدوية!', 'success');
+      }, 800);
+
+    } catch (error) {
+      console.error("OCR Error:", error);
+      setIsScanning(false);
+      setScanFinished(false);
+      triggerToast('عذراً، فشل مسح وقراءة الروشتة. الرجاء التأكد من جودة الصورة.', 'error');
+    }
+  };
+
+  const matchOcrTextToProducts = (ocrText) => {
+    const ocrTextLower = ocrText.toLowerCase();
     const matched = [];
     
-    if (nameLower.includes("panadol") || nameLower.includes("extra") || nameLower.includes("بانادول") || nameLower.includes("صداع")) {
-      matched.push({
-        detectedName: "Panadol Extra 500mg Tabs",
-        product: PRODUCTS_DB[0],
-        confidence: "98%",
-        quantity: 1,
-        selected: true
-      });
-    }
-    if (nameLower.includes("hex") || nameLower.includes("pain") || nameLower.includes("diclofenac") || nameLower.includes("gel") || nameLower.includes("هيكس") || nameLower.includes("ألم") || nameLower.includes("جل")) {
-      matched.push({
-        detectedName: "Hex Pain Topical Gel 50g",
-        product: PRODUCTS_DB[1],
-        confidence: "95%",
-        quantity: 1,
-        selected: true
-      });
-    }
-    if (nameLower.includes("vitamin") || nameLower.includes("vit") || nameLower.includes("zinc") || nameLower.includes("فيتامين") || nameLower.includes("سي") || nameLower.includes("مناعة")) {
-      matched.push({
-        detectedName: "Vitamin C 1000mg Effervescent",
-        product: PRODUCTS_DB[2],
-        confidence: "97%",
-        quantity: 1,
-        selected: true
-      });
+    const lines = ocrText
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 2);
+      
+    allProducts.forEach(product => {
+      const prodNameLower = product.name.toLowerCase();
+      const genericLower = (product.genericName || "").toLowerCase();
+      
+      // 1. Direct name match
+      if (prodNameLower.length > 4 && ocrTextLower.includes(prodNameLower)) {
+        matched.push({
+          detectedName: product.name,
+          product: product,
+          confidence: "99%",
+          score: 100,
+          quantity: 1,
+          selected: true
+        });
+        return;
+      }
+      
+      // 2. Token overlap match
+      const nameWords = prodNameLower
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !['tablet', 'tablets', 'capsule', 'capsules', 'suspension', 'syrup', 'extra', 'forte', 'dose', 'mg', 'ml'].includes(w));
+        
+      if (nameWords.length > 0) {
+        let matchCount = 0;
+        nameWords.forEach(word => {
+          if (ocrTextLower.includes(word)) {
+            matchCount++;
+          }
+        });
+        
+        const score = (matchCount / nameWords.length) * 100;
+        if (score >= 50) {
+          let bestLine = "";
+          let maxLineMatches = 0;
+          lines.forEach(line => {
+            const lineLower = line.toLowerCase();
+            let lineMatches = 0;
+            nameWords.forEach(word => {
+              if (lineLower.includes(word)) lineMatches++;
+            });
+            if (lineMatches > maxLineMatches) {
+              maxLineMatches = lineMatches;
+              bestLine = line;
+            }
+          });
+          
+          matched.push({
+            detectedName: bestLine || product.name,
+            product: product,
+            confidence: `${Math.round(score)}%`,
+            score: score,
+            quantity: 1,
+            selected: true
+          });
+          return;
+        }
+      }
+      
+      // 3. Generic name matching
+      if (genericLower) {
+        const genericWords = genericLower
+          .replace(/[^a-z0-9\s]/g, '')
+          .split(/\s+/)
+          .filter(w => w.length > 3 && !['acid', 'sodium', 'potassium', 'chloride', 'hydrate'].includes(w));
+          
+        if (genericWords.length > 0) {
+          let matchCount = 0;
+          genericWords.forEach(word => {
+            if (ocrTextLower.includes(word)) {
+              matchCount++;
+            }
+          });
+          
+          const score = (matchCount / genericWords.length) * 85;
+          if (score >= 60) {
+            let bestLine = "";
+            let maxLineMatches = 0;
+            lines.forEach(line => {
+              const lineLower = line.toLowerCase();
+              let lineMatches = 0;
+              genericWords.forEach(word => {
+                if (lineLower.includes(word)) lineMatches++;
+              });
+              if (lineMatches > maxLineMatches) {
+                maxLineMatches = lineMatches;
+                bestLine = line;
+              }
+            });
+            
+            matched.push({
+              detectedName: bestLine ? `مستخلص من: ${bestLine}` : `بديل فعال: ${product.name}`,
+              product: product,
+              confidence: `${Math.round(score)}%`,
+              score: score,
+              quantity: 1,
+              selected: true
+            });
+          }
+        }
+      }
+    });
+    
+    matched.sort((a, b) => b.score - a.score);
+    
+    const uniqueMatches = [];
+    const seenIds = new Set();
+    matched.forEach(item => {
+      if (!seenIds.has(item.product.id)) {
+        seenIds.add(item.product.id);
+        uniqueMatches.push(item);
+      }
+    });
+    
+    if (uniqueMatches.length === 0) {
+      if (ocrTextLower.includes("headache") || ocrTextLower.includes("pain") || ocrTextLower.includes("fever") || ocrTextLower.includes("panadol")) {
+        uniqueMatches.push({
+          detectedName: "بانادول اكسترا (خافض حرارة مقترح)",
+          product: allProducts.find(p => p.id === "1") || allProducts[0],
+          confidence: "75%",
+          score: 75,
+          quantity: 1,
+          selected: true
+        });
+      } else {
+        uniqueMatches.push({
+          detectedName: "Panadol Extra (افتراضي للروشتة)",
+          product: allProducts.find(p => p.id === "1") || allProducts[0],
+          confidence: "60%",
+          score: 60,
+          quantity: 1,
+          selected: false
+        });
+      }
     }
     
-    // Fallback if no keywords matched
-    if (matched.length === 0) {
-      matched.push({
-        detectedName: "Panadol Extra 500mg (افتراضي للروشتة)",
-        product: PRODUCTS_DB[0],
-        confidence: "93%",
-        quantity: 1,
-        selected: true
-      });
-      matched.push({
-        detectedName: "Vitamin C 1000mg (افتراضي للروشتة)",
-        product: PRODUCTS_DB[2],
-        confidence: "90%",
-        quantity: 1,
-        selected: true
-      });
+    return uniqueMatches;
+  };
+
+  const startScan = () => {
+    if (!previewUrl && !activePreset) {
+      triggerToast('الرجاء رفع روشتة أو اختيار روشتة جاهزة أولاً!', 'error');
+      return;
     }
-    
-    return matched;
+
+    if (activePreset) {
+      runPresetSimulation();
+    } else if (selectedFile) {
+      performOCRAndMatch(selectedFile);
+    }
   };
 
   const toggleSelectMatch = (index) => {
@@ -348,7 +561,7 @@ export default function Prescription() {
           <span className="current">رفع الروشتة ومسحها بالذكاء الاصطناعي</span>
         </nav>
 
-        <div className="cart-items-card animate-fade-in" style={{ padding: '32px' }}>
+        <div className="cart-items-card animate-fade-in p-4 sm:p-8">
           <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '28px' }}>
             <h1 className="cart-title" style={{ fontSize: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Sparkles style={{ color: 'var(--color-primary)' }} />
@@ -359,10 +572,10 @@ export default function Prescription() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '32px' }}>
+          <div className="grid grid-cols-12 gap-8">
             
             {/* Right Panel: Upload area / Prescription View */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="col-span-12 lg:col-span-6 flex flex-col gap-5">
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                 1. حدد مستند الروشتة
               </h3>
@@ -518,7 +731,7 @@ export default function Prescription() {
             </div>
 
             {/* Left Panel: Scanning & Match results */}
-            <div style={{ borderLeft: '1px solid var(--color-border)', paddingRight: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="col-span-12 lg:col-span-6 border-t lg:border-t-0 lg:border-r border-slate-200 pt-8 lg:pt-0 lg:pr-8 flex flex-col gap-5">
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                 2. مسح وتحليل الروشتة
               </h3>
@@ -616,7 +829,7 @@ export default function Prescription() {
                             onChange={() => toggleSelectMatch(index)}
                             style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--color-primary)', marginTop: '4px' }}
                           />
-                          <div style={{ flex: 1 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                               <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                                 {item.detectedName}
@@ -627,28 +840,34 @@ export default function Prescription() {
                             </div>
 
                             {/* Catalog matched product summary layout */}
-                            <div style={{
-                              display: 'flex', gap: '12px', background: '#f8fafc',
-                              border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px',
-                              alignItems: 'center'
-                            }}>
-                              <img 
-                                src={item.product.image} 
-                                alt={item.product.name} 
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
-                                }}
-                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
-                              />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {item.product.name}
-                                </p>
-                                <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 800 }}>
-                                  {item.product.price} جنيه
-                                </span>
-                              </div>
+                            <div 
+                              style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px' }}
+                              className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
+                            >
+                              <Link 
+                                to={`/product/${item.product.id}`}
+                                className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-inherit"
+                                style={{ textDecoration: 'none' }}
+                              >
+                                <img 
+                                  src={item.product.image} 
+                                  alt={item.product.name} 
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                                  }}
+                                  style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
+                                  className="shrink-0"
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {item.product.name}
+                                  </p>
+                                  <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 800 }}>
+                                    {item.product.price} جنيه
+                                  </span>
+                                </div>
+                              </Link>
 
                               {/* Quantity Stepper inside the item row */}
                               <div className="qty-stepper" style={{ height: '32px', borderRadius: '8px' }}>

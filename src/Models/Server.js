@@ -191,7 +191,7 @@ app.get('/api/user/profile', async (req, res) => {
                 email: "mock_user@dawaya.com",
                 phone: "01234567890",
                 age: "22",
-                gender: "ذكر"
+                gender: ""
             });
             await user.save();
         }

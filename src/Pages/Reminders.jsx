@@ -440,10 +440,10 @@ export default function Reminders() {
           <span className="current">جدولة تذكيرات الدواء وواتساب</span>
         </nav>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
           {/* Right Panel: Add Reminder Form */}
-          <div className="cart-items-card animate-fade-in" style={{ padding: '32px' }}>
+          <div className="col-span-12 lg:col-span-7 cart-items-card animate-fade-in" style={{ padding: '32px' }}>
             <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Bell style={{ color: 'var(--color-primary)' }} />
@@ -508,7 +508,7 @@ export default function Reminders() {
               </div>
 
               {/* Dosage & Frequency Row */}
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', margin: 0 }}>
+              <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ margin: 0 }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ marginBottom: '8px' }}>الجرعة المطلوبة</label>
                   <select
@@ -607,7 +607,7 @@ export default function Reminders() {
                   حدد طريقة استقبال التنبيه:
                 </span>
 
-                <div style={{ display: 'flex', gap: '20px' }}>
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
                     <input
                       type="checkbox"
@@ -698,7 +698,7 @@ export default function Reminders() {
 
               {/* Submit CTA / Edit CTAs */}
               {editingReminderId ? (
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="submit"
                     className="checkout-btn"
@@ -746,7 +746,7 @@ export default function Reminders() {
           </div>
 
           {/* Left Panel: Active Schedules Listing */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="col-span-12 lg:col-span-5" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)', margin: '4px 0 0' }}>
               التذكيرات النشطة حالياً ({reminders.length})
             </h3>
@@ -805,7 +805,7 @@ export default function Reminders() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="flex items-center gap-3 border-t border-slate-100 pt-3 sm:border-none sm:pt-0 justify-start sm:justify-end">
                       {/* Toggle switch active/inactive */}
                       <label className="reminder-switch">
                         <input
