@@ -1,4 +1,6 @@
-import React from 'react';
+// src/pages/Home/Home.jsx
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import HeroSection from '../Components/Home/HeroSection';
 import StatsSection from '../components/Home/StatsSection';
@@ -8,9 +10,46 @@ import ProductsSection from '../components/Home/ProductsSection';
 import PharmacyLogosSection from '../components/Home/PharmacyLogosSection';
 import AppPromotionSection from '../components/Home/AppPromotionSection';
 import FeaturesSection from '../components/Home/FeaturesSection';
+// import TestimonialsSection from '../components/Home/TestimonialsSection';
 import FAQSection from '../components/Home/FAQSection';
+// import CTASection from '../components/Home/CTASection';
 
 const Home = () => {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+  const getCookie = (name) => {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  };
+
+  const token = getCookie('token');
+  if (token) {
+    localStorage.setItem('token', token);
+    // مسح الكوكي بعد القراءة
+    document.cookie = 'token=; Max-Age=0; path=/';
+
+    fetch("https://dawaya-back-end.vercel.app/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setUser(data.user);
+      });
+  }
+}, []);
+
+  useEffect(() => {
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [hash]);
+
   return (
     <motion.main
 

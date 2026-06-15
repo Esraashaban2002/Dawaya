@@ -28,7 +28,7 @@ const PharmacyLogosSection = () => {
   }
 
   return (
-    <section className="py-16 bg-gray-50 overflow-hidden">
+    <section id="pharmacies-section" className="py-16 bg-gray-50 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

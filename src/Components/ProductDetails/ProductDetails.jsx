@@ -141,36 +141,94 @@ const PRODUCTS_DB = {
 
 export default function ProductDetails() {
   const { id } = useParams();
-  const PRODUCT_DATA = PRODUCTS_DB[id] || PRODUCTS_DB["1"];
+  const [productData, setProductData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (PRODUCTS_DB[id]) {
+      setProductData(PRODUCTS_DB[id]);
+      setLoading(false);
+    } else {
+      setLoading(true);
+      fetch(`https://dawaya-back-end.vercel.app/api/medicines/${id}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Product not found");
+          return res.json();
+        })
+        .then((data) => {
+          if (data.success && data.data) {
+            const apiProd = data.data;
+            setProductData({
+              id: apiProd._id,
+              name: apiProd.name,
+              brand: apiProd.manufacturer || apiProd.genericName || 'عام',
+              price: apiProd.price,
+              deliveryTime: "خلال 30-60 دقيقة",
+              sellerName: "أقرب صيدلية",
+              images: apiProd.images && apiProd.images.length > 0 
+                ? apiProd.images 
+                : ["https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=500&q=80"],
+              features: [apiProd.description || 'لا يوجد وصف متاح للمنتج حالياً.'],
+              qa: [
+                {
+                  q: "ما هو هذا المنتج ؟",
+                  a: apiProd.description || 'لا توجد تفاصيل إضافية عن هذا المنتج حالياً.'
+                }
+              ],
+              specifications: [
+                { key: "العلامة التجارية", value: apiProd.manufacturer || "عام" },
+                { key: "الاسم العلمي", value: apiProd.genericName || "غير محدد" },
+                { key: "الفئة", value: apiProd.category || "غير محدد" },
+                { key: "يتطلب وصفة طبية", value: apiProd.requiresPrescription ? "نعم" : "لا" }
+              ]
+            });
+          } else {
+            setProductData(PRODUCTS_DB["1"]);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch product details:", err);
+          setProductData(PRODUCTS_DB["1"]);
+          setLoading(false);
+        });
+    }
+  }, [id]);
+
+  const PRODUCT_DATA = productData || PRODUCTS_DB["1"];
   const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
-  const [activeImage, setActiveImage] = useState(PRODUCT_DATA.images[0]);
+  const [activeImage, setActiveImage] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'specs'
   const [toastMessage, setToastMessage] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
 
-  // Reset active image when product ID changes
+  // Reset active image when product ID or productData changes
   useEffect(() => {
-    setActiveImage(PRODUCT_DATA.images[0]);
-  }, [id, PRODUCT_DATA]);
+    if (PRODUCT_DATA && PRODUCT_DATA.images && PRODUCT_DATA.images.length > 0) {
+      setActiveImage(PRODUCT_DATA.images[0]);
+    }
+  }, [id, productData]);
 
   // Sync details page quantity stepper with cartItems
   useEffect(() => {
-    const existing = cartItems.find((item) => item.id === PRODUCT_DATA.id);
+    if (!PRODUCT_DATA) return;
+    const existing = cartItems.find((item) => String(item.id) === String(PRODUCT_DATA.id));
     if (existing) {
       setQuantity(existing.quantity);
     } else {
       setQuantity(1);
     }
-  }, [cartItems]);
+  }, [cartItems, PRODUCT_DATA]);
 
   const handleQtyChange = (val) => {
+    if (!PRODUCT_DATA) return;
     if (val < 1) return;
     setQuantity(val);
 
     // Automatically sync with cart and update navbar count if already added
-    const existing = cartItems.find((item) => item.id === PRODUCT_DATA.id);
+    const existing = cartItems.find((item) => String(item.id) === String(PRODUCT_DATA.id));
     if (existing) {
       addToCart({
         id: PRODUCT_DATA.id,
@@ -183,7 +241,8 @@ export default function ProductDetails() {
   };
 
   const handleAddToCart = () => {
-    const isAdded = cartItems.some((item) => item.id === PRODUCT_DATA.id);
+    if (!PRODUCT_DATA) return;
+    const isAdded = cartItems.some((item) => String(item.id) === String(PRODUCT_DATA.id));
     if (isAdded) {
       removeFromCart(PRODUCT_DATA.id);
       setToastMessage("تم إزالة المنتج من سلة المشتريات.");
@@ -207,6 +266,14 @@ export default function ProductDetails() {
     setTimeout(() => setShowShareToast(false), 2000);
   };
 
+  if (loading || !productData) {
+    return (
+      <div className="product-details-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="product-details-page">
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '24px 16px' }}>
@@ -215,7 +282,7 @@ export default function ProductDetails() {
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
-          <Link to="/products">الأدوية</Link>
+          <Link to="/#products-section">الأدوية</Link>
           <span className="separator">/</span>
           <span className="current">مسكنات الألم</span>
           <span className="separator">/</span>
@@ -251,7 +318,7 @@ export default function ProductDetails() {
             
             {/* Brand Link and Share Row */}
             <div className="product-header-actions">
-              <Link to="/products" className="product-brand-link">
+              <Link to="/#products-section" className="product-brand-link">
                 مشاهدة كل منتجات {PRODUCT_DATA.brand}
               </Link>
               <div className="actions-buttons">
@@ -315,9 +382,9 @@ export default function ProductDetails() {
               {/* Add To Cart Button */}
               <button 
                 onClick={handleAddToCart}
-                className={`add-to-cart-btn ${cartItems.some((item) => item.id === PRODUCT_DATA.id) ? 'added' : ''}`}
+                className={`add-to-cart-btn ${cartItems.some((item) => String(item.id) === String(PRODUCT_DATA.id)) ? 'added' : ''}`}
               >
-                {cartItems.some((item) => item.id === PRODUCT_DATA.id) ? (
+                {cartItems.some((item) => String(item.id) === String(PRODUCT_DATA.id)) ? (
                   <>
                     <Trash2 size={18} />
                     <span>إزالة من العربة</span>

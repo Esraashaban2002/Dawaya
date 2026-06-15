@@ -42,17 +42,17 @@ export default function Footer() {
             <h3 className="text-base font-semibold text-white/90">خدماتنا</h3>
             <ul className="space-y-2">
               {[
-                "رفع الروشتة",
-                "تذكيرات الجرعات",
-                "طلبات الجملة",
-                "تحاليل طبية",
+                { name: "رفع الروشتة", path: "/prescription" },
+                { name: "تذكيرات الجرعات", path: "/reminders" },
+                { name: "طلبات الجملة", path: "#" },
+                { name: "تحاليل طبية", path: "#" },
               ].map((link) => (
-                <li key={link}>
+                <li key={link.name}>
                   <NavLink
-                    to="#"
+                    to={link.path}
                     className="text-white/45 text-sm hover:text-white/80 transition-colors duration-200"
                   >
-                    {link}
+                    {link.name}
                   </NavLink>
                 </li>
               ))}
@@ -63,14 +63,18 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-white/90">الشركة</h3>
             <ul className="space-y-2">
-              {["من نحن", "الوظائف", "سياسة الخصوصية", "شروط الخدمة"].map(
-                (link) => (
-                  <li key={link}>
+              {[
+                { name: "من نحن", path: "/about" },
+                { name: "الوظائف", path: "#" },
+                { name: "سياسة الخصوصية", path: "#" },
+                { name: "شروط الخدمة", path: "#" }
+              ].map((link) => (
+                  <li key={link.name}>
                     <NavLink
-                      to="#"
+                      to={link.path}
                       className="text-white/45 text-sm hover:text-white/80 transition-colors duration-200"
                     >
-                      {link}
+                      {link.name}
                     </NavLink>
                   </li>
                 ),
