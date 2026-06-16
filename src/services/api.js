@@ -5,10 +5,12 @@ const REMINDERS_BASE_URL = typeof window !== 'undefined' && (window.location.hos
 
 function isValidJWT(token) {
   if (!token) return false;
+  if (token.startsWith('mock_')) return true;
   return token.split('.').length === 3;
 }
 
 function isJWTExpired(token) {
+  if (token.startsWith('mock_')) return false;
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;
@@ -65,6 +67,24 @@ export const api = {
 
 
   async getProfile() {
+    let token = localStorage.getItem('userToken');
+    if (token && token.startsWith('mock_')) {
+      const email = localStorage.getItem('dawaya_current_email') || '';
+      const users = JSON.parse(localStorage.getItem('dawaya_users') || '[]');
+      const localUser = users.find(u => u.email.toLowerCase() === email.toLowerCase()) || {};
+      return {
+        success: true,
+        data: {
+          user: {
+            username: localUser.username || email.split('@')[0],
+            email: email,
+            phone: localUser.phone || '',
+            age: localUser.age || 25,
+            gender: localUser.gender || 'male'
+          }
+        }
+      };
+    }
     const headers = getHeaders();
     console.log('Fetching profile with headers:', headers);
 
@@ -108,6 +128,20 @@ export const api = {
     return response.json();
   },
   async updateProfile(profileData) {
+    let token = localStorage.getItem('userToken');
+    if (token && token.startsWith('mock_')) {
+      return {
+        success: true,
+        data: {
+          user: {
+            username: profileData.username,
+            phone: profileData.phone,
+            age: profileData.age,
+            gender: profileData.gender
+          }
+        }
+      };
+    }
     const response = await fetch(`${BASE_URL}/user/profile`, {
       method: 'PUT',
       headers: getHeaders(),
@@ -133,6 +167,13 @@ export const api = {
   },
 
   async changePassword(oldPassword, newPassword) {
+    let token = localStorage.getItem('userToken');
+    if (token && token.startsWith('mock_')) {
+      return {
+        success: true,
+        message: "تم تغيير كلمة المرور بنجاح"
+      };
+    }
     const response = await fetch(`${BASE_URL}/user/changepassword`, {
       method: 'PATCH',
       headers: getHeaders(),

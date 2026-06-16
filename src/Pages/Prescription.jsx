@@ -621,12 +621,18 @@ export default function Prescription() {
                         position: 'relative'
                       }}>
                         {}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #3b82f6', paddingBottom: '12px', marginBottom: '16px' }}>
+                        <div 
+                          className="flex flex-col sm:flex-row justify-between gap-3"
+                          style={{ borderBottom: '2px double #3b82f6', paddingBottom: '12px', marginBottom: '16px' }}
+                        >
                           <div>
                             <h4 style={{ margin: 0, fontWeight: 900, color: '#1e3a8a', fontSize: '16px' }}>{activePreset.doctor}</h4>
                             <span style={{ fontSize: '11px', color: '#64748b' }}>عيادات الشفاء التخصصية - باطنة وقلب</span>
                           </div>
-                          <div style={{ textAlign: 'left', fontSize: '11px', color: '#64748b' }}>
+                          <div 
+                            className="text-right sm:text-left"
+                            style={{ fontSize: '11px', color: '#64748b' }}
+                          >
                             <div>التاريخ: {activePreset.date}</div>
                             <div>المريض: {activePreset.patient}</div>
                           </div>
@@ -652,11 +658,14 @@ export default function Prescription() {
                         </div>
 
                         {}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '16px', fontSize: '11px', color: '#64748b' }}>
+                        <div 
+                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
+                          style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '16px', fontSize: '11px', color: '#64748b' }}
+                        >
                           <span>صرف من صيدليات دوايا المعتمدة</span>
-                          <div style={{ textAlign: 'center' }}>
+                          <div style={{ textAlign: 'center' }} className="self-center sm:self-auto">
                             <div style={{ fontStyle: 'italic', fontWeight: 'bold', fontSize: '13px', color: '#1e3a8a' }}>التوقيع والختم</div>
-                            <div style={{ borderTop: '1px solid #94a3b8', width: '80px', marginTop: '4px' }}></div>
+                            <div style={{ borderTop: '1px solid #94a3b8', width: '80px', marginTop: '4px', marginLeft: 'auto', marginRight: 'auto' }}></div>
                           </div>
                         </div>
                       </div>
@@ -817,11 +826,13 @@ export default function Prescription() {
                             style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--color-primary)', marginTop: '4px' }}
                           />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <div 
+                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2"
+                            >
                               <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                                 {item.detectedName}
                               </span>
-                              <span className="match-badge">
+                              <span className="match-badge shrink-0 w-fit">
                                 نسبة التطابق {item.confidence}
                               </span>
                             </div>

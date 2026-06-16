@@ -1767,7 +1767,8 @@
   background: #0b141a;
   border: 12px solid #2d3748;
   border-radius: 36px;
-  width: 330px;
+  width: 100%;
+  max-width: 330px;
   height: 560px;
   display: flex;
   flex-direction: column;
@@ -1775,6 +1776,15 @@
   box-shadow: 0 20px 50px rgba(0,0,0,0.3);
   position: relative;
   direction: ltr;
+  box-sizing: border-box;
+}
+
+@media (max-width: 400px) {
+  .whatsapp-phone-mockup {
+    border-width: 6px;
+    border-radius: 24px;
+    height: 480px;
+  }
 }
 
 .whatsapp-chat-header {

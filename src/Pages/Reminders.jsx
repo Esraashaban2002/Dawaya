@@ -427,7 +427,7 @@ export default function Reminders() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
           {}
-          <div className="col-span-12 lg:col-span-7 cart-items-card animate-fade-in" style={{ padding: '32px' }}>
+          <div className="col-span-12 lg:col-span-7 cart-items-card animate-fade-in p-4 sm:p-8">
             <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Bell style={{ color: 'var(--color-primary)' }} />
@@ -858,8 +858,8 @@ export default function Reminders() {
 
       {}
       {simulatedReminder && (
-        <div className="modal-overlay" style={{ zIndex: 10000 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }} className="animate-fade-in">
+        <div className="modal-overlay" style={{ zIndex: 10000, overflowY: 'auto', padding: '24px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', margin: 'auto' }} className="animate-fade-in">
 
             {}
             <div className="whatsapp-phone-mockup">
