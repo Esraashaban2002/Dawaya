@@ -175,7 +175,7 @@ export const api = {
     return !!localStorage.getItem('userToken');
   },
 
-  // ─── REMINDERS ───
+  //  REMINDERS 
   async getReminders() {
     const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
       method: 'GET',

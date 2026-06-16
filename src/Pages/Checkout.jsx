@@ -21,13 +21,13 @@ export default function Checkout() {
   const [notes, setNotes] = useState('');
 
   // Payment state
-  const [paymentMethod, setPaymentMethod] = useState('vodafone'); // 'vodafone' | 'instapay' | 'bank' | 'cod'
+  const [paymentMethod, setPaymentMethod] = useState('vodafone');
   const [senderInfo, setSenderInfo] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
 
   // Copy status indicators
-  const [copiedField, setCopiedField] = useState(null); // 'vodafone_num' | 'instapay_address' | 'bank_acc' | 'bank_iban'
+  const [copiedField, setCopiedField] = useState(null); 
 
   // Loading & success modal states
   const [isSubmitting, setIsSubmitting] = useState(false);

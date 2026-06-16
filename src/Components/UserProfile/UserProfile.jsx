@@ -42,7 +42,7 @@ export default function UserProfile() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'orders'
+  const [activeTab, setActiveTab] = useState('profile');
   const [userOrders, setUserOrders] = useState([]);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
 

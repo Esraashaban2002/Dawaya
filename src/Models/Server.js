@@ -43,7 +43,7 @@ const getUserId = (req) => {
     return userId;
 };
 
-// ─── REMINDERS API ROUTES ───
+// REMINDERS API ROUTES 
 
 // 1. GET: Fetch all reminders
 app.get('/api/reminders', async (req, res) => {

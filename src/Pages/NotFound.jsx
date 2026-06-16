@@ -32,7 +32,6 @@ export default function NotFound() {
           عذراً، الصفحة التي تبحث عنها غير متوفرة حالياً، ربما تم نقلها أو حذفها نهائياً. يرجى التحقق من الرابط أو العودة للرئيسية.
         </p>
 
-      {/* أزرار */}
         <div className="flex flex-wrap gap-3 justify-center">
           <Link
             to="/"
@@ -50,7 +49,6 @@ export default function NotFound() {
           </button>
         </div>
 
-        {/* عبارة */}
         <p className="text-gray-400 text-xs mt-6">
           🫀 نهتم بصحتك
         </p>

@@ -1,8 +1,8 @@
 // worker.js
-import 'dotenv/config'; // Load environment variables from .env file
+import 'dotenv/config'; 
 import mongoose from 'mongoose';
 import cron from 'node-cron';
-import axios from 'axios'; // We use axios to send HTTP requests to WATI
+import axios from 'axios'; 
 import Reminder from './Reminder.js';
 
 // Mongoose Connection

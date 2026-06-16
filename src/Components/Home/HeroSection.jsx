@@ -9,24 +9,23 @@ const HeroSection = () => {
 
   const slides = [
     {
-      image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg", // نمو رقمي
+      image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg",
       title: "نمكن الصيدليات من النمو الرقمي",
       subtitle: "حلول رقمية ذكية لزيادة المبيعات"
     },
     {
-      image: "/imges/HeroImage/DriveFast.png", // توصيل سريع
+      image: "/imges/HeroImage/DriveFast.png",
       title: "توصيلات سريعة",
       subtitle: "وصل طلبك في أقل من ساعة"
     },
     {
-      image: "/imges/HeroImage/Medicine.png", // نواقص الأدوية
+      image: "/imges/HeroImage/Medicine.png",
       title: "نوفر نواقص الأدوية",
       subtitle: "منصة ذكية لتأمين احتياجات صيدليتك"
     },
    
     {
-      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop", // صيدلية حديثة
-      title: "صيدليتك الذكية",
+      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop",
       subtitle: "إدارة متكاملة للمخزون والطلبات"
     }
   ];

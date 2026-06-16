@@ -27,7 +27,7 @@
           height: 80px;
           display: flex;
           align-items: center;
-          justify-content: space-between; /* 🔥 مهم */
+          justify-content: space-between; 
         }
 
         .nb-logo {
@@ -141,7 +141,7 @@
           gap: 6px;
         }
 
-        /* 🔥 hamburger */
+     
         .nb-hamburger {
           display: none;
           width: 40px;
@@ -163,7 +163,7 @@
           height: 20px;
         }
 
-        /* 🔥 mobile menu */
+     
         .nb-mobile-menu {
           position: absolute;
           top: 80px;

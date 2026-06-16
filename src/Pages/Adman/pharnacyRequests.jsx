@@ -40,11 +40,10 @@ export default function PharmacyRequests() {
   const [selected, setSelected]       = useState(null);
   const [updatingId, setUpdatingId]   = useState(null);
 
-  // ── note modal (لما يرفض، ياخد ملاحظة) ──
-  const [noteModal, setNoteModal] = useState(null); // { id }
+  const [noteModal, setNoteModal] = useState(null); 
   const [noteText, setNoteText]   = useState('');
 
-  /* ───────── fetch ───────── */
+  /*  fetch  */
   const fetchRequests = async () => {
     setLoading(true);
     try {
@@ -64,7 +63,7 @@ export default function PharmacyRequests() {
 
   useEffect(() => { fetchRequests(); }, [page, statusFilter]);
 
-  /* ───────── status update ───────── */
+  /*  status update  */
   const applyStatusChange = async (id, newStatus, adminNote = '') => {
     setUpdatingId(id);
     try {
@@ -82,10 +81,8 @@ export default function PharmacyRequests() {
     }
   };
 
-  // قبول مباشر بدون ملاحظة
   const handleApprove = (id) => applyStatusChange(id, 'approved');
 
-  // رفض: يفتح مودال صغير لكتابة سبب الرفض
   const handleRejectClick = (id) => {
     setNoteText('');
     setNoteModal({ id });
@@ -97,7 +94,7 @@ export default function PharmacyRequests() {
     setNoteModal(null);
   };
 
-  /* ───────── delete ───────── */
+  /*  delete  */
   const handleDelete = async (id) => {
     if (!confirm('متأكد إنك عايز تحذف الطلب ده؟')) return;
     try {
@@ -112,7 +109,6 @@ export default function PharmacyRequests() {
 
   const totalPages = Math.ceil(total / 10) || 1;
 
-  /* ══════════════════════════════════════════ */
   return (
     <div>
       {/* Header */}
@@ -291,7 +287,7 @@ export default function PharmacyRequests() {
         </div>
       </div>
 
-      {/* ─── Request Detail Modal ─── */}
+      {/*  Request Detail Modal  */}
       {selected && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
@@ -340,7 +336,7 @@ export default function PharmacyRequests() {
               )}
             </div>
 
-            {/* Admin note (لو موجودة) */}
+            {/* Admin note */}
             {selected.adminNote && (
               <div className="mb-5 p-3 rounded-xl" style={{ background: 'var(--color-danger-light)' }}>
                 <p className="text-xs font-bold mb-1" style={{ color: 'var(--color-danger)' }}>ملاحظة الإدارة:</p>
@@ -408,7 +404,7 @@ export default function PharmacyRequests() {
         </div>
       )}
 
-      {/* ─── Reject Reason Modal ─── */}
+      {/*  Reject Reason Modal  */}
       {noteModal && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center"
