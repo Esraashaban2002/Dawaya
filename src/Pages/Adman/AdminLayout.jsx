@@ -22,9 +22,22 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(true);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
@@ -51,36 +64,59 @@ export default function AdminLayout() {
     }
   }, [userId]);
 
+    function logout() {
+    localStorage.removeItem("userToken");
+    setUserLogin(null);
+    navigate("/");
+  }
+
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)', fontFamily: 'Cairo, sans-serif' }}>
 
       <aside className={`${collapsed ? 'w-16' : 'w-60'} flex flex-col transition-all duration-300 flex-shrink-0`}
         style={{ background: 'var(--bg-card)', borderLeft: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}>
         <div className="flex items-center justify-between px-4 py-5" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          {!collapsed && (
-            <Link
-              to="/"
+       
+          <Link
+            to="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              textDecoration: "none",
+            }}
+          >
+            <img
+              src="/imges/logo.png"
+              alt="Dawaya Logo"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                textDecoration: "none",
+                height: collapsed ? "36px" : "65px",
+                width: "auto",
+                objectFit: "contain",
+                transition: "height 0.3s",
               }}
-            >
-              <img
-                src="/imges/logo.png"
-                alt="Dawaya Logo"
-                style={{ height: "65px", width: "auto", objectFit: "contain" }}
-              />
-            </Link>
+            />
+          </Link>
+          {!collapsed && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+              style={{ color: 'var(--color-text-muted)', background: 'var(--bg-primary)' }}>
+              <ChevronRight size={18} />
+            </button>
           )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-            style={{ color: 'var(--color-text-muted)', background: 'var(--bg-primary)' }}>
-            {collapsed ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-          </button>
         </div>
+
+        {collapsed && (
+          <div className="flex justify-center py-2">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+              style={{ color: 'var(--color-text-muted)', background: 'var(--bg-primary)' }}>
+              <ChevronLeft size={18} />
+            </button>
+          </div>
+        )}
 
         <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
@@ -97,7 +133,9 @@ export default function AdminLayout() {
                   ? "var(--color-primary)"
                   : "var(--color-text-muted)",
                 fontWeight: isActive ? "700" : "500",
+                justifyContent: collapsed ? "center" : "flex-start",
               })}
+              title={collapsed ? item.label : undefined}
             >
               <span className="text-base flex-shrink-0">
                 <item.icon size={18} />
@@ -108,9 +146,17 @@ export default function AdminLayout() {
         </nav>
 
         <div className="px-2 py-4" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <button onClick={handleLogout}
+          <button
+            onClick={() => {
+              setMenuOpen(false);
+              handleLogout();
+            }}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all"
-            style={{ color: "var(--color-danger)" }}
+            style={{
+              color: "var(--color-danger)",
+              justifyContent: collapsed ? "center" : "flex-start",
+            }}
+            title={collapsed ? "تسجيل الخروج" : undefined}
             onMouseEnter={(e) =>
               (e.currentTarget.style.background = "var(--color-danger-light)")
             }
