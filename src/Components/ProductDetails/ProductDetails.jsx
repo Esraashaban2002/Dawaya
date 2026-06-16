@@ -176,7 +176,7 @@ export default function ProductDetails() {
               ],
               specifications: [
                 { key: "العلامة التجارية", value: apiProd.manufacturer || "عام" },
-                { key: "الاسم العلمي", value: apiProd.genericName || "غير محدد" },
+                { key: "اسم المادة الفعالة ", value: apiProd.genericName || "غير محدد" },
                 { key: "الفئة", value: apiProd.subCategory || "غير محدد" },
                 { key: "يتطلب وصفة طبية", value: apiProd.requiresPrescription ? "نعم" : "لا" }
               ]
@@ -199,7 +199,7 @@ export default function ProductDetails() {
   const { isFavorite, toggleFavorite } = useContext(FavoritesContext);
   const [activeImage, setActiveImage] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('overview'); 
+  const [activeTab, setActiveTab] = useState('overview');
   const [toastMessage, setToastMessage] = useState(null);
   const [showShareToast, setShowShareToast] = useState(false);
 
@@ -274,7 +274,7 @@ export default function ProductDetails() {
     <div className="product-details-page">
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '24px 16px' }}>
 
-        {}
+        { }
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -285,12 +285,12 @@ export default function ProductDetails() {
           <span className="current text-truncate">{PRODUCT_DATA.name}</span>
         </nav>
 
-        {}
+        { }
         <div className="product-main-card animate-fade-in">
 
-          {}
+          { }
           <div className="product-gallery">
-            {}
+            { }
             <div className="product-thumbnails">
               {PRODUCT_DATA.images.map((img, index) => (
                 <div
@@ -303,16 +303,16 @@ export default function ProductDetails() {
               ))}
             </div>
 
-            {}
+            { }
             <div className="product-main-preview">
               <img src={activeImage} alt={PRODUCT_DATA.name} />
             </div>
           </div>
 
-          {}
+          { }
           <div className="product-options">
 
-            {}
+            { }
             <div className="product-header-actions">
               <Link to="/#products-section" className="product-brand-link">
                 مشاهدة كل منتجات {PRODUCT_DATA.brand}
@@ -345,19 +345,19 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {}
+            { }
             <h1 className="product-title-text">{PRODUCT_DATA.name}</h1>
 
-            {}
+            { }
             <div className="product-price-tag">
               <span className="price-label">السعر:</span>
               <span className="price-value">{PRODUCT_DATA.price} جنيه</span>
             </div>
 
 
-            {}
+            { }
             <div className="product-purchase-row">
-              {}
+              { }
               <div className="qty-stepper">
                 <button
                   className="qty-btn"
@@ -375,7 +375,7 @@ export default function ProductDetails() {
                 </button>
               </div>
 
-              {}
+              { }
               <button
                 onClick={handleAddToCart}
                 className={`add-to-cart-btn ${cartItems.some((item) => String(item.id) === String(PRODUCT_DATA.id)) ? 'added' : ''}`}
@@ -397,10 +397,10 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        {}
+        { }
         <div className="product-details-tabs-card">
 
-          {}
+          { }
           <div className="tabs-header-nav">
             <button
               className={`tab-nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
@@ -416,14 +416,14 @@ export default function ProductDetails() {
             </button>
           </div>
 
-          {}
+          { }
           <div className="tabs-content-body">
 
-            {}
+            { }
             {activeTab === 'overview' && (
               <div className="tab-pane animate-fade-in">
 
-                {}
+                { }
                 <section className="details-section">
                   <h2 className="section-heading">مميزات المنتج</h2>
                   <ul className="features-list-bullets">
@@ -433,7 +433,7 @@ export default function ProductDetails() {
                   </ul>
                 </section>
 
-                {}
+                { }
                 <section className="details-section">
                   <h2 className="section-heading">عن هذا المنتج</h2>
                   <div className="qa-accordion-list">
@@ -449,7 +449,7 @@ export default function ProductDetails() {
               </div>
             )}
 
-            {}
+            { }
             {activeTab === 'specs' && (
               <div className="tab-pane animate-fade-in">
                 <section className="details-section">
@@ -476,7 +476,7 @@ export default function ProductDetails() {
 
       </div>
 
-      {}
+      { }
       {toastMessage && (
         <div className="product-toast-notification success animate-fade-in" style={{ background: toastMessage.includes('إزالة') ? '#ef4444' : '', borderColor: toastMessage.includes('إزالة') ? '#dc2626' : '' }}>
           {toastMessage.includes('إزالة') ? <Trash2 size={16} /> : <Check size={16} />}
@@ -484,7 +484,7 @@ export default function ProductDetails() {
         </div>
       )}
 
-      {}
+      { }
       {showShareToast && (
         <div className="product-toast-notification info animate-fade-in">
           <Check size={16} />
