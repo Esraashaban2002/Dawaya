@@ -33,15 +33,15 @@ const predefinedLocations = [
 ];
 
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; 
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -63,8 +63,8 @@ export default function Pharmacy() {
   const modalTravelTime = useMemo(() => {
     if (!selectedPharmacy) return null;
     const dist = selectedPharmacy.distance;
-    const formattedDistance = dist < 1.0 
-      ? `${Math.round(dist * 1000)}m` 
+    const formattedDistance = dist < 1.0
+      ? `${Math.round(dist * 1000)}m`
       : `${dist.toFixed(1)} KM`;
 
     const travelTimeText = dist < 1.0
@@ -160,8 +160,8 @@ export default function Pharmacy() {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    const hasMatchingPharmacy = pharmacies.some(p => 
-      p.name.includes(searchQuery.trim()) || p.address.includes(searchQuery.trim())
+    const hasMatchingPharmacy = pharmacies.some(p =>
+      (p.name || "").includes(searchQuery.trim()) || (p.address || "").includes(searchQuery.trim())
     );
 
     if (!hasMatchingPharmacy) {
@@ -215,7 +215,7 @@ export default function Pharmacy() {
         };
 
         if (p.address) {
-          const matchedKey = Object.keys(addressCoordinates).find(key => 
+          const matchedKey = Object.keys(addressCoordinates).find(key =>
             p.address.includes(key) || key.includes(p.address)
           );
           if (matchedKey) {
@@ -225,8 +225,8 @@ export default function Pharmacy() {
         }
       }
 
-      if (lat === undefined || isNaN(lat)) lat = 30.0444; 
-      if (lng === undefined || isNaN(lng)) lng = 31.2357; 
+      if (lat === undefined || isNaN(lat)) lat = 30.0444;
+      if (lng === undefined || isNaN(lng)) lng = 31.2357;
 
       const dist = calculateHaversineDistance(userLocation.lat, userLocation.lng, lat, lng);
       const isOpen = p.status ? p.status === "مفتوح الآن" : (p.isOpen !== undefined ? p.isOpen : true);
@@ -255,10 +255,11 @@ export default function Pharmacy() {
   const filteredPharmacies = useMemo(() => {
     return processedPharmacies.filter(pharmacy => {
 
-      const matchesSearch = 
-        pharmacy.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pharmacy.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pharmacy.about.toLowerCase().includes(searchQuery.toLowerCase());
+      const query = (searchQuery || "").toLowerCase();
+      const matchesSearch =
+        (pharmacy.name || "").toLowerCase().includes(query) ||
+        (pharmacy.address || "").toLowerCase().includes(query) ||
+        (pharmacy.about || "").toLowerCase().includes(query);
 
       if (!matchesSearch) return false;
 
@@ -379,7 +380,7 @@ export default function Pharmacy() {
     <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#1ab5ea]/20 selection:text-[#1ab5ea]">
 
       {!isLocationConfirmed && (
-        <div 
+        <div
           onClick={() => setIsMapModalOpen(true)}
           className="bg-[#d97706] hover:bg-[#b45309] text-white text-xs md:text-sm font-black py-3.5 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors sticky top-0 z-40 select-none text-center shadow-md leading-relaxed"
         >
@@ -398,7 +399,7 @@ export default function Pharmacy() {
         </div>
 
         <div className="max-w-[800px] mx-auto relative z-10">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -406,7 +407,7 @@ export default function Pharmacy() {
           >
             ابحث عن صيدليتك أو دواءك بسهولة
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
@@ -415,7 +416,7 @@ export default function Pharmacy() {
             منصتك الذكية للوصول إلى كافة الخدمات الطبية ومستحضرات التجميل والأدوية في منطقتك
           </motion.p>
 
-          <motion.form 
+          <motion.form
             onSubmit={handleSearchSubmit}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -505,9 +506,8 @@ export default function Pharmacy() {
                                   handleLocationSelect(loc.name);
                                   setIsDropdownOpen(false);
                                 }}
-                                className={`w-full text-right px-4 py-2 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer ${
-                                  userLocation.name === loc.name ? "text-[#1ab5ea] bg-[#1ab5ea]/5 font-black" : "text-slate-600"
-                                }`}
+                                className={`w-full text-right px-4 py-2 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer ${userLocation.name === loc.name ? "text-[#1ab5ea] bg-[#1ab5ea]/5 font-black" : "text-slate-600"
+                                  }`}
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                                 <span>{loc.name.split("،")[0]}</span>
@@ -548,11 +548,10 @@ export default function Pharmacy() {
 
           <button
             onClick={() => handleFilterToggle("onlyNearby")}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
-              selectedServices.onlyNearby
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${selectedServices.onlyNearby
                 ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
                 : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${selectedServices.onlyNearby ? "bg-white" : "bg-[#1ab5ea]"}`} />
             <span> قريبة مني (تغطية موقعي)</span>
@@ -560,11 +559,10 @@ export default function Pharmacy() {
 
           <button
             onClick={() => handleFilterToggle("openNow")}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
-              selectedServices.openNow
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${selectedServices.openNow
                 ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
                 : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${selectedServices.openNow ? "bg-white" : "bg-emerald-500"}`} />
             <span>مفتوح الآن</span>
@@ -572,33 +570,30 @@ export default function Pharmacy() {
 
           <button
             onClick={() => handleFilterToggle("delivery")}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
-              selectedServices.delivery
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${selectedServices.delivery
                 ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
                 : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <span> خدمة توصيل</span>
           </button>
 
           <button
             onClick={() => handleFilterToggle("is24h")}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
-              selectedServices.is24h
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${selectedServices.is24h
                 ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
                 : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <span> طوال 24 ساعة</span>
           </button>
 
           <button
             onClick={() => handleFilterToggle("parking")}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${
-              selectedServices.parking
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 border ${selectedServices.parking
                 ? "bg-[#1ab5ea] text-white border-transparent shadow-sm shadow-[#1ab5ea]/20"
                 : "bg-white text-slate-600 border-slate-200 hover:border-[#1ab5ea]/30 hover:bg-slate-50"
-            }`}
+              }`}
           >
             <span> موقف سيارات</span>
           </button>
@@ -808,8 +803,8 @@ export function PharmacyCard({ pharmacy, onViewDetails }) {
   const distance = pharmacy.distance;
   const isNearby = distance < 1.0;
 
-  const formattedDistance = distance < 1.0 
-    ? `${Math.round(distance * 1000)}m` 
+  const formattedDistance = distance < 1.0
+    ? `${Math.round(distance * 1000)}m`
     : `${distance.toFixed(1)} KM`;
 
   const travelTimeText = distance < 1.0
@@ -821,18 +816,17 @@ export function PharmacyCard({ pharmacy, onViewDetails }) {
       layout
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25 }}
-      className={`bg-white border border-slate-100 hover:border-[#1ab5ea]/30 rounded-[24px] p-5 flex flex-col justify-between h-[330px] transition-all duration-300 relative group ${
-        isNearby 
-          ? "shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.06)]" 
+      className={`bg-white border border-slate-100 hover:border-[#1ab5ea]/30 rounded-[24px] p-5 flex flex-col justify-between h-[330px] transition-all duration-300 relative group ${isNearby
+          ? "shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(16,185,129,0.06)]"
           : "shadow-md shadow-slate-100/40 hover:shadow-xl hover:shadow-slate-200/40"
-      }`}
+        }`}
     >
 
       <div className="flex flex-col items-center justify-center pt-2 mb-4 relative">
 
         {isNearby && (
           <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black px-2.5 py-0.5 rounded-full absolute -top-1.5 shadow-sm shadow-emerald-500/5 animate-pulse z-10">
-             الأقرب إليك
+            الأقرب إليك
           </span>
         )}
 
@@ -842,16 +836,15 @@ export function PharmacyCard({ pharmacy, onViewDetails }) {
             <div className="absolute -inset-1 rounded-full bg-emerald-400/20 animate-ping blur-sm" />
           )}
 
-          <div 
-            className={`w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center border transition-all duration-300 relative overflow-hidden ${
-              isNearby 
-                ? "border-emerald-400/80 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-4 ring-emerald-500/5 scale-105 group-hover:scale-110" 
+          <div
+            className={`w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center border transition-all duration-300 relative overflow-hidden ${isNearby
+                ? "border-emerald-400/80 shadow-[0_0_20px_rgba(16,185,129,0.25)] ring-4 ring-emerald-500/5 scale-105 group-hover:scale-110"
                 : "border-slate-100 shadow-inner group-hover:scale-105"
-            }`}
+              }`}
           >
-            <img 
-              src={pharmacy.image || pharmacy.logo} 
-              alt={pharmacy.name} 
+            <img
+              src={pharmacy.image || pharmacy.logo}
+              alt={pharmacy.name}
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.src = "https://via.placeholder.com/150?text=صيدلية";
@@ -859,11 +852,10 @@ export function PharmacyCard({ pharmacy, onViewDetails }) {
             />
           </div>
 
-          <span dir="ltr" className={`absolute -top-1.5 -right-2 px-2.5 py-0.5 rounded-full text-[9px] font-black shadow-md flex items-center gap-0.5 z-10 border text-white ${
-            isNearby 
-              ? "bg-emerald-500 border-emerald-400" 
+          <span dir="ltr" className={`absolute -top-1.5 -right-2 px-2.5 py-0.5 rounded-full text-[9px] font-black shadow-md flex items-center gap-0.5 z-10 border text-white ${isNearby
+              ? "bg-emerald-500 border-emerald-400"
               : "bg-[#1ab5ea] border-[#1ab5ea]/40"
-          }`}>
+            }`}>
             <MapPin className="w-2.5 h-2.5 fill-current" />
             <span>{formattedDistance}</span>
           </span>
@@ -1051,8 +1043,8 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
     let initLat = selectedLoc.lat;
     let initLng = selectedLoc.lng;
     if (initLat < 22.0 || initLat > 31.9 || initLng < 24.0 || initLng > 37.0) {
-      initLat = 30.0444; 
-      initLng = 31.2357; 
+      initLat = 30.0444;
+      initLng = 31.2357;
     }
 
     const map = L.map(mapContainerRef.current, {
@@ -1276,7 +1268,7 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
           <h3 className="text-sm md:text-base font-black text-slate-800">
             اختر موقع التوصيل
           </h3>
-          <div className="w-8 h-8" /> 
+          <div className="w-8 h-8" />
         </div>
 
         <div className="bg-[#fef3c7] border-b border-[#fde68a] text-[#78350f] px-4 py-3 flex items-start gap-2.5 text-xs font-bold text-right">
@@ -1381,11 +1373,10 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
               type="button"
               onClick={() => onConfirm(selectedLoc)}
               disabled={isGeocoding}
-              className={`rounded-xl px-7 py-2.5 font-black text-xs transition-all cursor-pointer ${
-                isGeocoding 
-                  ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200" 
+              className={`rounded-xl px-7 py-2.5 font-black text-xs transition-all cursor-pointer ${isGeocoding
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                   : "bg-[#1ab5ea] hover:bg-[#159ccb] text-white shadow-md shadow-[#1ab5ea]/15"
-              }`}
+                }`}
             >
               تأكيد الموقع
             </button>
