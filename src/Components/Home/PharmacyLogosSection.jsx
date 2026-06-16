@@ -1,14 +1,34 @@
 // src/components/PharmacyLogosSection.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { pharmacyLogos } from '../../data/pharmacyLogos';
 
 const PharmacyLogosSection = () => {
-  // Duplicate logos for seamless infinite scroll
-  const duplicatedLogos = [...pharmacyLogos, ...pharmacyLogos, ...pharmacyLogos];
+  const [pharmacy, setPharmacy] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('https://dawaya-back-end.vercel.app/api/pharmacies')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        if (data.success) setPharmacy(data.data.data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-16 bg-gray-50 overflow-hidden">
+    <section id="pharmacies-section" className="py-16 bg-gray-50 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -23,7 +43,7 @@ const PharmacyLogosSection = () => {
 
         <div className="mt-12 relative overflow-hidden">
           <div className="flex gap-6 animate-marquee whitespace-nowrap">
-            {duplicatedLogos.map((logo, index) => (
+            {pharmacy.map((logo, index) => (
               <a
                 key={`${logo.name}-${index}`}
                 href={logo.url}
@@ -35,7 +55,7 @@ const PharmacyLogosSection = () => {
                   <img
                     src={logo.image}
                     alt={logo.name}
-                    className="max-h-full max-w-full object-contain grayscale group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-110"
+                    className="max-h-full max-w-full object-contain transition-all duration-500 transform group-hover:scale-110"
                   />
                 </div>
               </a>

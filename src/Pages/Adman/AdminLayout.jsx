@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { getUserById } from '../../services/api';
+import { jwtDecode } from "jwt-decode";
 import {
   FaHouse,
   FaUsers,
@@ -7,6 +9,7 @@ import {
   FaCartShopping,
   FaRightFromBracket,
 } from "react-icons/fa6";
+
 const navItems = [
   { path: "/admin", label: "الرئيسية", icon: <FaHouse />, end: true },
   { path: "/admin/users", label: "المستخدمين", icon: <FaUsers /> },
@@ -17,11 +20,32 @@ const navItems = [
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
   const handleLogout = () => {
     localStorage.removeItem("userToken");
     navigate("/login");
   };
+  const token = localStorage.getItem("userToken");
+
+  const decoded = token ? jwtDecode(token) : null;
+
+  const userId = decoded?._id;
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await getUserById(userId);
+        setUser(data.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (userId) {
+      fetchUser();
+    }
+  }, [userId]);
 
   return (
     <div
@@ -149,7 +173,7 @@ export default function AdminLayout() {
                 "linear-gradient(135deg, var(--color-primary) 0%, #0ea5e9 100%)",
             }}
           >
-            A
+            {user?.username?.charAt(0).toUpperCase() || 'U'}
           </div>
         </div>
 

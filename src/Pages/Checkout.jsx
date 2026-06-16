@@ -182,10 +182,10 @@ export default function Checkout() {
           إتمام الطلب والدفع
         </h1>
 
-        <div className="checkout-grid" style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '24px' }}>
+        <div className="checkout-grid grid grid-cols-1 lg:grid-cols-12 gap-8">
 
           {/* Right Column: Address and Payment */}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <form onSubmit={handleSubmit} className="col-span-12 lg:col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             {/* Delivery Info Card */}
             <div className="checkout-card" style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '28px', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(241,245,249,0.8)' }}>
@@ -196,7 +196,7 @@ export default function Checkout() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label">الاسم الكامل *</label>
                     <input
@@ -223,7 +223,7 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px' }}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label">المدينة / المحافظة *</label>
                     <select
@@ -243,7 +243,7 @@ export default function Checkout() {
                       <option value="البحيرة">البحيرة</option>
                     </select>
                   </div>
-                  <div className="form-group" style={{ margin: 0 }}>
+                  <div className="form-group md:col-span-2" style={{ margin: 0 }}>
                     <label className="form-label">العنوان بالتفصيل *</label>
                     <input
                       type="text"
@@ -280,7 +280,7 @@ export default function Checkout() {
               </h2>
 
               {/* Payment Methods selector tabs */}
-              <div className="payment-selectors-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+              <div className="payment-selectors-grid grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
 
                 {/* Vodafone Cash */}
                 <button
@@ -406,7 +406,7 @@ export default function Checkout() {
                       </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ marginBottom: '6px' }}>رقم المحفظة التي قمت بالتحويل منها *</label>
                         <input
@@ -468,7 +468,7 @@ export default function Checkout() {
                       </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ marginBottom: '6px' }}>اسم الحساب المحوّل منه (Instapay Name) *</label>
                         <input
@@ -559,7 +559,7 @@ export default function Checkout() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '8px' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                       <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ marginBottom: '6px' }}>اسم المرسل بالكامل (صاحب الحساب المحول منه) *</label>
                         <input
@@ -622,7 +622,7 @@ export default function Checkout() {
           </form>
 
           {/* Left Column: Order Summary */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="col-span-12 lg:col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             <div className="checkout-card" style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '28px', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(241,245,249,0.8)' }}>
               <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--color-text-main)', marginBottom: '20px', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
@@ -633,7 +633,15 @@ export default function Checkout() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '200px', overflowY: 'auto', marginBottom: '20px', paddingLeft: '4px' }}>
                 {cartItems.map((item) => (
                   <div key={item.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <img src={item.image} alt={item.name} style={{ width: '48px', height: '48px', objectFit: 'contain', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '4px' }} />
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                      }}
+                      style={{ width: '48px', height: '48px', objectFit: 'contain', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '4px' }}
+                    />
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-main)', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.name}</span>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-text-muted)' }}>

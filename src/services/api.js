@@ -1,4 +1,7 @@
-const BASE_URL = "https://dawaya-back-end.vercel.app/api";
+const BASE_URL = 'https://dawaya-back-end.vercel.app/api';
+const REMINDERS_BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000/api'
+  : 'https://dawaya-back-end.vercel.app/api';
 
 function isValidJWT(token) {
   if (!token) return false;
@@ -113,7 +116,7 @@ export const api = {
     const response = await fetch(`${BASE_URL}/user/profile`, {
       method: "PUT",
       headers: getHeaders(),
-      body: JSON.stringify(bodyToSend),
+      body: JSON.stringify(profileData),
     });
 
     if (!response.ok) {
@@ -169,8 +172,47 @@ export const api = {
   },
 
   isLoggedIn() {
-    return !!localStorage.getItem("userToken");
+    return !!localStorage.getItem('userToken');
   },
+
+  // ─── REMINDERS ───
+  async getReminders() {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error('فشل في تحميل التذكيرات.');
+    return response.json();
+  },
+
+  async createReminder(reminderData) {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(reminderData),
+    });
+    if (!response.ok) throw new Error('فشل في حفظ التذكير.');
+    return response.json();
+  },
+
+  async updateReminder(id, reminderData) {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(reminderData),
+    });
+    if (!response.ok) throw new Error('فشل في تحديث التذكير.');
+    return response.json();
+  },
+
+  async deleteReminder(id) {
+    const response = await fetch(`${REMINDERS_BASE_URL}/reminders/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error('فشل في حذف التذكير.');
+    return response.json();
+  }
 };
 
 //  Adman Dashoard
@@ -194,9 +236,7 @@ export const getUsers = async (params = {}) => {
 };
 
 export const getUserById = async (id) => {
-  const res = await fetch(`${BASE_URL}/admin/users/${id}`, {
-    headers: getHeaders(),
-  });
+  const res = await fetch(`${BASE_URL}/admin/users/${id}`, { headers: getHeaders() });
   return res.json();
 };
 
@@ -217,7 +257,7 @@ export const deleteUser = async (id) => {
   return res.json();
 };
 
-// ─── PHARMACIES ───
+//  PHARMACIES 
 export const getPharmacies = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
   const res = await fetch(`${BASE_URL}/pharmacies?${query}`, {
@@ -230,37 +270,60 @@ export const createPharmacy = async (data) => {
   const res = await fetch(`${BASE_URL}/admin/pharmacies`, {
     method: "POST",
     headers: getHeaders(),
+
+
+async function authFetch(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: getHeaders(),
+  });
+
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const err = await res.json();
+      msg = err.message || err.error || msg;
+    } catch (_) { }
+    console.error(`[API] ${options.method || 'GET'} ${url} → ${res.status}:`, msg);
+    throw new Error(msg);
+  }
+
+  const text = await res.text();
+  return text ? JSON.parse(text) : {};
+}
+
+// PHARMACIES 
+
+// /admin/pharmacies 
+export const getPharmacies = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return authFetch(`${BASE_URL}/pharmacies?${query}`);
+};
+
+export const createPharmacy = (data) =>
+  authFetch(`${BASE_URL}/admin/pharmacies`, {
+    method: 'POST',
     body: JSON.stringify(data),
   });
-  return res.json();
-};
 
-export const updatePharmacy = async (id, data) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}`, {
-    method: "PUT",
-    headers: getHeaders(),
+export const updatePharmacy = (id, data) =>
+  authFetch(`${BASE_URL}/admin/pharmacies/${id}`, {
+    method: 'PUT',
     body: JSON.stringify(data),
   });
-  return res.json();
-};
 
-export const deletePharmacy = async (id) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}`, {
-    method: "DELETE",
-    headers: getHeaders(),
+export const deletePharmacy = (id) =>
+  authFetch(`${BASE_URL}/admin/pharmacies/${id}`, {
+    method: 'DELETE',
   });
-  return res.json();
-};
 
-export const togglePharmacy = async (id) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies/${id}/toggle`, {
-    method: "PATCH",
-    headers: getHeaders(),
+export const togglePharmacy = (id) =>
+  authFetch(`${BASE_URL}/admin/pharmacies/${id}/toggle`, {
+    method: 'PATCH',
   });
-  return res.json();
-};
 
-// ─── ORDERS ───
+//  ORDERS 
+
 export const getOrders = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
   const res = await fetch(`${BASE_URL}/admin/orders?${query}`, {
@@ -278,7 +341,7 @@ export const updateOrderStatus = async (id, status) => {
   return res.json();
 };
 
-// ---------------------- PHARMACY APIs ----------------------
+//  PHARMACY APIs 
 
 export const getPharmacyStats = async () => {
   const res = await fetch(`${BASE_URL}/pharmacy/stats`, {
@@ -412,3 +475,12 @@ export const getTopMedicines = async (limit = 10) => {
   const json = await res.json();
   return json.data;
 };
+  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, { headers: getHeaders() });
+  return res.json();
+};
+
+export const updateOrderStatus = (id, status) =>
+  authFetch(`${BASE_URL}/admin/orders/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });

@@ -1,4 +1,3 @@
-// src/components/FAQSection.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlus, FaMinus } from 'react-icons/fa';
@@ -26,7 +25,7 @@ const FAQSection = () => {
           className="text-center"
         >
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">الأسئلة الشائعة</h2>
-          <p className="mt-4 text-lg text-gray-600">إجابات على أسئلتك المتكررة</p>
+          <p className="mt-4 text-lg text-gray-600">إجابات على الاسئله </p>
         </motion.div>
 
         <div className="mt-12 space-y-4">
@@ -41,14 +40,16 @@ const FAQSection = () => {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="flex w-full items-center justify-between p-6 text-left font-semibold text-gray-900 hover:bg-gray-50 transition-colors duration-200"
+                className="flex w-full items-center justify-between p-6 font-semibold text-gray-900 hover:bg-gray-50 transition-colors duration-200"
               >
+                <div className="flex items-center gap-3">
+                  {openIndex === index ? (
+                    <FaMinus className="h-5 w-5 text-blue-600" />
+                  ) : (
+                    <FaPlus className="h-5 w-5 text-blue-600" />
+                  )}
+                </div>
                 <span className="text-lg">{faq.question}</span>
-                {openIndex === index ? (
-                  <FaMinus className="h-5 w-5 text-blue-600" />
-                ) : (
-                  <FaPlus className="h-5 w-5 text-blue-600" />
-                )}
               </button>
               <AnimatePresence>
                 {openIndex === index && (
