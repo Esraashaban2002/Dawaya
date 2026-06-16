@@ -155,8 +155,7 @@ function App() {
         
         {path:"/contact",
          element:<Contact />
-        }
-        ,
+        },
         { path: "*",
           element: <NotFound />,
         }
