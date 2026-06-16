@@ -117,8 +117,8 @@ function App() {
           element: <Login />,
         },
         {
-          path:"/auth/callback" ,
-          element:<AuthCallback />
+          path: "/auth/callback",
+          element: <AuthCallback />
         },
         {
           path: "/pharmacistRegister",
@@ -152,13 +152,15 @@ function App() {
           path: "/resetpassword",
           element: <ResetPassword />,
         },
-        
-        {path:"/contact",
-         element:<Contact />
+
+        {
+          path: "/contact",
+          element: <Contact />
         },
-        { path: "*",
+        {
+          path: "*",
           element: <NotFound />,
-        }
+        },
       ],
     },
 
@@ -191,25 +193,25 @@ function App() {
         { path: "pharmacyorders", element: <PharmacyOrders /> },
       ],
     },
-        { path: "/pharmacies", element: <Pharmacies /> },
-        { path: "/orders", element: <Orders /> },
-    
+    { path: "/pharmacies", element: <Pharmacies /> },
+    { path: "/orders", element: <Orders /> },
+
   ]);
 
   return (
 
-  <QueryClientProvider client={queryClient}>
-    <UserContextProvider>
-      <CartContextProvider>
-        <FavoritesContextProvider>
-          <div dir="rtl">
-            <RouterProvider router={router} />
-          </div>
-        </FavoritesContextProvider>
-      </CartContextProvider>
-    </UserContextProvider>
-  </QueryClientProvider>
-    
+    <QueryClientProvider client={queryClient}>
+      <UserContextProvider>
+        <CartContextProvider>
+          <FavoritesContextProvider>
+            <div dir="rtl">
+              <RouterProvider router={router} />
+            </div>
+          </FavoritesContextProvider>
+        </CartContextProvider>
+      </UserContextProvider>
+    </QueryClientProvider>
+
   );
 }
 
