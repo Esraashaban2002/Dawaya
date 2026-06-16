@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { PharmacyCard, MapModal } from "./pharmacies";
+import { cleanMedicineText } from "../utils/textCleaner";
 
 const localPharmacies = [
 
@@ -1402,7 +1403,7 @@ export default function Prouducts() {
                         </div>
                       ) : (
                         <p className="text-sm text-slate-500 leading-relaxed text-right">
-                          {activeDetails?.description || "لا يوجد وصف متوفر لهذا المنتج حالياً."}
+                          {cleanMedicineText(activeDetails?.description) || "لا يوجد وصف متوفر لهذا المنتج حالياً."}
                         </p>
                       )}
                     </div>

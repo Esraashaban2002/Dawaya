@@ -70,14 +70,34 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
  * Sends a real WhatsApp message using WATI API
  */
 async function sendWatiWhatsAppReminder(reminder, triggerTime) {
+    // const displayTime = triggerTime || reminder.time;
+    // // إزالة أي أصفار أو + في الأول
+    // cleanPhone = cleanPhone.replace(/^\+/, '').replace(/^0+/, '');
+
+    // // لو مش بادي بـ 20 زوديها
+    // if (!cleanPhone.startsWith('20')) {
+    //     cleanPhone = '20' + cleanPhone;
+    // }
+    // let cleanPhone = reminder.phoneNumber.trim().replace(/^\+/, '');
+    // if (cleanPhone.startsWith('0')) {
+    //     cleanPhone = '20' + cleanPhone.substring(1);
+
+    // } else if (!cleanPhone.startsWith('20')) {
+    //     cleanPhone = '20' + cleanPhone;
+    // }
+    // // const formattedPhone = `+${cleanPhone}`;
+    // const formattedPhone = cleanPhone;
     const displayTime = triggerTime || reminder.time;
-    let cleanPhone = reminder.phoneNumber.trim().replace(/^\+/, '');
-    if (cleanPhone.startsWith('0')) {
-        cleanPhone = '20' + cleanPhone.substring(1);
-    } else if (!cleanPhone.startsWith('20')) {
+
+    let cleanPhone = reminder.phoneNumber.trim()
+        .replace(/^\+/, '')
+        .replace(/^0+/, '');
+
+    if (!cleanPhone.startsWith('20')) {
         cleanPhone = '20' + cleanPhone;
     }
-    const formattedPhone = `+${cleanPhone}`;
+
+    const formattedPhone = cleanPhone;
 
     try {
         const templateName = process.env.WATI_TEMPLATE_NAME || "medicine_reminder";

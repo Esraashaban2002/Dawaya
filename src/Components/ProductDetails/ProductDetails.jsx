@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { CartContext } from '../../Context/CartContext';
 import { FavoritesContext } from '../../Context/FavoritesContext';
+import { cleanMedicineText } from '../../utils/textCleaner';
 
 const PRODUCTS_DB = {
   "1": {
@@ -157,6 +158,7 @@ export default function ProductDetails() {
         .then((data) => {
           if (data.success && data.data) {
             const apiProd = data.data;
+            const cleanedDescription = cleanMedicineText(apiProd.description);
             setProductData({
               id: apiProd._id,
               name: apiProd.name,
@@ -167,11 +169,11 @@ export default function ProductDetails() {
               images: apiProd.images && apiProd.images.length > 0
                 ? apiProd.images
                 : ["https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=500&q=80"],
-              features: [apiProd.description || 'لا يوجد وصف متاح للمنتج حالياً.'],
+              features: [cleanedDescription || 'لا يوجد وصف متاح للمنتج حالياً.'],
               qa: [
                 {
                   q: "ما هو هذا المنتج ؟",
-                  a: apiProd.description || 'لا توجد تفاصيل إضافية عن هذا المنتج حالياً.'
+                  a: cleanedDescription || 'لا توجد تفاصيل إضافية عن هذا المنتج حالياً.'
                 }
               ],
               specifications: [
