@@ -390,6 +390,11 @@ export default function Prescription() {
     return Array.from(new Set(aliases));
   };
 
+  const hasWord = (text, word) => {
+    const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    return new RegExp('\\b' + escaped + '\\b', 'i').test(text);
+  };
+
   const matchOcrTextToProducts = (ocrText) => {
     const ocrTextLower = ocrText.toLowerCase();
     const matched = [];
@@ -408,18 +413,13 @@ export default function Prescription() {
       let matchedLine = "";
       
       aliases.forEach(alias => {
-        if (ocrTextLower.includes(alias)) {
-          let score = 60;
+        if (hasWord(ocrTextLower, alias)) {
+          let score = 65;
           
           lines.forEach(line => {
             const lineLower = line.toLowerCase();
-            if (lineLower.includes(alias)) {
-              let lineScore = 70;
-              
-              const wordRegex = new RegExp(`\\b${alias}\\b`, 'i');
-              if (wordRegex.test(lineLower)) {
-                lineScore += 15;
-              }
+            if (hasWord(lineLower, alias)) {
+              let lineScore = 75;
               
               const numbersInName = product.name.match(/\d+/g);
               if (numbersInName) {
@@ -566,26 +566,59 @@ export default function Prescription() {
     });
     
     const isDrugLine = (line) => {
-      const lower = line.toLowerCase();
+      const lower = line.toLowerCase().trim();
       
+      // Must contain letters
       if (!/[a-zA-Z]/.test(line)) return false;
       
-      const ignoreWords = [
-        'dr', 'doctor', 'patient', 'date', 'rx', 'signature', 'stamp', 'clinic', 'medical', 
+      // Standard header markers to ignore completely
+      const headerWords = [
+        'dr', 'doctor', 'patient', 'date', 'rx', 'clinic', 'medical', 
         'prescription', 'hospital', 'name', 'age', 'gender', 'tel', 'phone', 'address', 'ref',
-        'tablets', 'capsules', 'daily', 'times', 'every', 'hours', 'day', 'week', 'month',
-        'signature', 'sign', 'stamp', 'years', 'yrs', 'weight', 'wt', 'diagnosis', 'history',
+        'signature', 'stamp', 'years', 'yrs', 'weight', 'wt', 'diagnosis', 'history',
         'clinics', 'consultant', 'specialist', 'b.sc', 'm.d', 'ph.d', 'care', 'note', 'notes',
-        'avoid', 'take', 'directions', 'instruction', 'instructions', 'empty', 'stomach', 'course'
+        'avoid', 'empty', 'stomach', 'course', 'sig'
       ];
       
-      if (ignoreWords.some(word => lower === word || lower.startsWith(word + ':') || lower.startsWith(word + ' ') || lower.includes(' ' + word + ' '))) {
+      if (headerWords.some(word => lower === word || lower.startsWith(word + ':') || lower.startsWith(word + ' '))) {
         return false;
       }
       
-      if (line.replace(/[^a-zA-Z]/g, '').length < 3) return false;
+      // Split the line into alphanumeric words
+      const words = lower
+        .split(/\s+/)
+        .map(w => w.replace(/[^a-z0-9]/g, ''))
+        .filter(w => w.length > 0);
+        
+      // Ignore words that are common instruction details
+      const instructionWords = [
+        'tablet', 'tablets', 'capsule', 'capsules', 'daily', 'times', 'every', 'hours', 'day', 'week', 'month',
+        'sign', 'tab', 'tabs', 'caps', 'once', 'twice', 'three', 'hrs', 'dose', 'directions', 'instruction',
+        'instructions', 'take', 'with', 'after', 'before', 'food', 'meals', 'meal'
+      ];
       
-      return true;
+      // Filter out header and instruction words
+      const candidateWords = words.filter(w => !headerWords.includes(w) && !instructionWords.includes(w));
+      
+      if (candidateWords.length === 0) return false;
+      
+      // Check if we have at least one valid word of length >= 4, or containing a number, or matching a known alias
+      const hasValidWord = candidateWords.some(word => {
+        // Is it a number? (e.g. 500, 400)
+        if (/^\d+$/.test(word)) return true;
+        // Is it length >= 4?
+        if (word.length >= 4) return true;
+        // Is it a known alias from our transliteration (even if short)?
+        const isKnown = allProducts.some(product => {
+          const aliases = getProductEnglishAliases(product);
+          return aliases.includes(word);
+        });
+        if (isKnown) return true;
+        
+        return false;
+      });
+      
+      return hasValidWord;
     };
 
     lines.forEach(line => {
