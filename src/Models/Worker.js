@@ -77,7 +77,7 @@ async function sendWatiWhatsAppReminder(reminder, triggerTime) {
     } else if (!cleanPhone.startsWith('20')) {
         cleanPhone = '20' + cleanPhone;
     }
-    const formattedPhone = cleanPhone;
+    const formattedPhone = `+${cleanPhone}`;
 
     try {
         const templateName = process.env.WATI_TEMPLATE_NAME || "medicine_reminder";
@@ -85,8 +85,11 @@ async function sendWatiWhatsAppReminder(reminder, triggerTime) {
         if (templateName === "appointment_reminder_with_buttons") {
             customParams = [
                 { name: "name", value: "Patient" },
+                { name: "1", value: "Patient" },
                 { name: "place", value: `${reminder.medicineName} (${reminder.dosage})` },
-                { name: "date", value: displayTime }
+                { name: "2", value: `${reminder.medicineName} (${reminder.dosage})` },
+                { name: "date", value: displayTime },
+                { name: "3", value: displayTime }
             ];
         } else if (templateName === "medicine_reminder_ar") {
             customParams = [
