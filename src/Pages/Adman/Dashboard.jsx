@@ -50,6 +50,7 @@ export default function Dashboard() {
       </div>
     );
 
+    const COLORS = ['#1ab5ea', '#10b981', '#f59e0b', '#ef4444'];
   const roleData = [
     { name: "Users", value: users.filter((u) => u.role === "user").length },
     {
@@ -90,9 +91,9 @@ export default function Dashboard() {
     { label: 'المستخدمين', value: stats?.users || 0, icon: Users, color: '#1ab5ea', bg: 'rgba(26,181,234,0.08)' },
     { label: 'الصيدليات', value: stats?.pharmacies || 0, icon: Store, color: '#10b981', bg: 'rgba(16,185,129,0.08)' },
     { label: 'الطلبات', value: stats?.orders || 0, icon: ShoppingCart, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)' },
-    { label: 'طلبات معلقة', value: orderStatusData[0].value, icon: Clock, color: '#ef4444', bg: 'rgba(239,68,68,0.08)' },
+    { label: 'طلبات معلقة', value: requestStatusData[0].value, icon: Clock, color: '#ef4444', bg: 'rgba(239,68,68,0.08)' },
   ];
-
+  
   return (
     <div className="space-y-6">
 
@@ -207,7 +208,7 @@ export default function Dashboard() {
           <span>حالة الطلبات الحالية</span>
         </h3>
         <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={orderStatusData}>
+          <BarChart data={requestStatusData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: 'Cairo', fill: '#64748b' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
@@ -220,7 +221,7 @@ export default function Dashboard() {
               }} 
             />
             <Bar dataKey="value" name="عدد الطلبات" radius={[6, 6, 0, 0]} maxBarSize={50}>
-              {orderStatusData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+              {requestStatusData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
