@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  FileText, Upload, Check, AlertCircle, 
+import {
+  FileText, Upload, Check, AlertCircle,
   RefreshCw, ShoppingCart, Trash2, ArrowRight,
   Sparkles, ShieldCheck, FileSpreadsheet
 } from 'lucide-react';

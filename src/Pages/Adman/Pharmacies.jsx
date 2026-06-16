@@ -330,7 +330,7 @@ export default function Pharmacies() {
                                                     color: '#10b981',
                                                 }}
                                             >
-                                                🏪
+                                                <img src={ph.image} alt={ph.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                                             </div>
 
                                             <span
