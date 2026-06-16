@@ -613,15 +613,7 @@ export default function Prouducts() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#1ab5ea]/20 selection:text-[#1ab5ea]">
 
-      {!isLocationConfirmed && (
-        <div 
-          onClick={() => setIsMapModalOpen(true)}
-          className="bg-[#d97706] hover:bg-[#b45309] text-white text-base md:text-lg font-black py-4 px-4 flex items-center justify-center gap-2 cursor-pointer transition-colors sticky top-0 z-40 select-none text-center shadow-md leading-relaxed"
-        >
-          <MapPin className="w-5 h-5 fill-white text-[#d97706] shrink-0" />
-          <span>تحديد الموقع معطل. اضغط هنا لتفعيله قبل اختيار المنتجات</span>
-        </div>
-      )}
+
 
       <div className="w-full py-6">
 

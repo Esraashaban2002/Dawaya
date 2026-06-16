@@ -154,7 +154,6 @@ function App() {
       ],
     },
 
-  // Admin Dashboard
     {
       path: "/admin",
       element: (
