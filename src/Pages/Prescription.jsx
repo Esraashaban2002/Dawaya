@@ -332,6 +332,64 @@ export default function Prescription() {
     }
   };
 
+  const getProductEnglishAliases = (product) => {
+    const aliases = [];
+    const name = product.name.toLowerCase();
+    
+    if (name.includes("بانادول")) aliases.push("panadol");
+    if (name.includes("أموكسيل") || name.includes("اموكسيل")) aliases.push("amoxil");
+    if (name.includes("أوجمنتين") || name.includes("اوجمنتين")) aliases.push("augmentin");
+    if (name.includes("بروفين")) aliases.push("brufen");
+    if (name.includes("أسبرين") || name.includes("اسبرين")) aliases.push("aspirin");
+    if (name.includes("سنتروم")) aliases.push("centrum");
+    if (name.includes("أماريل") || name.includes("اماريل")) aliases.push("amaryl");
+    if (name.includes("تينول")) aliases.push("tenol");
+    if (name.includes("جافيسكون")) aliases.push("gaviscon");
+    if (name.includes("زيرتك") || name.includes("زيرتيك")) aliases.push("zyrtec");
+    if (name.includes("كومتركس") || name.includes("كوميتريكس") || name.includes("كونتركس") || name.includes("كونتريكس")) aliases.push("comtrex", "contrex");
+    if (name.includes("جاست ريج")) aliases.push("just reg");
+    if (name.includes("إيموديوم") || name.includes("ايموديوم")) aliases.push("imodium");
+    if (name.includes("كونجستال") || name.includes("كونجيستال")) aliases.push("congestal");
+    if (name.includes("كتافلام")) aliases.push("cataflam");
+    if (name.includes("بوديزونيد")) aliases.push("budesonide");
+    if (name.includes("نابروكسين")) aliases.push("naproxen");
+    if (name.includes("أزيثرومايسين") || name.includes("ازيثرومايسين")) aliases.push("azithromycin");
+    if (name.includes("سيتريزين")) aliases.push("cetirizine");
+    if (name.includes("ديسلوراتادين")) aliases.push("desloratadine");
+    if (name.includes("دومبيريدون")) aliases.push("domperidone");
+    if (name.includes("نوفاليس")) aliases.push("novalges");
+    if (name.includes("دسلين")) aliases.push("deceline");
+    if (name.includes("كابوتين")) aliases.push("capoten");
+    if (name.includes("ميتفورمين")) aliases.push("metformin");
+    if (name.includes("فينتولين")) aliases.push("ventolin");
+    if (name.includes("ديكلوفيناك")) aliases.push("diclofenac");
+    if (name.includes("إريثرومايسين") || name.includes("اريثرومايسين")) aliases.push("erythromycin");
+    if (name.includes("تيلفاست")) aliases.push("telfast");
+    if (name.includes("رينمارك")) aliases.push("renmark");
+    if (name.includes("دوميتل")) aliases.push("domitel");
+    if (name.includes("جليبنكلاميد")) aliases.push("glibenclamide");
+    if (name.includes("سيريتايد")) aliases.push("seretide");
+    if (name.includes("أوميبرازول") || name.includes("اوميبرازول")) aliases.push("omeprazole");
+    if (name.includes("يوتيروكس") || name.includes("ايوثيروكس")) aliases.push("euthyrox");
+    if (name.includes("جلوكوفاج")) aliases.push("glucophage");
+    
+    if (product.genericName) {
+      aliases.push(product.genericName.toLowerCase());
+      const genericWords = product.genericName.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !['acid', 'sodium', 'potassium', 'chloride', 'hydrate'].includes(w));
+      aliases.push(...genericWords);
+    }
+    
+    const englishWordMatches = name.match(/[a-z0-9]+/g);
+    if (englishWordMatches) {
+      aliases.push(...englishWordMatches.filter(w => w.length > 2));
+    }
+    
+    return Array.from(new Set(aliases));
+  };
+
   const matchOcrTextToProducts = (ocrText) => {
     const ocrTextLower = ocrText.toLowerCase();
     const matched = [];
@@ -343,7 +401,62 @@ export default function Prescription() {
       
     allProducts.forEach(product => {
       const prodNameLower = product.name.toLowerCase();
-      const genericLower = (product.genericName || "").toLowerCase();
+      
+      const aliases = getProductEnglishAliases(product);
+      let bestAlias = null;
+      let highestScore = 0;
+      let matchedLine = "";
+      
+      aliases.forEach(alias => {
+        if (ocrTextLower.includes(alias)) {
+          let score = 60;
+          
+          lines.forEach(line => {
+            const lineLower = line.toLowerCase();
+            if (lineLower.includes(alias)) {
+              let lineScore = 70;
+              
+              const wordRegex = new RegExp(`\\b${alias}\\b`, 'i');
+              if (wordRegex.test(lineLower)) {
+                lineScore += 15;
+              }
+              
+              const numbersInName = product.name.match(/\d+/g);
+              if (numbersInName) {
+                let matchedNums = 0;
+                numbersInName.forEach(num => {
+                  if (lineLower.includes(num)) matchedNums++;
+                });
+                if (matchedNums > 0) {
+                  lineScore += 15;
+                }
+              }
+              
+              if (lineScore > score) {
+                score = lineScore;
+                matchedLine = line;
+              }
+            }
+          });
+          
+          if (score > highestScore) {
+            highestScore = score;
+            bestAlias = alias;
+          }
+        }
+      });
+      
+      if (highestScore >= 70) {
+        matched.push({
+          detectedName: matchedLine || product.name,
+          product: product,
+          confidence: `${Math.round(highestScore)}%`,
+          score: highestScore,
+          quantity: 1,
+          selected: true
+        });
+        return;
+      }
       
       if (prodNameLower.length > 4 && ocrTextLower.includes(prodNameLower)) {
         matched.push({
@@ -398,8 +511,8 @@ export default function Prescription() {
         }
       }
       
-      if (genericLower) {
-        const genericWords = genericLower
+      if (product.genericName) {
+        const genericWords = product.genericName.toLowerCase()
           .replace(/[^a-z0-9\s]/g, '')
           .split(/\s+/)
           .filter(w => w.length > 3 && !['acid', 'sodium', 'potassium', 'chloride', 'hydrate'].includes(w));
@@ -452,36 +565,29 @@ export default function Prescription() {
       }
     });
     
-
-
-
     const isDrugLine = (line) => {
       const lower = line.toLowerCase();
       
-      // Must contain letters
       if (!/[a-zA-Z]/.test(line)) return false;
       
-      // Ignore common header/footer words in prescriptions
       const ignoreWords = [
         'dr', 'doctor', 'patient', 'date', 'rx', 'signature', 'stamp', 'clinic', 'medical', 
         'prescription', 'hospital', 'name', 'age', 'gender', 'tel', 'phone', 'address', 'ref',
         'tablets', 'capsules', 'daily', 'times', 'every', 'hours', 'day', 'week', 'month',
         'signature', 'sign', 'stamp', 'years', 'yrs', 'weight', 'wt', 'diagnosis', 'history',
-        'clinics', 'consultant', 'specialist', 'b.sc', 'm.d', 'ph.d', 'care'
+        'clinics', 'consultant', 'specialist', 'b.sc', 'm.d', 'ph.d', 'care', 'note', 'notes',
+        'avoid', 'take', 'directions', 'instruction', 'instructions', 'empty', 'stomach', 'course'
       ];
       
-      // If the line is just one of these ignored words or contains header markers
-      if (ignoreWords.some(word => lower === word || lower.startsWith(word + ':') || lower.startsWith(word + ' '))) {
+      if (ignoreWords.some(word => lower === word || lower.startsWith(word + ':') || lower.startsWith(word + ' ') || lower.includes(' ' + word + ' '))) {
         return false;
       }
       
-      // If the line has no typical drug name characteristics (e.g. too short)
       if (line.replace(/[^a-zA-Z]/g, '').length < 3) return false;
       
       return true;
     };
 
-    // For each line, check if it's a drug line and if it was matched to any product in uniqueMatches
     lines.forEach(line => {
       if (!isDrugLine(line)) return;
 
@@ -493,6 +599,11 @@ export default function Prescription() {
         
         if (lineLower.includes(prodNameLower) || prodNameLower.includes(lineLower) ||
             lineLower.includes(detectedLower) || detectedLower.includes(lineLower)) {
+          return true;
+        }
+
+        const aliases = getProductEnglishAliases(item.product);
+        if (aliases.some(alias => lineLower.includes(alias))) {
           return true;
         }
 
