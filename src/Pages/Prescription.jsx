@@ -50,11 +50,13 @@ const PRESETS = [
     patient: "سارة محمد",
     notes: [
       "Panadol Extra tabs - قرص 3 مرات يومياً بعد الأكل",
-      "Vitamin C 1000mg effervescent - قرص فوار يومياً صباحاً"
+      "Vitamin C 1000mg effervescent - قرص فوار يومياً صباحاً",
+      "Aspirin 81mg - قرص بعد الغداء يومياً"
     ],
     matches: [
       { detectedName: "Panadol Extra 500mg Tabs", product: PRODUCTS_DB[0], confidence: "99%", quantity: 1, selected: true },
-      { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "97%", quantity: 1, selected: true }
+      { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "97%", quantity: 1, selected: true },
+      { detectedName: "Aspirin 81mg", product: null, confidence: "0%", quantity: 1, selected: false }
     ]
   },
   {
@@ -83,6 +85,21 @@ const PRESETS = [
     ],
     matches: [
       { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "98%", quantity: 1, selected: true }
+    ]
+  },
+  {
+    id: "preset-4",
+    title: "روشتة غير متوفرة (بدون تطابق)",
+    doctor: "د. خالد منصور (أخصائي الغدد الصماء)",
+    date: "08-06-2026",
+    patient: "منى علي",
+    notes: [
+      "Euthyrox 50mcg - قرص يومياً على الريق",
+      "Glucophage 500mg - قرص بعد الغداء يومياً"
+    ],
+    matches: [
+      { detectedName: "Euthyrox 50mcg", product: null, confidence: "0%", quantity: 1, selected: false },
+      { detectedName: "Glucophage 500mg", product: null, confidence: "0%", quantity: 1, selected: false }
     ]
   }
 ];
@@ -429,33 +446,77 @@ export default function Prescription() {
     const uniqueMatches = [];
     const seenIds = new Set();
     matched.forEach(item => {
-      if (!seenIds.has(item.product.id)) {
+      if (item.product && !seenIds.has(item.product.id)) {
         seenIds.add(item.product.id);
         uniqueMatches.push(item);
       }
     });
     
-    if (uniqueMatches.length === 0) {
-      if (ocrTextLower.includes("headache") || ocrTextLower.includes("pain") || ocrTextLower.includes("fever") || ocrTextLower.includes("panadol")) {
+
+
+
+    const isDrugLine = (line) => {
+      const lower = line.toLowerCase();
+      
+      // Must contain letters
+      if (!/[a-zA-Z]/.test(line)) return false;
+      
+      // Ignore common header/footer words in prescriptions
+      const ignoreWords = [
+        'dr', 'doctor', 'patient', 'date', 'rx', 'signature', 'stamp', 'clinic', 'medical', 
+        'prescription', 'hospital', 'name', 'age', 'gender', 'tel', 'phone', 'address', 'ref',
+        'tablets', 'capsules', 'daily', 'times', 'every', 'hours', 'day', 'week', 'month',
+        'signature', 'sign', 'stamp', 'years', 'yrs', 'weight', 'wt', 'diagnosis', 'history',
+        'clinics', 'consultant', 'specialist', 'b.sc', 'm.d', 'ph.d', 'care'
+      ];
+      
+      // If the line is just one of these ignored words or contains header markers
+      if (ignoreWords.some(word => lower === word || lower.startsWith(word + ':') || lower.startsWith(word + ' '))) {
+        return false;
+      }
+      
+      // If the line has no typical drug name characteristics (e.g. too short)
+      if (line.replace(/[^a-zA-Z]/g, '').length < 3) return false;
+      
+      return true;
+    };
+
+    // For each line, check if it's a drug line and if it was matched to any product in uniqueMatches
+    lines.forEach(line => {
+      if (!isDrugLine(line)) return;
+
+      const lineLower = line.toLowerCase();
+      const isAlreadyMatched = uniqueMatches.some(item => {
+        if (!item.product) return false;
+        const prodNameLower = item.product.name.toLowerCase();
+        const detectedLower = item.detectedName.toLowerCase();
+        
+        if (lineLower.includes(prodNameLower) || prodNameLower.includes(lineLower) ||
+            lineLower.includes(detectedLower) || detectedLower.includes(lineLower)) {
+          return true;
+        }
+
+        const lineWords = lineLower.split(/\s+/).filter(w => w.length > 3);
+        const prodWords = prodNameLower.split(/\s+/).filter(w => w.length > 3);
+        const commonWords = lineWords.filter(w => prodWords.includes(w));
+        if (commonWords.length > 0 && commonWords.length >= Math.min(lineWords.length, prodWords.length) * 0.5) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (!isAlreadyMatched) {
         uniqueMatches.push({
-          detectedName: "بانادول اكسترا (خافض حرارة مقترح)",
-          product: allProducts.find(p => p.id === "1") || allProducts[0],
-          confidence: "75%",
-          score: 75,
-          quantity: 1,
-          selected: true
-        });
-      } else {
-        uniqueMatches.push({
-          detectedName: "Panadol Extra (افتراضي للروشتة)",
-          product: allProducts.find(p => p.id === "1") || allProducts[0],
-          confidence: "60%",
-          score: 60,
+          detectedName: line,
+          product: null,
+          confidence: "0%",
+          score: 0,
           quantity: 1,
           selected: false
         });
       }
-    }
+    });
     
     return uniqueMatches;
   };
@@ -498,7 +559,7 @@ export default function Prescription() {
       return;
     }
 
-    const selectedMatches = matches.filter(m => m.selected);
+    const selectedMatches = matches.filter(m => m.selected && m.product);
     if (selectedMatches.length === 0) {
       triggerToast('الرجاء تحديد منتج واحد على الأقل لإضافته للسلة!', 'error');
       return;
@@ -533,9 +594,9 @@ export default function Prescription() {
     setScanLogs([]);
   };
 
-  const selectedCount = matches.filter(m => m.selected).length;
+  const selectedCount = matches.filter(m => m.selected && m.product).length;
   const totalPrice = matches.reduce((acc, m) => {
-    if (m.selected) {
+    if (m.selected && m.product) {
       return acc + (m.product.price * m.quantity);
     }
     return acc;
@@ -803,96 +864,162 @@ export default function Prescription() {
               {}
               {scanFinished && (
                 <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{
-                    background: '#e8f7f0', color: '#10b981', border: '1px solid #a3e635',
-                    borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
-                    fontSize: '13px', fontWeight: 800
-                  }}>
-                    <ShieldCheck size={18} />
-                    <span>تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة.</span>
-                  </div>
+                   {matches.some(item => item.product !== null) ? (
+                    <div style={{
+                      background: '#e8f7f0', color: '#10b981', border: '1px solid #a3e635',
+                      borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
+                      fontSize: '13px', fontWeight: 800
+                    }}>
+                      <ShieldCheck size={18} />
+                      <span>تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة.</span>
+                    </div>
+                  ) : (
+                    <div style={{
+                      background: '#fef2f2', color: '#ef4444', border: '1px solid #fca5a5',
+                      borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
+                      fontSize: '13px', fontWeight: 800
+                    }}>
+                      <AlertCircle size={18} />
+                      <span>تم تحليل الروشتة بنجاح! لم يتم العثور على أدوية مطابقة.</span>
+                    </div>
+                  )}
 
                   {}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والتطابقات المقترحة:</span>
-                    
-                    {matches.map((item, index) => (
-                      <div key={index} className="matched-item-row">
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={item.selected}
-                            onChange={() => toggleSelectMatch(index)}
-                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--color-primary)', marginTop: '4px' }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div 
-                              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2"
-                            >
-                              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
-                                {item.detectedName}
-                              </span>
-                              <span className="match-badge shrink-0 w-fit">
-                                نسبة التطابق {item.confidence}
-                              </span>
-                            </div>
-
-                            {}
-                            <div 
-                              style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px' }}
-                              className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
-                            >
-                              <Link 
-                                to={`/product/${item.product.id}`}
-                                className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-inherit"
-                                style={{ textDecoration: 'none' }}
-                              >
-                                <img 
-                                  src={item.product.image} 
-                                  alt={item.product.name} 
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                    {matches.some(item => item.product !== null) ? (
+                      <>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والتطابقة المقترحة:</span>
+                        {matches.filter(item => item.product !== null).map((item) => {
+                          const originalIndex = matches.findIndex(m => m === item);
+                          return (
+                            <div key={originalIndex} className="matched-item-row">
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={item.selected}
+                                  onChange={() => toggleSelectMatch(originalIndex)}
+                                  disabled={!item.product}
+                                  style={{ 
+                                    width: '18px', 
+                                    height: '18px', 
+                                    cursor: item.product ? 'pointer' : 'not-allowed', 
+                                    accentColor: 'var(--color-primary)', 
+                                    marginTop: '4px',
+                                    opacity: item.product ? 1 : 0.3
                                   }}
-                                  style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
-                                  className="shrink-0"
                                 />
-                                <div className="min-w-0 flex-1">
-                                  <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {item.product.name}
-                                  </p>
-                                  <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 800 }}>
-                                    {item.product.price} جنيه
-                                  </span>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div 
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2"
+                                  >
+                                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
+                                      {item.detectedName}
+                                    </span>
+                                    <span 
+                                      className="match-badge shrink-0 w-fit"
+                                    >
+                                      نسبة التطابق {item.confidence}
+                                    </span>
+                                  </div>
+
+                                  <div 
+                                    style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px' }}
+                                    className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
+                                  >
+                                    <Link 
+                                      to={`/product/${item.product.id}`}
+                                      className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-inherit"
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      <img 
+                                        src={item.product.image} 
+                                        alt={item.product.name} 
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                                        }}
+                                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
+                                        className="shrink-0"
+                                      />
+                                      <div className="min-w-0 flex-1">
+                                        <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                          {item.product.name}
+                                        </p>
+                                        <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 800 }}>
+                                          {item.product.price} جنيه
+                                        </span>
+                                      </div>
+                                    </Link>
+
+                                    <div className="qty-stepper" style={{ height: '32px', borderRadius: '8px' }}>
+                                      <button 
+                                        className="qty-btn" 
+                                        style={{ width: '28px' }}
+                                        onClick={() => handleQtyChange(originalIndex, item.quantity - 1)}
+                                        disabled={item.quantity <= 1 || !item.selected}
+                                      >
+                                        -
+                                      </button>
+                                      <span className="qty-number" style={{ fontSize: '13px', minWidth: '20px' }}>{item.quantity}</span>
+                                      <button 
+                                        className="qty-btn" 
+                                        style={{ width: '28px' }}
+                                        onClick={() => handleQtyChange(originalIndex, item.quantity + 1)}
+                                        disabled={!item.selected}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+
+                                  </div>
+
                                 </div>
-                              </Link>
-
-                              {}
-                              <div className="qty-stepper" style={{ height: '32px', borderRadius: '8px' }}>
-                                <button 
-                                  className="qty-btn" 
-                                  style={{ width: '28px' }}
-                                  onClick={() => handleQtyChange(index, item.quantity - 1)}
-                                  disabled={item.quantity <= 1 || !item.selected}
-                                >
-                                  -
-                                </button>
-                                <span className="qty-number" style={{ fontSize: '13px', minWidth: '20px' }}>{item.quantity}</span>
-                                <button 
-                                  className="qty-btn" 
-                                  style={{ width: '28px' }}
-                                  onClick={() => handleQtyChange(index, item.quantity + 1)}
-                                  disabled={!item.selected}
-                                >
-                                  +
-                                </button>
                               </div>
-
                             </div>
+                          );
+                        })}
+
+                        {matches.some(item => item.product === null) && (
+                          <div style={{
+                            background: '#fee2e2',
+                            border: '1px solid #fca5a5',
+                            borderRadius: '12px',
+                            padding: '12px 16px',
+                            color: '#b91c1c',
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            marginTop: '4px'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <AlertCircle size={16} />
+                              <span>the rest dont match</span>
+                            </div>
+                            <ul style={{ margin: '0 0 0 24px', padding: 0, listStyleType: 'disc', fontSize: '12px', opacity: 0.9 }}>
+                              {matches.filter(item => item.product === null).map((item, idx) => (
+                                <li key={idx}>{item.detectedName}</li>
+                              ))}
+                            </ul>
                           </div>
-                        </div>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{
+                        background: '#fee2e2',
+                        border: '1px solid #fca5a5',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        color: '#b91c1c',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        fontFamily: 'Cairo, sans-serif'
+                      }}>
+                        no match
                       </div>
-                    ))}
+                    )}
                   </div>
 
                   {}
