@@ -1,61 +1,88 @@
-import { useEffect, useState } from 'react';
-import { getStats, getUsers, getOrders } from '../../services/api';
+import { useEffect, useState } from "react";
+import { getStats, getUsers, getPharmacyRequests } from "../../services/api";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend
 } from 'recharts';
 import { Users, Store, ShoppingCart, Clock, Activity } from 'lucide-react';
 
-const COLORS = ['#1ab5ea', '#10b981', '#f59e0b', '#ef4444'];
+// ── helper: normalize any API shape to a flat array ──
+const extractList = (res) => {
+  if (Array.isArray(res))             return res;
+  if (Array.isArray(res?.data))       return res.data;
+  if (Array.isArray(res?.data?.data)) return res.data.data;
+  return [];
+};
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
-  const [orders, setOrders] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [statsRes, usersRes, ordersRes] = await Promise.all([
-        getStats(),
-        getUsers({ limit: 100 }),
-        getOrders({ limit: 100 })
-      ]);
-      setStats(statsRes.data);
-      setUsers(usersRes.data?.data || []);
-      setOrders(ordersRes.data?.data || []);
-      setLoading(false);
+      try {
+        const [statsRes, usersRes, requestsRes] = await Promise.all([
+          getStats(),
+          getUsers({ limit: 100 }),
+          getPharmacyRequests({ limit: 100 }),
+        ]);
+        setStats(statsRes.data);
+        setUsers(extractList(usersRes));
+        setRequests(extractList(requestsRes));
+      } catch (err) {
+        console.error("[Dashboard] fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchAll();
   }, []);
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-      <i className="fas fa-spinner fa-spin ml-2"></i> جاري التحميل...
-    </div>
-  );
+  if (loading)
+    return (
+      <div
+        className="flex items-center justify-center h-64 text-sm"
+        style={{ color: "var(--color-text-muted)" }}
+      >
+        <i className="fas fa-spinner fa-spin ml-2"></i> جاري التحميل...
+      </div>
+    );
 
   const roleData = [
-    { name: 'Users', value: users.filter(u => u.role === 'user').length },
-    { name: 'Pharmacists', value: users.filter(u => u.role === 'pharmacist').length },
-    { name: 'Admins', value: users.filter(u => u.role === 'admin').length },
+    { name: "Users", value: users.filter((u) => u.role === "user").length },
+    {
+      name: "Pharmacists",
+      value: users.filter((u) => u.role === "pharmacist").length,
+    },
+    { name: "Admins", value: users.filter((u) => u.role === "admin").length },
   ];
 
-  const orderStatusData = [
-    { name: 'معلق', value: orders.filter(o => o.status === 'pending').length },
-    { name: 'مؤكد', value: orders.filter(o => o.status === 'confirmed').length },
-    { name: 'تم التوصيل', value: orders.filter(o => o.status === 'delivered').length },
-    { name: 'ملغي', value: orders.filter(o => o.status === 'cancelled').length },
+  const requestStatusData = [
+    {
+      name: "قيد المراجعة",
+      value: requests.filter((r) => r.status === "pending").length,
+    },
+    {
+      name: "مقبول",
+      value: requests.filter((r) => r.status === "approved").length,
+    },
+    {
+      name: "مرفوض",
+      value: requests.filter((r) => r.status === "rejected").length,
+    },
   ];
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - i));
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = date.toISOString().split("T")[0];
     return {
-      day: date.toLocaleDateString('ar-EG', { weekday: 'short' }),
-      مستخدمين: users.filter(u => u.createdAt?.startsWith(dateStr)).length,
-      طلبات: orders.filter(o => o.createdAt?.startsWith(dateStr)).length,
+      day: date.toLocaleDateString("ar-EG", { weekday: "short" }),
+      مستخدمين: users.filter((u) => u.createdAt?.startsWith(dateStr)).length,
+      "طلبات صيدليات": requests.filter((r) => r.createdAt?.startsWith(dateStr))
+        .length,
     };
   });
 
@@ -198,7 +225,6 @@ export default function Dashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
-
     </div>
   );
 }
