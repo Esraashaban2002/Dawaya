@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getStats, getUsers, getOrders } from "../../services/api";
+import { getStats, getUsers, getPharmacyRequests } from "../../services/api";
 import {
   BarChart,
   Bar,
@@ -15,26 +15,39 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { FaUsers, FaStore, FaCartShopping, FaClock } from "react-icons/fa6";
+import { FaUsers, FaStore, FaFileSignature, FaClock } from "react-icons/fa6";
 const COLORS = ["#1ab5ea", "#10b981", "#f59e0b", "#ef4444"];
+
+// ── helper: normalize any API shape to a flat array ──
+const extractList = (res) => {
+  if (Array.isArray(res))             return res;
+  if (Array.isArray(res?.data))       return res.data;
+  if (Array.isArray(res?.data?.data)) return res.data.data;
+  return [];
+};
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
-  const [orders, setOrders] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [statsRes, usersRes, ordersRes] = await Promise.all([
-        getStats(),
-        getUsers({ limit: 100 }),
-        getOrders({ limit: 100 }),
-      ]);
-      setStats(statsRes.data);
-      setUsers(usersRes.data?.data || []);
-      setOrders(ordersRes.data?.data || []);
-      setLoading(false);
+      try {
+        const [statsRes, usersRes, requestsRes] = await Promise.all([
+          getStats(),
+          getUsers({ limit: 100 }),
+          getPharmacyRequests({ limit: 100 }),
+        ]);
+        setStats(statsRes.data);
+        setUsers(extractList(usersRes));
+        setRequests(extractList(requestsRes));
+      } catch (err) {
+        console.error("[Dashboard] fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchAll();
   }, []);
@@ -58,22 +71,18 @@ export default function Dashboard() {
     { name: "Admins", value: users.filter((u) => u.role === "admin").length },
   ];
 
-  const orderStatusData = [
+  const requestStatusData = [
     {
-      name: "معلق",
-      value: orders.filter((o) => o.status === "pending").length,
+      name: "قيد المراجعة",
+      value: requests.filter((r) => r.status === "pending").length,
     },
     {
-      name: "مؤكد",
-      value: orders.filter((o) => o.status === "confirmed").length,
+      name: "مقبول",
+      value: requests.filter((r) => r.status === "approved").length,
     },
     {
-      name: "تم التوصيل",
-      value: orders.filter((o) => o.status === "delivered").length,
-    },
-    {
-      name: "ملغي",
-      value: orders.filter((o) => o.status === "cancelled").length,
+      name: "مرفوض",
+      value: requests.filter((r) => r.status === "rejected").length,
     },
   ];
 
@@ -84,7 +93,8 @@ export default function Dashboard() {
     return {
       day: date.toLocaleDateString("ar-EG", { weekday: "short" }),
       مستخدمين: users.filter((u) => u.createdAt?.startsWith(dateStr)).length,
-      طلبات: orders.filter((o) => o.createdAt?.startsWith(dateStr)).length,
+      "طلبات صيدليات": requests.filter((r) => r.createdAt?.startsWith(dateStr))
+        .length,
     };
   });
 
@@ -104,15 +114,15 @@ export default function Dashboard() {
       bg: "rgba(16,185,129,0.08)",
     },
     {
-      label: "الطلبات",
-      value: stats?.orders || 0,
-      icon: <FaCartShopping />,
+      label: "طلبات الانضمام",
+      value: requests.length,
+      icon: <FaFileSignature />,
       color: "#f59e0b",
       bg: "rgba(245,158,11,0.08)",
     },
     {
-      label: "طلبات معلقة",
-      value: orderStatusData[0].value,
+      label: "طلبات قيد المراجعة",
+      value: requestStatusData[0].value,
       icon: <FaClock />,
       color: "#ef4444",
       bg: "rgba(239,68,68,0.08)",
@@ -185,7 +195,7 @@ export default function Dashboard() {
               />
               <Line
                 type="monotone"
-                dataKey="طلبات"
+                dataKey="طلبات صيدليات"
                 stroke="#10b981"
                 strokeWidth={2}
                 dot={{ r: 3 }}
@@ -232,10 +242,10 @@ export default function Dashboard() {
           className="font-bold mb-4 text-sm"
           style={{ color: "var(--color-text-main)" }}
         >
-          حالة الطلبات
+          حالة طلبات انضمام الصيدليات
         </h3>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={orderStatusData}>
+          <BarChart data={requestStatusData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
             <XAxis
               dataKey="name"
@@ -246,7 +256,7 @@ export default function Dashboard() {
               contentStyle={{ fontFamily: "Cairo", borderRadius: "12px" }}
             />
             <Bar dataKey="value" name="عدد الطلبات" radius={[8, 8, 0, 0]}>
-              {orderStatusData.map((_, i) => (
+              {requestStatusData.map((_, i) => (
                 <Cell key={i} fill={COLORS[i]} />
               ))}
             </Bar>

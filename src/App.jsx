@@ -37,9 +37,9 @@ import Reminders from './Pages/Reminders';
 import AdminLayout from './Pages/Adman/AdminLayout';
 import AuthCallback from "./Pages/AuthCallback";
 import Pharmacies from './Pages/Adman/Pharmacies';
-import Orders from './Pages/Adman/Orders';
 
 import Contact from './Pages/Adman/Contact';
+import PharmacyRequests from "./Pages/Adman/pharnacyRequests";
 const queryClient = new QueryClient();
 
 function App() {
@@ -176,29 +176,9 @@ function App() {
         { index: true, element: <Dashboard /> },
         { path: "users", element: <Users /> },
         { path: "pharmacies", element: <Pharmacies /> },
-        { path: "orders", element: <Orders /> },
+        { path: "orders", element: <PharmacyRequests /> },
       ],
     },
-
-    // Pharmacy Dashboard
-    //   {
-    //     path: "/pharmacy",
-    //     element: (
-    //       <ProtectedRoure>
-    //         <PharmacyLayout />
-    //       </ProtectedRoure>
-    //     ),
-    //     children: [
-    //       { index: true, element: <PharmacyDashboard /> },
-    //       { path: "pharmacyprofile", element: <PharmacyProfile /> },
-    //       { path: "pharmacystock", element: <PharmacyStock /> },
-    //       { path: "pharmacyorders", element: <PharmacyOrders /> },
-    //     ],
-    //   },
-    //   { path: "/pharmacies", element: <Pharmacies /> },
-    //   { path: "/orders", element: <Orders /> },
-
-    // ]);
 
     {
       path: "/pharmacy",
@@ -217,10 +197,6 @@ function App() {
     {
       path: "/pharmacies",
       element: <Pharmacies />,
-    },
-    {
-      path: "/orders",
-      element: <Orders />,
     },
   ]);
 

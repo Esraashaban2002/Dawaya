@@ -217,13 +217,13 @@ export const api = {
 
 //  Adman Dashoard
 
-// ─── STATS ───
+//  STATS 
 export const getStats = async () => {
   const res = await fetch(`${BASE_URL}/admin/stats`, { headers: getHeaders() });
   return res.json();
 };
 
-// ─── USERS ───
+//  USERS 
 export const getUsers = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
 
@@ -310,25 +310,41 @@ export const togglePharmacy = (id) =>
     method: 'PATCH',
   });
 
-//  ORDERS 
-
-export const getOrders = async (params = {}) => {
+//  PHARMACY REQUESTS
+ 
+export const getPharmacyRequests = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests?${query}`, {
     headers: getHeaders(),
   });
   return res.json();
 };
-
-export const updateOrderStatus = async (id, status) => {
-  const res = await fetch(`${BASE_URL}/admin/orders/${id}/status`, {
-    method: "PATCH",
+ 
+export const getPharmacyRequestById = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests/${id}`, {
+    method: 'GET',
     headers: getHeaders(),
-    body: JSON.stringify({ status }),
   });
   return res.json();
 };
-
+ 
+export const updatePharmacyRequestStatus = async (id, status, adminNote = '') => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests/${id}/status`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ status, adminNote }),
+  });
+  return res.json();
+};
+ 
+export const deletePharmacyRequest = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  return res.json();
+};
+ 
 //  PHARMACY APIs 
 
 export const getPharmacyStats = async () => {
