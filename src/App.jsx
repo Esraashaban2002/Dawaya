@@ -179,6 +179,25 @@ function App() {
     },
 
     // Pharmacy Dashboard
+    //   {
+    //     path: "/pharmacy",
+    //     element: (
+    //       <ProtectedRoure>
+    //         <PharmacyLayout />
+    //       </ProtectedRoure>
+    //     ),
+    //     children: [
+    //       { index: true, element: <PharmacyDashboard /> },
+    //       { path: "pharmacyprofile", element: <PharmacyProfile /> },
+    //       { path: "pharmacystock", element: <PharmacyStock /> },
+    //       { path: "pharmacyorders", element: <PharmacyOrders /> },
+    //     ],
+    //   },
+    //   { path: "/pharmacies", element: <Pharmacies /> },
+    //   { path: "/orders", element: <Orders /> },
+
+    // ]);
+
     {
       path: "/pharmacy",
       element: (
@@ -193,9 +212,14 @@ function App() {
         { path: "pharmacyorders", element: <PharmacyOrders /> },
       ],
     },
-    { path: "/pharmacies", element: <Pharmacies /> },
-    { path: "/orders", element: <Orders /> },
-
+    {
+      path: "/pharmacies",
+      element: <Pharmacies />,
+    },
+    {
+      path: "/orders",
+      element: <Orders />,
+    },
   ]);
 
   return (
