@@ -90,7 +90,7 @@ export default function Login() {
           username: data.data.user?.username || formValues.email.split('@')[0].slice(0, 12),
           email:    formValues.email,
           phone:    data.data.user?.phone || '01012345678',
-          gender:   data.data.user?.gender || 'male',
+          gender:   data.data.user?.gender || '',
           age:      data.data.user?.age || 25,
           role:     userRole,
           token,

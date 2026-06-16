@@ -35,6 +35,7 @@ import AuthCallback from "./Pages/AuthCallback";
 import Pharmacies from './Pages/Adman/Pharmacies';
 import Orders from './Pages/Adman/Orders';
 
+import Contact from './pages/Adman/Contact';
 const queryClient = new QueryClient();
 
 function App() {
@@ -147,10 +148,14 @@ function App() {
           path: "/resetpassword",
           element: <ResetPassword />,
         },
-        {
-          path: "*",
+        
+        {path:"/contact",
+         element:<Contact />
+        }
+        ,
+        { path: "*",
           element: <NotFound />,
-        },
+        }
       ],
     },
 

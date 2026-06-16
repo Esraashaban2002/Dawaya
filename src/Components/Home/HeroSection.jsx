@@ -7,7 +7,6 @@ const HeroSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
-  // صور مناسبة للمحتوى (نواقص الأدوية، توصيل سريع، نمو رقمي)
   const slides = [
     {
       image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg", // نمو رقمي
@@ -44,7 +43,7 @@ const HeroSection = () => {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* LEFT COLUMN - Small cards */}
+          {/*  Small cards */}
           <div className="order-2 lg:order-1 lg:w-[38%] flex flex-col gap-6">
             <div 
               onClick={() => navigate('/prescription')}
@@ -99,9 +98,9 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN - Hero Banner */}
+          {/* Hero Banner */}
           <div className="order-1 lg:order-2 lg:w-[62%]">
-            <div className="relative rounded-[30px] overflow-hidden shadow-2xl" style={{ minHeight: '560px', height: '100%' }}>
+            <div className="relative rounded-[30px] overflow-hidden shadow-2xl min-h-[300px] sm:min-h-[450px] lg:min-h-[560px] h-full">
               
               {/* Background Image Slider */}
               <AnimatePresence mode="wait">
@@ -116,7 +115,7 @@ const HeroSection = () => {
                   <img
                     src={slides[currentIndex].image}
                     alt={slides[currentIndex].title}
-                    className="w-full h-full object-Contain object-center"
+                    className="w-full h-full object-cover object-center"
                   />
                   <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/40 to-transparent" />
                 </motion.div>
