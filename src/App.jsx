@@ -175,6 +175,8 @@ function App() {
       children: [
         { index: true, element: <Dashboard /> },
         { path: "users", element: <Users /> },
+        { path: "pharmacies", element: <Pharmacies /> },
+        { path: "orders", element: <Orders /> },
       ],
     },
 

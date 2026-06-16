@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FileQuestion, Home } from "lucide-react";
 import { motion } from "framer-motion";
+import { FaArrowRight, FaHome } from "react-icons/fa";
 
 export default function NotFound() {
   return (
