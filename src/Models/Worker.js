@@ -1,7 +1,7 @@
-import 'dotenv/config'; 
+import 'dotenv/config';
 import mongoose from 'mongoose';
 import cron from 'node-cron';
-import axios from 'axios'; 
+import axios from 'axios';
 import Reminder from './Reminder.js';
 
 if (!process.env.MONGODB_URI) {
@@ -12,8 +12,8 @@ mongoose.connection.on('connected', () => console.log("Mongoose connected to Mon
 mongoose.connection.on('error', (err) => console.error("Mongoose connection error:", err));
 mongoose.connection.on('disconnected', () => console.warn("Mongoose disconnected from MongoDB"));
 
-const WATI_API_ENDPOINT = process.env.WATI_API_ENDPOINT 
-    ? process.env.WATI_API_ENDPOINT.replace(/\/$/, "") 
+const WATI_API_ENDPOINT = process.env.WATI_API_ENDPOINT
+    ? process.env.WATI_API_ENDPOINT.replace(/\/$/, "")
     : "https://live-api.wati.io/10182028";
 const WATI_ACCESS_TOKEN = process.env.WATI_ACCESS_TOKEN;
 
@@ -22,7 +22,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
         cron.schedule('* * * * *', async () => {
             const options = { timeZone: 'Africa/Cairo', hour: '2-digit', minute: '2-digit', hour12: false };
             const formatter = new Intl.DateTimeFormat('en-US', options);
-            
+
             let currentTime = "00:00";
             try {
                 const parts = formatter.formatToParts(new Date());

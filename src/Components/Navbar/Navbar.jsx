@@ -4,7 +4,6 @@ import {
   FaSearch,
   FaShoppingCart,
   FaUser,
-  FaGlobe,
   FaBars,
   FaTimes,
   FaHeart,
@@ -97,10 +96,6 @@ export default function Navbar() {
             </form>
 
             <div className="nb-actions">
-              <button className="nb-icon-btn">
-                <FaGlobe />
-              </button>
-
               <Link to="/favorites" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
                 <FaHeart style={{ color: "#000000" }} />
                 {favorites.length > 0 && <span className="nb-badge" style={{ backgroundColor: "#e53935" }}>{favorites.length}</span>}
