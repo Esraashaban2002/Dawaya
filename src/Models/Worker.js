@@ -71,9 +71,13 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
  */
 async function sendWatiWhatsAppReminder(reminder, triggerTime) {
     const displayTime = triggerTime || reminder.time;
-    const formattedPhone = reminder.phoneNumber.startsWith('+')
-        ? reminder.phoneNumber
-        : `+20${reminder.phoneNumber.replace(/^0/, '')}`;
+    let cleanPhone = reminder.phoneNumber.trim().replace(/^\+/, '');
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = '20' + cleanPhone.substring(1);
+    } else if (!cleanPhone.startsWith('20')) {
+        cleanPhone = '20' + cleanPhone;
+    }
+    const formattedPhone = cleanPhone;
 
     try {
         const templateName = process.env.WATI_TEMPLATE_NAME || "medicine_reminder";
@@ -104,7 +108,7 @@ async function sendWatiWhatsAppReminder(reminder, triggerTime) {
         }
 
         const response = await axios.post(
-            `${WATI_API_ENDPOINT}/api/v2/sendTemplateMessages`,
+            `${WATI_API_ENDPOINT}/api/v1/sendTemplateMessages`,
             {
                 template_name: templateName,
                 broadcast_name: `reminder_${reminder.id}`,
