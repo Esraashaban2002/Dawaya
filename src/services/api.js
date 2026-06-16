@@ -266,17 +266,11 @@ export const getPharmacies = async (params = {}) => {
   return res.json();
 };
 
-export const createPharmacy = async (data) => {
-  const res = await fetch(`${BASE_URL}/admin/pharmacies`, {
-    method: "POST",
-    headers: getHeaders(),
-
-
 async function authFetch(url, options = {}) {
   const res = await fetch(url, {
     ...options,
     headers: getHeaders(),
-  });
+  })
 
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
@@ -293,12 +287,6 @@ async function authFetch(url, options = {}) {
 }
 
 // PHARMACIES 
-
-// /admin/pharmacies 
-export const getPharmacies = (params = {}) => {
-  const query = new URLSearchParams(params).toString();
-  return authFetch(`${BASE_URL}/pharmacies?${query}`);
-};
 
 export const createPharmacy = (data) =>
   authFetch(`${BASE_URL}/admin/pharmacies`, {
@@ -475,12 +463,3 @@ export const getTopMedicines = async (limit = 10) => {
   const json = await res.json();
   return json.data;
 };
-  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, { headers: getHeaders() });
-  return res.json();
-};
-
-export const updateOrderStatus = (id, status) =>
-  authFetch(`${BASE_URL}/admin/orders/${id}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status }),
-  });
