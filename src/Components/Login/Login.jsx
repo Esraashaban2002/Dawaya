@@ -17,6 +17,7 @@ export default function Login() {
  async function handelLogin(formValues) {
   setIsLoading(true);
 
+  //  helper: decode JWT payload without library 
   const decodeToken = (token) => {
     try {
       const payload = token.split('.')[1];
@@ -31,6 +32,7 @@ export default function Login() {
     }
   };
 
+  //  helper: redirect based on role 
   const redirectByRole = (role) => {
     switch (role) {
       case 'admin':       navigate('/admin'); break;
@@ -59,6 +61,7 @@ export default function Login() {
     console.error('Local login intercept failed', e);
   }
 
+  //  2. Fallback to server API 
   try {
     const { data } = await axios.post(
       'https://dawaya-back-end.vercel.app/api/auth/login',

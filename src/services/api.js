@@ -22,10 +22,11 @@ export function decodeToken(token) {
       base64 += '='.repeat(4 - pad);
     }
     const jsonPayload = decodeURIComponent(
-      window.atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+      window
+        .atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
@@ -36,32 +37,44 @@ export function decodeToken(token) {
 
 function isJWTExpired(token) {
   if (token.startsWith('mock_')) return false;
-  const payload = decodeToken(token);
-  if (payload && typeof payload.exp === 'number') {
-    const now = Math.floor(Date.now() / 1000);
-    return payload.exp < now;
+  try {
+    const payload = decodeToken(token);
+    if (payload && typeof payload.exp === 'number') {
+      const now = Math.floor(Date.now() / 1000);
+      return payload.exp < now;
+    }
+    return false;
+  } catch (error) {
+    console.error("Failed to parse JWT payload:", error);
+    return true;
   }
-  return false;
 }
 
 function getHeaders() {
   const headers = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
-  let token = localStorage.getItem('userToken');
+  let token = localStorage.getItem("userToken");
+  console.log(token)
   if (token) {
     if (!isValidJWT(token)) {
-      console.warn('Malformed token detected. Clearing from localStorage:', token);
-      localStorage.removeItem('userToken');
-      window.dispatchEvent(new Event('storage'));
+      console.warn(
+        "Malformed token detected. Clearing from localStorage:",
+        token,
+      );
+      localStorage.removeItem("userToken");
+      window.dispatchEvent(new Event("storage"));
       token = null;
     } else if (isJWTExpired(token)) {
-      console.warn('Expired token detected. Clearing from localStorage:', token);
-      localStorage.removeItem('userToken');
-      window.dispatchEvent(new Event('storage'));
+      console.warn(
+        "Expired token detected. Clearing from localStorage:",
+        token,
+      );
+      localStorage.removeItem("userToken");
+      window.dispatchEvent(new Event("storage"));
       token = null;
     } else {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
   }
   return headers;
@@ -76,6 +89,7 @@ export const api = {
 
 
 
+  
   async getProfile() {
     let token = localStorage.getItem('userToken');
     if (token && token.startsWith('mock_')) {
@@ -96,10 +110,10 @@ export const api = {
       };
     }
     const headers = getHeaders();
-    console.log('Fetching profile with headers:', headers);
+    console.log("Fetching profile with headers:", headers);
 
     const response = await fetch(`${BASE_URL}/user/profile`, {
-      method: 'GET',
+      method: "GET",
       headers: headers,
     });
 
@@ -114,7 +128,7 @@ export const api = {
         errorData = { message: `HTTP Error ${response.status}` };
       }
 
-      console.error('Detailed Server Error payload:', errorData);
+      console.error("Detailed Server Error payload:", errorData);
 
       const isAuthError =
         response.status === 401 ||
@@ -123,16 +137,18 @@ export const api = {
           /jwt|token|expired|malformed|auth/i.test(errorData.message));
 
       if (isAuthError) {
-        localStorage.removeItem('userToken');
-        window.dispatchEvent(new Event('storage'));
-        throw new Error('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى.');
+        localStorage.removeItem("userToken");
+        window.dispatchEvent(new Event("storage"));
+        throw new Error("انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى.");
       }
 
       if (response.status === 500) {
-        throw new Error('حدث خطأ في الخادم، يرجى المحاولة لاحقاً.');
+        throw new Error("حدث خطأ في الخادم، يرجى المحاولة لاحقاً.");
       }
 
-      throw new Error(errorData?.message || 'فشل في تحميل بيانات الملف الشخصي.');
+      throw new Error(
+        errorData?.message || "فشل في تحميل بيانات الملف الشخصي.",
+      );
     }
 
     return response.json();
@@ -153,14 +169,14 @@ export const api = {
       };
     }
     const response = await fetch(`${BASE_URL}/user/profile`, {
-      method: 'PUT',
+      method: "PUT",
       headers: getHeaders(),
       body: JSON.stringify(profileData),
     });
 
     if (!response.ok) {
       console.warn(`Profile update failed with status: ${response.status}`);
-      let errorText = '';
+      let errorText = "";
       let errorData = {};
       try {
         errorText = await response.text();
@@ -169,8 +185,8 @@ export const api = {
         errorData = { message: errorText || `HTTP Error ${response.status}` };
       }
 
-      console.error('Detailed Server Update Error payload:', errorData);
-      throw new Error(errorData.message || 'فشل في تحديث بيانات الملف الشخصي.');
+      console.error("Detailed Server Update Error payload:", errorData);
+      throw new Error(errorData.message || "فشل في تحديث بيانات الملف الشخصي.");
     }
 
     return response.json();
@@ -185,14 +201,14 @@ export const api = {
       };
     }
     const response = await fetch(`${BASE_URL}/user/changepassword`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: getHeaders(),
       body: JSON.stringify({ oldPassword, newPassword }),
     });
 
     if (!response.ok) {
       console.warn(`Password change failed with status: ${response.status}`);
-      let errorText = '';
+      let errorText = "";
       let errorData = {};
       try {
         errorText = await response.text();
@@ -201,21 +217,25 @@ export const api = {
         errorData = { message: errorText || `HTTP Error ${response.status}` };
       }
 
-      console.error('Detailed Server Password Error payload:', errorData);
-      throw new Error(errorData.message || 'فشل في تغيير كلمة المرور. يرجى التحقق من كلمة المرور الحالية.');
+      console.error("Detailed Server Password Error payload:", errorData);
+      throw new Error(
+        errorData.message ||
+          "فشل في تغيير كلمة المرور. يرجى التحقق من كلمة المرور الحالية.",
+      );
     }
 
     return response.json();
   },
 
   logout() {
-    localStorage.removeItem('userToken');
+    localStorage.removeItem("userToken");
   },
 
   isLoggedIn() {
     return !!localStorage.getItem('userToken');
   },
 
+  //  REMINDERS 
   async getReminders() {
     const response = await fetch(`${REMINDERS_BASE_URL}/reminders`, {
       method: 'GET',
@@ -256,18 +276,19 @@ export const api = {
 };
 
 
+//  STATS 
 export const getStats = async () => {
   const res = await fetch(`${BASE_URL}/admin/stats`, { headers: getHeaders() });
   return res.json();
 };
 
+//  USERS 
 export const getUsers = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
 
-  const res = await fetch(
-    `${BASE_URL}/admin/users?${query}`,
-    { headers: getHeaders() }
-  );
+  const res = await fetch(`${BASE_URL}/admin/users?${query}`, {
+    headers: getHeaders(),
+  });
   const text = await res.text();
 
   return JSON.parse(text);
@@ -280,28 +301,35 @@ export const getUserById = async (id) => {
 
 export const updateUserRole = async (id, role) => {
   const res = await fetch(`${BASE_URL}/admin/users/${id}/role`, {
-    method: 'PATCH',
+    method: "PATCH",
     headers: getHeaders(),
-    body: JSON.stringify({ role })
+    body: JSON.stringify({ role }),
   });
   return res.json();
 };
 
 export const deleteUser = async (id) => {
   const res = await fetch(`${BASE_URL}/admin/users/${id}`, {
-    method: 'DELETE',
-    headers: getHeaders()
+    method: "DELETE",
+    headers: getHeaders(),
   });
   return res.json();
 };
 
-
+//  PHARMACIES 
+export const getPharmaciesDirect = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE_URL}/pharmacies?${query}`, {
+    headers: getHeaders(),
+  });
+  return res.json();
+};
 
 async function authFetch(url, options = {}) {
   const res = await fetch(url, {
     ...options,
     headers: getHeaders(),
-  });
+  })
 
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
@@ -322,6 +350,7 @@ export const getPharmacies = (params = {}) => {
   const query = new URLSearchParams(params).toString();
   return authFetch(`${BASE_URL}/pharmacies?${query}`);
 };
+// PHARMACIES 
 
 export const createPharmacy = (data) =>
   authFetch(`${BASE_URL}/admin/pharmacies`, {
@@ -345,15 +374,172 @@ export const togglePharmacy = (id) =>
     method: 'PATCH',
   });
 
-
-export const getOrders = async (params = {}) => {
+//  PHARMACY REQUESTS
+ 
+export const getPharmacyRequests = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
-  const res = await fetch(`${BASE_URL}/admin/orders?${query}`, { headers: getHeaders() });
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests?${query}`, {
+    headers: getHeaders(),
+  });
+  return res.json();
+};
+ 
+export const getPharmacyRequestById = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests/${id}`, {
+    method: 'GET',
+    headers: getHeaders(),
+  });
+  return res.json();
+};
+ 
+export const updatePharmacyRequestStatus = async (id, status, adminNote = '') => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests/${id}/status`, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify({ status, adminNote }),
+  });
+  return res.json();
+};
+ 
+export const deletePharmacyRequest = async (id) => {
+  const res = await fetch(`${BASE_URL}/admin/pharmacy-requests/${id}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  return res.json();
+};
+ 
+//  PHARMACY APIs 
+
+export const getPharmacyStats = async () => {
+  const res = await fetch(`${BASE_URL}/pharmacy/stats`, {
+    headers: getHeaders(),
+  });
+  console.log("Calling URL:", res);
+
+  if (!res.ok) throw new Error(await extractError(res));
   return res.json();
 };
 
-export const updateOrderStatus = (id, status) =>
-  authFetch(`${BASE_URL}/admin/orders/${id}/status`, {
-    method: 'PATCH',
+export const getPharmacyProfile = async () => {
+  const res = await fetch(`${BASE_URL}/pharmacy/profile`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const updatePharmacyProfile = async (profileData) => {
+  const res = await fetch(`${BASE_URL}/pharmacy/profile`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(profileData),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const getPharmacyStock = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE_URL}/pharmacy/stock?${query}`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const addPharmacyStockItem = async (data) => {
+  const res = await fetch(`${BASE_URL}/pharmacy/stock`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const updatePharmacyStockItem = async (id, data) => {
+  const res = await fetch(`${BASE_URL}/pharmacy/stock/${id}`, {
+    method: "PUT",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const deletePharmacyStockItem = async (id) => {
+  const res = await fetch(`${BASE_URL}/pharmacy/stock/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const getPharmacyOrders = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE_URL}/pharmacy/orders?${query}`, {
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+export const updatePharmacyOrderStatus = async (id, status) => {
+  const res = await fetch(`${BASE_URL}/pharmacy/orders/${id}/status`, {
+    method: "PATCH",
+    headers: getHeaders(),
     body: JSON.stringify({ status }),
   });
+  if (!res.ok) throw new Error(await extractError(res));
+  return res.json();
+};
+
+async function extractError(res) {
+  let text = "";
+  try {
+    text = await res.text();
+    const json = JSON.parse(text);
+    return json.message || json.error || `HTTP ${res.status}`;
+  } catch {
+    return text || `HTTP Error ${res.status}`;
+  }
+}
+
+
+export const getSalesChartData = async (period) => {
+  const res = await fetch(
+    `${BASE_URL}/pharmacy/sales-chart?period=${period}`,
+    {
+      headers: getHeaders(),
+    },
+  );
+  if (!res.ok) throw new Error(await extractError(res));
+  const json = await res.json();
+  return json.data;
+};
+
+export const getRecentOrders = async (limit = 5) => {
+  const res = await fetch(
+    `${BASE_URL}/pharmacy/orders/recent?limit=${limit}`,
+    {
+      headers: getHeaders(),
+    },
+  );
+  if (!res.ok) throw new Error(await extractError(res));
+  const json = await res.json();
+  return json.data;
+};
+
+export const getTopMedicines = async (limit = 10) => {
+  const res = await fetch(
+    `${BASE_URL}/pharmacy/top-medicines?limit=${limit}`,
+    {
+      headers: getHeaders(),
+    },
+  );
+  if (!res.ok) throw new Error(await extractError(res));
+  const json = await res.json();
+  return json.data;
+};

@@ -39,6 +39,7 @@ const getUserId = (req) => {
     return userId;
 };
 
+// REMINDERS API ROUTES 
 
 app.get('/api/reminders', async (req, res) => {
     try {

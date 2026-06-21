@@ -24,7 +24,7 @@
           max-width: 1280px;
           margin: auto;
           padding: 0 20px;
-          height: 70px;
+          height: 80px;
           display: flex;
           align-items: center;
           justify-content: space-between; 
@@ -164,7 +164,7 @@
 
         .nb-mobile-menu {
           position: absolute;
-          top: 70px;
+          top: 80px;
           right: 0;
           width: 100%;
           background: #fff;
@@ -223,6 +223,11 @@
 
         svg { width: 18px; height: 18px; }
 
+        @media (max-width: 768px) {
+          .nb-links, .nb-search, .nb-login, .nb-auth-links { display: none; }
+          .nb-hamburger { display: flex; }
+          .nb-actions button.nb-icon-btn { display: none; }
+        }
         .logo-img {
   width: 120px;
   height: 120px;
@@ -249,3 +254,170 @@
           .nb-links, .nb-search, .nb-login, .nb-auth-links { display: none !important; }
           .nb-hamburger { display: flex; }
         }
+/* User Menu & Dropdown Styles */
+.nb-user-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.nb-user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 24px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.nb-user-trigger:hover {
+  background-color: #f0faff;
+  border-color: #cbd5e1;
+}
+
+.nb-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1ab5ea;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.nb-user-trigger:hover .nb-user-avatar {
+  transform: scale(1.05);
+}
+
+.nb-user-avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1ab5ea, #0d82d3);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(26, 181, 234, 0.2);
+  transition: transform 0.2s ease;
+  user-select: none;
+}
+
+.nb-user-trigger:hover .nb-user-avatar-placeholder {
+  transform: scale(1.05);
+}
+
+.nb-dropdown-arrow {
+  color: #64748b;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.nb-user-trigger:hover .nb-dropdown-arrow {
+  color: #1ab5ea;
+}
+
+.nb-dropdown-arrow.open {
+  transform: rotate(180deg);
+  color: #1ab5ea;
+}
+
+.nb-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  min-width: 190px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 110;
+  animation: slideUpFade 0.2s ease forwards;
+  transform-origin: top left;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.nb-dropdown-header {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.nb-welcome-msg {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.nb-username-display {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.nb-dropdown-divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 4px 8px;
+}
+
+.nb-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #475569;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.nb-dropdown-item:hover {
+  background-color: #f0faff;
+  color: #1ab5ea;
+}
+
+.nb-dropdown-item.logout {
+  color: #ef4444;
+}
+
+.nb-dropdown-item.logout:hover {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+.nb-item-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}

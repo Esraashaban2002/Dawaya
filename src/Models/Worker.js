@@ -3,6 +3,10 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import cron from 'node-cron';
 import axios from 'axios';
+import 'dotenv/config'; 
+import mongoose from 'mongoose';
+import cron from 'node-cron';
+import axios from 'axios'; 
 import Reminder from './Reminder.js';
 
 if (!process.env.MONGODB_URI) {

@@ -16,25 +16,30 @@ import ProtectedRoure from "./Components/ProtectedRoure/ProtectedRoute";
 import ForgetPassword from "./Components/ForgetPassword/ForgetPassword";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import VerifyCompleted from "./Components/VerifyCompleted/VerifyCompleted";
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import UserProfile from "./Components/UserProfile/UserProfile";
 import AccountType from "./Components/AccountType/AccountType";
 import PharmacistRegister from "./Components/PharmacistRegister/PharmacistRegister";
 import ThankYou from "./Components/ThankYou/ThankYou";
-import ProductDetails from './Components/ProductDetails/ProductDetails';
-import Cart from './Pages/Cart';
-import Favorites from './Pages/Favorites';
-import Checkout from './Pages/Checkout';
+import ProductDetails from "./Components/ProductDetails/ProductDetails";
+import Cart from "./Pages/Cart";
+import Favorites from "./Pages/Favorites";
+import Checkout from "./Pages/Checkout";
+import Users from "./Pages/Adman/User";
+import Dashboard from "./Pages/Adman/Dashboard";
+import PharmacyLayout from "./Pages/Pharmacy/PharmacyLayout";
+import PharmacyDashboard from "./Pages/Pharmacy/PharmacyDashboard";
+import PharmacyProfile from "./Pages/Pharmacy/PharmacyProfile";
+import PharmacyStock from "./Pages/Pharmacy/PharmacyStock";
+import PharmacyOrders from "./Pages/Pharmacy/PharmacyOrders";
 import Prescription from './Pages/Prescription';
 import Reminders from './Pages/Reminders';
-import Users from './Pages/Adman/User';
-import Dashboard from './Pages/Adman/Dashboard';
 import AdminLayout from './Pages/Adman/AdminLayout';
 import AuthCallback from "./Pages/AuthCallback";
 import Pharmacies from './Pages/Adman/Pharmacies';
-import Orders from './Pages/Adman/Orders';
 
+import Contact from './Pages/Adman/Contact';
+import PharmacyRequests from "./Pages/Adman/pharnacyRequests";
 const queryClient = new QueryClient();
 
 function App() {
@@ -49,11 +54,11 @@ function App() {
         },
         {
           path: "/product/:id",
-          element: <ProductDetails />
+          element: <ProductDetails />,
         },
         {
           path: "/cart",
-          element: <Cart />
+          element: <Cart />,
         },
         {
           path: "/checkout",
@@ -61,11 +66,11 @@ function App() {
             <ProtectedRoure>
               <Checkout />
             </ProtectedRoure>
-          )
+          ),
         },
         {
           path: "/favorites",
-          element: <Favorites />
+          element: <Favorites />,
         },
         {
           path: "/pharmacies",
@@ -85,7 +90,7 @@ function App() {
         },
         {
           path: "/products",
-          element: <Prouducts />
+          element: <Prouducts />,
         },
         {
           path: "/about",
@@ -112,8 +117,8 @@ function App() {
           element: <Login />,
         },
         {
-          path:"/auth/callback" ,
-          element:<AuthCallback />
+          path: "/auth/callback",
+          element: <AuthCallback />
         },
         {
           path: "/pharmacistRegister",
@@ -147,6 +152,11 @@ function App() {
           path: "/resetpassword",
           element: <ResetPassword />,
         },
+
+        {
+          path: "/contact",
+          element: <Contact />
+        },
         {
           path: "*",
           element: <NotFound />,
@@ -154,6 +164,7 @@ function App() {
       ],
     },
 
+    // Admin Dashboard
     {
       path: "/admin",
       element: (
@@ -165,25 +176,44 @@ function App() {
         { index: true, element: <Dashboard /> },
         { path: "users", element: <Users /> },
         { path: "pharmacies", element: <Pharmacies /> },
-        { path: "orders", element: <Orders /> },
-      ]
-    }
+        { path: "orders", element: <PharmacyRequests /> },
+      ],
+    },
+
+    {
+      path: "/pharmacy",
+      element: (
+        <ProtectedRoure>
+          <PharmacyLayout />
+        </ProtectedRoure>
+      ),
+      children: [
+        { index: true, element: <PharmacyDashboard /> },
+        { path: "pharmacyprofile", element: <PharmacyProfile /> },
+        { path: "pharmacystock", element: <PharmacyStock /> },
+        { path: "pharmacyorders", element: <PharmacyOrders /> },
+      ],
+    },
+    {
+      path: "/pharmacies",
+      element: <Pharmacies />,
+    },
   ]);
 
   return (
 
-  <QueryClientProvider client={queryClient}>
-    <UserContextProvider>
-      <CartContextProvider>
-        <FavoritesContextProvider>
-          <div dir="rtl">
-            <RouterProvider router={router} />
-          </div>
-        </FavoritesContextProvider>
-      </CartContextProvider>
-    </UserContextProvider>
-  </QueryClientProvider>
-    
+    <QueryClientProvider client={queryClient}>
+      <UserContextProvider>
+        <CartContextProvider>
+          <FavoritesContextProvider>
+            <div dir="rtl">
+              <RouterProvider router={router} />
+            </div>
+          </FavoritesContextProvider>
+        </CartContextProvider>
+      </UserContextProvider>
+    </QueryClientProvider>
+
   );
 }
 

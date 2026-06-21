@@ -21,7 +21,7 @@ export default function Layout() {
 
     return <>
         <Navbar />
-        <div className="container-custom py-10">
+        <div className="mx-auto max-w-[1280px] px-4 py-10">
             <Outlet></Outlet>
         </div>
         <Footer />

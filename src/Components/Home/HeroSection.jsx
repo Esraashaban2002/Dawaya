@@ -27,6 +27,7 @@ const HeroSection = () => {
     {
       image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop", 
       title: "صيدليتك الذكية",
+      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop",
       subtitle: "إدارة متكاملة للمخزون والطلبات"
     }
   ];
@@ -44,6 +45,7 @@ const HeroSection = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           
           {}
+          {/*  Small cards */}
           <div className="order-2 lg:order-1 lg:w-[38%] flex flex-col gap-6">
             <div 
               onClick={() => navigate('/prescription')}
@@ -99,6 +101,7 @@ const HeroSection = () => {
           </div>
 
           {}
+          {/* Hero Banner */}
           <div className="order-1 lg:order-2 lg:w-[62%]">
             <div className="relative rounded-[30px] overflow-hidden shadow-2xl min-h-[300px] sm:min-h-[450px] lg:min-h-[560px] h-full">
               

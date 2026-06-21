@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Navigation, Autoplay } from 'swiper/modules';
 import { motion } from 'framer-motion';
 import { FaStar, FaShoppingCart, FaChevronRight, FaChevronLeft, FaHeart, FaTrash ,FaArrowLeft} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 import { CartContext } from '../../Context/CartContext';
 import { FavoritesContext } from '../../Context/FavoritesContext';
 import { UserContext } from '../../Context/UserContext';
@@ -11,11 +11,11 @@ import { cleanMedicineText } from '../../utils/textCleaner';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/pagination';
 
 const ProductsSection = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const pathname = useLocation().pathname;
   const [toastMessage, setToastMessage] = useState(null);
 
   const { cartItems, addToCart, removeFromCart, setShowLoginModal } = useContext(CartContext);
@@ -94,21 +94,17 @@ const ProductsSection = () => {
 
         <div className="relative px-12">
           <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
+            modules={[Navigation, Autoplay]}
             spaceBetween={30}
             slidesPerView={1}
             navigation={{ nextEl: '.next-btn', prevEl: '.prev-btn' }}
-            pagination={{ 
-              clickable: true,
-              dynamicBullets: true,
-            }}
-            autoplay={{ delay: 5000 }}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
             breakpoints={{ 
               640: { slidesPerView: 2, spaceBetween: 20 },
               768: { slidesPerView: 3, spaceBetween: 25 },
               1024: { slidesPerView: 4, spaceBetween: 30 }
             }}
-            className="pb-14"
+            className="pb-0"
           >
             {products.map(product => (
               <SwiperSlide key={product._id}>
@@ -187,7 +183,6 @@ const ProductsSection = () => {
               </SwiperSlide>
             ))}
           </Swiper>
-          
           <button className="prev-btn absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all text-blue-600 hidden lg:flex items-center justify-center w-12 h-12 hover:bg-blue-600 hover:text-white group">
             <FaChevronLeft className="h-5 w-5 group-hover:scale-110 transition" />
           </button>
@@ -203,37 +198,17 @@ const ProductsSection = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-center mt-12"
         >
-          <button className="group bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 px-8 py-3 rounded-full font-semibold text-lg inline-flex items-center gap-2 shadow-md hover:shadow-xl transform hover:scale-105">
+          <Link
+            to="/products"
+            className={`inline-flex items-center gap-2 bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 px-8 py-3 rounded-full font-semibold text-lg shadow-md hover:shadow-xl transform hover:scale-105 ${
+              pathname === "/products" ? "bg-blue-600 text-white" : ""
+            }`}
+          >
             <span>عرض جميع المنتجات</span>
             <FaArrowLeft className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
         </motion.div>
       </div>
-
-      {toastMessage && (
-        <div className="product-toast-notification success animate-fade-in" style={{ background: toastMessage.includes('إزالة') ? '#ef4444' : '', borderColor: toastMessage.includes('إزالة') ? '#dc2626' : '' }}>
-          {toastMessage.includes('إزالة') ? <FaTrash size={16} /> : <FaShoppingCart size={16} />}
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      <style jsx>{`
-        .swiper-pagination-bullet {
-          background: #3B82F6 !important;
-          opacity: 0.4 !important;
-          width: 8px !important;
-          height: 8px !important;
-          transition: all 0.3s !important;
-        }
-        .swiper-pagination-bullet-active {
-          opacity: 1 !important;
-          width: 24px !important;
-          border-radius: 4px !important;
-        }
-        .swiper-pagination {
-          bottom: 0 !important;
-        }
-      `}</style>
     </section>
   );
 };

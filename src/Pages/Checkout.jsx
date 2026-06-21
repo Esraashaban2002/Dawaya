@@ -19,11 +19,13 @@ export default function Checkout() {
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
 
-  const [paymentMethod, setPaymentMethod] = useState('vodafone'); 
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState('vodafone');
   const [senderInfo, setSenderInfo] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
 
+  // Copy status indicators
   const [copiedField, setCopiedField] = useState(null); 
 
   const [isSubmitting, setIsSubmitting] = useState(false);

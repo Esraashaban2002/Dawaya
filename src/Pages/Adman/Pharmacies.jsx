@@ -42,6 +42,7 @@ export default function Pharmacies() {
     const [saving, setSaving] = useState(false);
     const [formError, setFormError] = useState('');
 
+    /*  fetch  */
     const fetchPharmacies = async () => {
         setLoading(true);
         try {
@@ -59,6 +60,7 @@ export default function Pharmacies() {
 
     useEffect(() => { fetchPharmacies(); }, [page]);
 
+    /*  modal helpers  */
     const openCreate = () => {
         setEditTarget(null);
         setForm(EMPTY_FORM);
@@ -90,6 +92,7 @@ export default function Pharmacies() {
 
     const closeModal = () => { setModalOpen(false); setEditTarget(null); };
 
+    /*  submit  */
     const handleSubmit = async () => {
         if (!form.name.trim() || !form.address.trim() || !form.phone.trim()) {
             setFormError('الاسم والعنوان والهاتف مطلوبين');
@@ -171,6 +174,7 @@ export default function Pharmacies() {
         }
     };
 
+    /*  delete  */
     const handleDelete = async (id) => {
         if (!confirm('متأكد إنك عايز تحذف الصيدلية دي؟')) return;
         try {
@@ -183,6 +187,7 @@ export default function Pharmacies() {
         }
     };
 
+    /*  toggle  */
     const handleToggle = async (id) => {
         try {
             const res = await togglePharmacy(id);
@@ -196,6 +201,7 @@ export default function Pharmacies() {
         }
     };
 
+    /*  filter client-side  */
     const filtered = pharmacies.filter(p => {
         if (!search.trim()) return true;
         return (
@@ -318,7 +324,7 @@ export default function Pharmacies() {
                                                     color: '#10b981',
                                                 }}
                                             >
-                                                🏪
+                                                <img src={ph.image} alt={ph.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                                             </div>
 
                                             <span
@@ -359,6 +365,7 @@ export default function Pharmacies() {
                                     </td>
 
                                     {}
+
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -375,6 +382,7 @@ export default function Pharmacies() {
                                     </td>
 
                                     {}
+ 
                                     <td className="px-4 py-3">
                                         <span
                                             className="text-xs px-3 py-1 rounded-full font-bold"
@@ -468,6 +476,7 @@ export default function Pharmacies() {
             </div>
 
             {}
+            {/*  Modal  */}
             {modalOpen && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center"

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { FileQuestion, Home } from "lucide-react";
 import { motion } from "framer-motion";
+import { FaArrowRight, FaHome } from "react-icons/fa";
 
 export default function NotFound() {
   return (
@@ -39,6 +40,26 @@ export default function NotFound() {
           <Home className="w-4.5 h-4.5" />
           <span>العودة إلى الصفحة الرئيسية</span>
         </Link>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-all duration-300 shadow-md"
+          >
+            <FaHome className="h-3.5 w-3.5" />
+            <span>الرئيسية</span>
+          </Link>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-200 transition-all duration-300"
+          >
+            <FaArrowRight className="h-3.5 w-3.5" />
+            <span>رجوع</span>
+          </button>
+        </div>
+
+        <p className="text-gray-400 text-xs mt-6">
+          🫀 نهتم بصحتك
+        </p>
       </motion.div>
     </div>
   );
