@@ -305,7 +305,7 @@ export default function Pharmacies() {
                                     className="text-center py-12"
                                     style={{ color: 'var(--color-text-muted)' }}
                                 >
-                                    مفيش صيدليات
+                                    لا يوجد صيدليات
                                 </td>
                             </tr>
                         ) : (

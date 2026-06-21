@@ -4,10 +4,10 @@ import { getOrders, updateOrderStatus } from '../../services/api';
 const STATUS_OPTIONS = ['pending', 'confirmed', 'delivered', 'cancelled'];
 
 const statusMeta = {
-  pending:   { label: 'معلق',       color: '#f59e0b', bg: 'rgba(245,158,11,0.1)'  },
-  confirmed: { label: 'مؤكد',       color: '#1ab5ea', bg: 'rgba(26,181,234,0.1)'  },
-  delivered: { label: 'تم التوصيل', color: '#10b981', bg: 'rgba(16,185,129,0.1)'  },
-  cancelled: { label: 'ملغي',       color: '#ef4444', bg: 'rgba(239,68,68,0.1)'   },
+  pending: { label: 'معلق', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+  confirmed: { label: 'مؤكد', color: '#1ab5ea', bg: 'rgba(26,181,234,0.1)' },
+  delivered: { label: 'تم التوصيل', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+  cancelled: { label: 'ملغي', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
 };
 
 const StatusBadge = ({ status }) => {
@@ -122,7 +122,7 @@ export default function Orders() {
               </td></tr>
             ) : orders.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-                مفيش طلبات
+                لا يوجد طلبات
               </td></tr>
             ) : orders.map((order, i) => (
               <tr key={order._id}

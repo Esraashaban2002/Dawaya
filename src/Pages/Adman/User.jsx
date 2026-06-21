@@ -103,7 +103,7 @@ export default function Users() {
               </td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={5} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-                مفيش مستخدمين
+                لا يوجد مستخدمين
               </td></tr>
             ) : filtered.map((user, i) => (
               <tr key={user._id}
