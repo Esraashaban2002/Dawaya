@@ -76,7 +76,7 @@ const HeroSection = () => {
             </div>
 
             <div 
-              onClick={() => navigate('/reminders')}
+              onClick={() => navigate('/whatsapp')}
               className="bg-white rounded-[30px] p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer group"
             >
               <div className="flex flex-col items-center text-center">
@@ -88,7 +88,7 @@ const HeroSection = () => {
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate('/reminders');
+                    navigate('/whatsapp');
                   }}
                   className="px-6 py-3 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 transition-all duration-300 shadow-md"
                 >

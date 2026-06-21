@@ -1,4 +1,6 @@
-const BASE_URL = 'https://dawaya-back-end.vercel.app/api';
+const BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000/api'
+  : 'https://dawaya-back-end.vercel.app/api';
 const REMINDERS_BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:5000/api'
   : 'https://dawaya-back-end.vercel.app/api';
@@ -9,29 +11,37 @@ function isValidJWT(token) {
   return token.split('.').length === 3;
 }
 
-function isJWTExpired(token) {
-  if (token.startsWith('mock_')) return false;
+export function decodeToken(token) {
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) return true;
+    if (parts.length !== 3) return null;
     const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = base64.length % 4;
+    if (pad) {
+      base64 += '='.repeat(4 - pad);
+    }
     const jsonPayload = decodeURIComponent(
       window.atob(base64)
         .split('')
         .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
         .join('')
     );
-    const payload = JSON.parse(jsonPayload);
-    if (payload && typeof payload.exp === 'number') {
-      const now = Math.floor(Date.now() / 1000);
-      return payload.exp < now;
-    }
-    return false;
+    return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Failed to parse JWT payload:', error);
-    return true;
+    console.error('Failed to decode token:', error);
+    return null;
   }
+}
+
+function isJWTExpired(token) {
+  if (token.startsWith('mock_')) return false;
+  const payload = decodeToken(token);
+  if (payload && typeof payload.exp === 'number') {
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  }
+  return false;
 }
 
 function getHeaders() {

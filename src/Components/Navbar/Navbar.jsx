@@ -29,6 +29,7 @@ export default function Navbar() {
 
   function logout() {
     localStorage.removeItem("userToken");
+    localStorage.setItem("dawaya_logged_out", "true");
     setUserLogin(null);
     navigate("/");
   }

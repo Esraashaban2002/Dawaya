@@ -26,7 +26,8 @@ export default function UserContextProvider(props) {
       }
 
       let token = localStorage.getItem("userToken");
-      if (!token) {
+      const loggedOut = localStorage.getItem("dawaya_logged_out") === "true";
+      if (!token && !loggedOut) {
         localStorage.setItem('userToken', defaultUserToken);
         localStorage.setItem('dawaya_current_email', defaultUserEmail);
         localStorage.setItem('dawaya_current_password', defaultUserPassword);
