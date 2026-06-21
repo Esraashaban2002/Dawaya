@@ -47,7 +47,7 @@ export default function Pharmacies() {
         setLoading(true);
         try {
             const res = await getPharmacies({ page, limit: 10 });
-            console.log('[Pharmacies] GET response:', res);       
+            console.log('[Pharmacies] GET response:', res);
             const { list, total: t } = parsePharmaciesResponse(res);
             setPharmacies(list);
             setTotal(t);
@@ -197,7 +197,7 @@ export default function Pharmacies() {
             );
         } catch (err) {
             console.error('[Pharmacies] toggle error:', err);
-            fetchPharmacies(); 
+            fetchPharmacies();
         }
     };
 
@@ -215,7 +215,7 @@ export default function Pharmacies() {
 
     return (
         <div>
-            {}
+            { }
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-extrabold" style={{ color: 'var(--color-text-main)' }}>
@@ -236,7 +236,7 @@ export default function Pharmacies() {
                 </button>
             </div>
 
-            {}
+            { }
             <div className="mb-6">
                 <input
                     type="text"
@@ -248,7 +248,7 @@ export default function Pharmacies() {
                 />
             </div>
 
-            {}
+            { }
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
 
                 <table className="w-full text-sm">
@@ -299,7 +299,7 @@ export default function Pharmacies() {
                                     className="text-center py-12"
                                     style={{ color: 'var(--color-text-muted)' }}
                                 >
-                                    مفيش صيدليات
+                                    لا يوجد صيدليات
                                 </td>
                             </tr>
                         ) : (
@@ -314,7 +314,7 @@ export default function Pharmacies() {
                                                 : 'var(--bg-primary)',
                                     }}
                                 >
-                                    {}
+                                    { }
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div
@@ -336,7 +336,7 @@ export default function Pharmacies() {
                                         </div>
                                     </td>
 
-                                    {}
+                                    { }
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -344,7 +344,7 @@ export default function Pharmacies() {
                                         {ph.address}
                                     </td>
 
-                                    {}
+                                    { }
                                     <td
                                         className="px-4 py-3"
                                         style={{
@@ -356,7 +356,7 @@ export default function Pharmacies() {
                                         {ph.phone}
                                     </td>
 
-                                    {}
+                                    { }
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -364,7 +364,7 @@ export default function Pharmacies() {
                                         {ph.rating ?? '-'}
                                     </td>
 
-                                    {}
+                                    { }
 
                                     <td
                                         className="px-4 py-3"
@@ -373,7 +373,7 @@ export default function Pharmacies() {
                                         {ph.distance ?? '-'}
                                     </td>
 
-                                    {}
+                                    { }
                                     <td
                                         className="px-4 py-3"
                                         style={{ color: 'var(--color-text-muted)' }}
@@ -381,8 +381,8 @@ export default function Pharmacies() {
                                         {ph.estimatedTime ?? '-'}
                                     </td>
 
-                                    {}
- 
+                                    { }
+
                                     <td className="px-4 py-3">
                                         <span
                                             className="text-xs px-3 py-1 rounded-full font-bold"
@@ -402,7 +402,7 @@ export default function Pharmacies() {
                                         </span>
                                     </td>
 
-                                    {}
+                                    { }
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-2">
                                             <button
@@ -456,7 +456,7 @@ export default function Pharmacies() {
 
 
 
-            {}
+            { }
             <div className="flex items-center justify-between mt-4">
                 <p className="text-xs" style={{ color: 'var(--color-text-light)' }}>
                     صفحة {page} من {totalPages}
@@ -475,7 +475,7 @@ export default function Pharmacies() {
                 </div>
             </div>
 
-            {}
+            { }
             {/*  Modal  */}
             {modalOpen && (
                 <div
@@ -490,7 +490,7 @@ export default function Pharmacies() {
 
                         <div className="space-y-4">
 
-                            {}
+                            { }
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     الاسم *
@@ -503,7 +503,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {}
+                            { }
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     العنوان *
@@ -516,7 +516,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {}
+                            { }
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     الهاتف *
@@ -530,7 +530,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {}
+                            { }
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -560,7 +560,7 @@ export default function Pharmacies() {
                                 </div>
                             </div>
 
-                            {}
+                            { }
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     رابط الصورة
@@ -574,7 +574,7 @@ export default function Pharmacies() {
                                 />
                             </div>
 
-                            {}
+                            { }
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -604,7 +604,7 @@ export default function Pharmacies() {
                                 </div>
                             </div>
 
-                            {}
+                            { }
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
@@ -631,7 +631,7 @@ export default function Pharmacies() {
                                 </div>
                             </div>
 
-                            {}
+                            { }
                             <div>
                                 <label className="block text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>
                                     الخدمات <span style={{ fontWeight: 400 }}>(افصل بفاصلة: Parking, 24h)</span>
