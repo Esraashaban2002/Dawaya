@@ -12,7 +12,7 @@ import {
   EditProfileModal,
   ChangePasswordModal
 } from './Modals';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const INITIAL_PROFILE = {
   fullName: '',
@@ -26,6 +26,7 @@ const INITIAL_PROFILE = {
 
 export default function UserProfile() {
   const { userLogin } = useContext(UserContext);
+  const location = useLocation();
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -42,9 +43,15 @@ export default function UserProfile() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
-  const [activeTab, setActiveTab] = useState('profile'); 
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile'); 
   const [userOrders, setUserOrders] = useState([]);
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const email = profile.email || localStorage.getItem("dawaya_current_email") || '';

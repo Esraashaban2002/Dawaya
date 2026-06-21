@@ -4,10 +4,10 @@ import { getOrders, updateOrderStatus } from '../../services/api';
 const STATUS_OPTIONS = ['pending', 'confirmed', 'delivered', 'cancelled'];
 
 const statusMeta = {
-  pending:   { label: 'معلق',       color: '#f59e0b', bg: 'rgba(245,158,11,0.1)'  },
-  confirmed: { label: 'مؤكد',       color: '#1ab5ea', bg: 'rgba(26,181,234,0.1)'  },
-  delivered: { label: 'تم التوصيل', color: '#10b981', bg: 'rgba(16,185,129,0.1)'  },
-  cancelled: { label: 'ملغي',       color: '#ef4444', bg: 'rgba(239,68,68,0.1)'   },
+  pending: { label: 'معلق', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+  confirmed: { label: 'مؤكد', color: '#1ab5ea', bg: 'rgba(26,181,234,0.1)' },
+  delivered: { label: 'تم التوصيل', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+  cancelled: { label: 'ملغي', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
 };
 
 const StatusBadge = ({ status }) => {
@@ -54,7 +54,7 @@ export default function Orders() {
 
   return (
     <div>
-      {}
+      { }
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold" style={{ color: 'var(--color-text-main)' }}>
@@ -66,7 +66,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {}
+      { }
       <div className="flex gap-2 mb-6 flex-wrap">
         <button
           onClick={() => { setStatusFilter(''); setPage(1); }}
@@ -97,7 +97,7 @@ export default function Orders() {
         })}
       </div>
 
-      {}
+      { }
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="w-full text-sm">
           <thead>
@@ -117,13 +117,13 @@ export default function Orders() {
               </td></tr>
             ) : orders.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-                مفيش طلبات
+                لا يوجد طلبات
               </td></tr>
             ) : orders.map((order, i) => (
               <tr key={order._id}
                 style={{ borderBottom: '1px solid var(--color-border)', background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)' }}>
 
-                {}
+                { }
                 <td className="px-4 py-3">
                   <span className="text-xs font-mono px-2 py-1 rounded-lg"
                     style={{ background: 'var(--bg-primary)', color: 'var(--color-text-muted)' }}>
@@ -131,7 +131,7 @@ export default function Orders() {
                   </span>
                 </td>
 
-                {}
+                { }
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
@@ -144,30 +144,30 @@ export default function Orders() {
                   </div>
                 </td>
 
-                {}
+                { }
                 <td className="px-4 py-3" style={{ color: 'var(--color-text-muted)' }}>
                   {order.pharmacy?.name || order.pharmacyId?.name || '—'}
                 </td>
 
-                {}
+                { }
                 <td className="px-4 py-3 font-bold" style={{ color: 'var(--color-text-main)' }}>
                   {order.totalPrice != null ? `${order.totalPrice} ج` : '—'}
                 </td>
 
-                {}
+                { }
                 <td className="px-4 py-3">
                   <StatusBadge status={order.status} />
                 </td>
 
-                {}
+                { }
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--color-text-light)' }}>
                   {order.createdAt ? new Date(order.createdAt).toLocaleDateString('ar-EG') : '—'}
                 </td>
 
-                {}
+                { }
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    {}
+                    { }
                     <select
                       value={order.status}
                       onChange={e => handleStatusChange(order._id, e.target.value)}
@@ -179,7 +179,7 @@ export default function Orders() {
                       ))}
                     </select>
 
-                    {}
+                    { }
                     <button
                       onClick={() => setSelected(order)}
                       className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
@@ -197,7 +197,7 @@ export default function Orders() {
         </table>
       </div>
 
-      {}
+      { }
       <div className="flex items-center justify-between mt-4">
         <p className="text-xs" style={{ color: 'var(--color-text-light)' }}>
           صفحة {page} من {totalPages}
@@ -216,7 +216,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {}
+      { }
       {selected && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
@@ -224,7 +224,7 @@ export default function Orders() {
           onClick={e => { if (e.target === e.currentTarget) setSelected(null); }}
         >
           <div className="card w-full max-w-lg mx-4 overflow-y-auto" style={{ padding: '28px', maxHeight: '85vh' }}>
-            {}
+            { }
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-extrabold" style={{ color: 'var(--color-text-main)' }}>
                 تفاصيل الطلب #{selected._id?.slice(-6).toUpperCase()}
@@ -236,7 +236,7 @@ export default function Orders() {
               </button>
             </div>
 
-            {}
+            { }
             <div className="flex items-center gap-3 mb-5 p-4 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
               <span className="text-sm font-bold" style={{ color: 'var(--color-text-muted)' }}>الحالة:</span>
               <StatusBadge status={selected.status} />
@@ -252,7 +252,7 @@ export default function Orders() {
               </select>
             </div>
 
-            {}
+            { }
             <div className="grid grid-cols-2 gap-4 mb-5">
               {[
                 { label: 'العميل', value: selected.user?.username || selected.userId?.username || 'مجهول' },
@@ -269,7 +269,7 @@ export default function Orders() {
               ))}
             </div>
 
-            {}
+            { }
             {(selected.items || selected.orderItems || []).length > 0 && (
               <div>
                 <h3 className="text-sm font-bold mb-3" style={{ color: 'var(--color-text-muted)' }}>
