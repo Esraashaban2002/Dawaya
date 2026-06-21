@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const PharmacyLogosSection = () => {
-  const duplicatedLogos = [...pharmacyLogos, ...pharmacyLogos, ...pharmacyLogos];
   const [pharmacy, setPharmacy] = useState([]);
   const [loading, setLoading] = useState(true);
 
