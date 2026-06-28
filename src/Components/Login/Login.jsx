@@ -21,7 +21,12 @@ export default function Login() {
   const decodeToken = (token) => {
     try {
       const payload = token.split('.')[1];
-      return JSON.parse(atob(payload));
+      let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const pad = base64.length % 4;
+      if (pad) {
+        base64 += '='.repeat(4 - pad);
+      }
+      return JSON.parse(atob(base64));
     } catch {
       return null;
     }
@@ -65,7 +70,6 @@ export default function Login() {
 
     if (data.success) {
       const token    = data.data.accessToken;
-
       const userRole = data.data.user?.role
                     || data.data.role
                     || decodeToken(token)?.role

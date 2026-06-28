@@ -50,7 +50,7 @@ export default function Dashboard() {
       </div>
     );
 
-    const COLORS = ['#1ab5ea', '#10b981', '#f59e0b', '#ef4444'];
+  const COLORS = ['#1ab5ea', '#10b981', '#f59e0b', '#ef4444'];
   const roleData = [
     { name: "Users", value: users.filter((u) => u.role === "user").length },
     {
@@ -97,17 +97,17 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+      {/* Grid Version A */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card, i) => (
           <div 
-            key={i} 
+            key={`a-${i}`} 
             className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group"
           >
             <div 
               className="absolute -right-10 -bottom-10 w-28 h-28 rounded-full opacity-5 group-hover:scale-150 transition-all duration-500" 
               style={{ backgroundColor: card.color }}
             />
-            
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-bold text-slate-500">
                 {card.label}
@@ -119,7 +119,6 @@ export default function Dashboard() {
                 <card.icon size={20} className="transition-transform group-hover:scale-110" />
               </div>
             </div>
-            
             <div className="flex items-baseline gap-1.5 mt-2">
               <p className="text-3xl font-black text-slate-800 tracking-tight">
                 {card.value}
@@ -129,8 +128,110 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Grid Version B */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
+        {statCards.map((card, i) => (
+          <div 
+            key={`b-${i}`} 
+            className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group"
+          >
+            <div 
+              className="absolute -right-10 -bottom-10 w-28 h-28 rounded-full opacity-5 group-hover:scale-150 transition-all duration-500" 
+              style={{ backgroundColor: card.color }}
+            />
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-bold text-slate-500">
+                {card.label}
+              </span>
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300"
+                style={{ backgroundColor: card.bg, color: card.color }}
+              >
+                <card.icon size={20} className="transition-transform group-hover:scale-110" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-2">
+              <p className="text-3xl font-black text-slate-800 tracking-tight">
+                {card.value}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
 
+      {/* Charts Grid Version A */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="card" style={{ padding: '20px' }}>
+          <h3 className="font-bold mb-4 text-sm" style={{ color: 'var(--color-text-main)' }}>
+            نشاط آخر 7 أيام
+          </h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <LineChart data={last7Days}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fontFamily: 'Cairo', fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+              <Tooltip 
+                contentStyle={{ 
+                  fontFamily: 'Cairo', 
+                  borderRadius: '12px', 
+                  border: '1px solid #e2e8f0', 
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)' 
+                }} 
+              />
+              <Legend wrapperStyle={{ fontFamily: 'Cairo', fontSize: '11px', paddingTop: '10px' }} iconType="circle" />
+              <Line type="monotone" name="مستخدمين مسجلين" dataKey="مستخدمين" stroke="#1ab5ea" strokeWidth={3} dot={{ r: 4, strokeWidth: 1 }} activeDot={{ r: 6 }} />
+              <Line type="monotone" name="طلبات جديدة" dataKey="طلبات" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 1 }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card" style={{ padding: '20px' }}>
+          <h3 className="font-bold mb-4 text-sm" style={{ color: 'var(--color-text-main)' }}>
+            توزيع المستخدمين بالدور
+          </h3>
+          <ResponsiveContainer width="100%" height={240}>
+            <PieChart>
+              <Pie 
+                data={roleData} 
+                cx="50%" 
+                cy="45%" 
+                innerRadius={60} 
+                outerRadius={82} 
+                paddingAngle={4}
+                dataKey="value"
+              >
+                {roleData.map((_, i) => <Cell key={i} fill={COLORS[i]} stroke="none" />)}
+              </Pie>
+              <Tooltip 
+                contentStyle={{ 
+                  fontFamily: 'Cairo', 
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)'
+                }} 
+              />
+              <Legend 
+                layout="horizontal" 
+                verticalAlign="bottom" 
+                align="center"
+                iconType="circle"
+                wrapperStyle={{ paddingTop: '10px' }}
+                formatter={(value, entry) => {
+                  const item = roleData.find(d => d.name === value);
+                  let labelName = value;
+                  if (value === 'Users') labelName = 'عملاء';
+                  else if (value === 'Pharmacists') labelName = 'صيادلة';
+                  else if (value === 'Admins') labelName = 'مدراء النظام';
+                  return <span style={{ color: '#475569', fontWeight: 700, fontFamily: 'Cairo', fontSize: '11px' }}>{labelName} ({item ? item.value : 0})</span>;
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Charts Grid Version B */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm transition-shadow duration-300 hover:shadow-md">
           <h3 className="font-black mb-6 text-base text-slate-800 flex items-center gap-2 border-b border-slate-50 pb-3">
             <Activity className="w-5 h-5 text-[#1ab5ea]" />
@@ -202,6 +303,32 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* BarChart Version A */}
+      <div className="card" style={{ padding: '20px' }}>
+        <h3 className="font-bold mb-4 text-sm" style={{ color: 'var(--color-text-main)' }}>
+          حالة الطلبات
+        </h3>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={requestStatusData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fontFamily: 'Cairo', fill: '#64748b' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+            <Tooltip 
+              contentStyle={{ 
+                fontFamily: 'Cairo', 
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.05)'
+              }} 
+            />
+            <Bar dataKey="value" name="عدد الطلبات" radius={[6, 6, 0, 0]} maxBarSize={50}>
+              {requestStatusData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* BarChart Version B */}
       <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm transition-shadow duration-300 hover:shadow-md">
         <h3 className="font-black mb-6 text-base text-slate-800 flex items-center gap-2 border-b border-slate-50 pb-3">
           <ShoppingCart className="w-5 h-5 text-[#f59e0b]" />
@@ -226,6 +353,7 @@ export default function Dashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
     </div>
   );
 }

@@ -54,7 +54,7 @@ export default function Favorites() {
     <div className="cart-page">
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
         
-        {/* Navigation Breadcrumb */}
+        {}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -62,7 +62,6 @@ export default function Favorites() {
         </nav>
 
         {favorites.length === 0 ? (
-          /* Empty State */
           <div className="cart-items-card animate-fade-in" style={{ padding: '48px 32px' }}>
             <div className="cart-empty-state">
               <div className="empty-icon-wrapper" style={{ background: '#ffebee', color: '#e53935' }}>
@@ -79,7 +78,6 @@ export default function Favorites() {
             </div>
           </div>
         ) : (
-          /* Favorites Grid Layout */
           <div className="cart-items-card animate-fade-in">
             <h1 className="cart-title" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
               قائمة المنتجات المفضلة ({favorites.length})
@@ -117,7 +115,7 @@ export default function Favorites() {
                     e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)';
                   }}
                 >
-                  {/* Remove Button */}
+                  {}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -148,7 +146,7 @@ export default function Favorites() {
                   </button>
 
                   <div>
-                    {/* Product Image */}
+                    {}
                     <div style={{ 
                       height: '170px', 
                       background: '#f0f4f8', 
@@ -169,7 +167,7 @@ export default function Favorites() {
                       />
                     </div>
 
-                    {/* Product Specs */}
+                    {}
                     <div style={{ padding: '16px 16px 8px' }}>
                       <span style={{ 
                         fontSize: '11px', 
@@ -206,7 +204,7 @@ export default function Favorites() {
                     </div>
                   </div>
 
-                  {/* Add To Cart CTA */}
+                  {}
                   <div style={{ padding: '0 16px 16px' }}>
                     <button
                       onClick={(e) => handleAddToCart(e, item)}
@@ -234,7 +232,7 @@ export default function Favorites() {
 
       </div>
 
-      {/* Toast Notification */}
+      {}
       {toast.show && (
         <div 
           className={`product-toast-notification ${toast.type} animate-fade-in`}

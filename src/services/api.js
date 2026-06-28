@@ -1,19 +1,26 @@
-const BASE_URL = 'https://dawaya-back-end.vercel.app/api';
+const BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000/api'
+  : 'https://dawaya-back-end.vercel.app/api';
 const REMINDERS_BASE_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:5000/api'
   : 'https://dawaya-back-end.vercel.app/api';
 
 function isValidJWT(token) {
   if (!token) return false;
-  return token.split(".").length === 3;
+  if (token.startsWith('mock_')) return true;
+  return token.split('.').length === 3;
 }
 
-function isJWTExpired(token) {
+export function decodeToken(token) {
   try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return true;
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
     const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = base64.length % 4;
+    if (pad) {
+      base64 += '='.repeat(4 - pad);
+    }
     const jsonPayload = decodeURIComponent(
       window
         .atob(base64)
@@ -21,8 +28,18 @@ function isJWTExpired(token) {
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join(""),
     );
-    const payload = JSON.parse(jsonPayload);
-    if (payload && typeof payload.exp === "number") {
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Failed to decode token:', error);
+    return null;
+  }
+}
+
+function isJWTExpired(token) {
+  if (token.startsWith('mock_')) return false;
+  try {
+    const payload = decodeToken(token);
+    if (payload && typeof payload.exp === 'number') {
       const now = Math.floor(Date.now() / 1000);
       return payload.exp < now;
     }
@@ -64,8 +81,34 @@ function getHeaders() {
 }
 
 export const api = {
+
+
+
+  //     console.warn(`Profile fetch failed with status: ${response.status}`);
+
+
+
+
   
   async getProfile() {
+    let token = localStorage.getItem('userToken');
+    if (token && token.startsWith('mock_')) {
+      const email = localStorage.getItem('dawaya_current_email') || '';
+      const users = JSON.parse(localStorage.getItem('dawaya_users') || '[]');
+      const localUser = users.find(u => u.email.toLowerCase() === email.toLowerCase()) || {};
+      return {
+        success: true,
+        data: {
+          user: {
+            username: localUser.username || email.split('@')[0],
+            email: email,
+            phone: localUser.phone || '',
+            age: localUser.age || 25,
+            gender: localUser.gender || 'male'
+          }
+        }
+      };
+    }
     const headers = getHeaders();
     console.log("Fetching profile with headers:", headers);
 
@@ -99,7 +142,6 @@ export const api = {
         throw new Error("انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى.");
       }
 
-      // Generic 500 fallback
       if (response.status === 500) {
         throw new Error("حدث خطأ في الخادم، يرجى المحاولة لاحقاً.");
       }
@@ -111,8 +153,21 @@ export const api = {
 
     return response.json();
   },
-  // Update Profile
   async updateProfile(profileData) {
+    let token = localStorage.getItem('userToken');
+    if (token && token.startsWith('mock_')) {
+      return {
+        success: true,
+        data: {
+          user: {
+            username: profileData.username,
+            phone: profileData.phone,
+            age: profileData.age,
+            gender: profileData.gender
+          }
+        }
+      };
+    }
     const response = await fetch(`${BASE_URL}/user/profile`, {
       method: "PUT",
       headers: getHeaders(),
@@ -137,8 +192,14 @@ export const api = {
     return response.json();
   },
 
-  // Change Password
   async changePassword(oldPassword, newPassword) {
+    let token = localStorage.getItem('userToken');
+    if (token && token.startsWith('mock_')) {
+      return {
+        success: true,
+        message: "تم تغيير كلمة المرور بنجاح"
+      };
+    }
     const response = await fetch(`${BASE_URL}/user/changepassword`, {
       method: "PATCH",
       headers: getHeaders(),
@@ -166,7 +227,6 @@ export const api = {
     return response.json();
   },
 
-  // Logout
   logout() {
     localStorage.removeItem("userToken");
   },
@@ -215,7 +275,6 @@ export const api = {
   }
 };
 
-//  Adman Dashoard
 
 //  STATS 
 export const getStats = async () => {
@@ -258,7 +317,7 @@ export const deleteUser = async (id) => {
 };
 
 //  PHARMACIES 
-export const getPharmacies = async (params = {}) => {
+export const getPharmaciesDirect = async (params = {}) => {
   const query = new URLSearchParams(params).toString();
   const res = await fetch(`${BASE_URL}/pharmacies?${query}`, {
     headers: getHeaders(),
@@ -286,6 +345,11 @@ async function authFetch(url, options = {}) {
   return text ? JSON.parse(text) : {};
 }
 
+
+export const getPharmacies = (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return authFetch(`${BASE_URL}/pharmacies?${query}`);
+};
 // PHARMACIES 
 
 export const createPharmacy = (data) =>

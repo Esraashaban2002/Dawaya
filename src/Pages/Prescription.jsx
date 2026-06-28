@@ -50,11 +50,13 @@ const PRESETS = [
     patient: "سارة محمد",
     notes: [
       "Panadol Extra tabs - قرص 3 مرات يومياً بعد الأكل",
-      "Vitamin C 1000mg effervescent - قرص فوار يومياً صباحاً"
+      "Vitamin C 1000mg effervescent - قرص فوار يومياً صباحاً",
+      "Aspirin 81mg - قرص بعد الغداء يومياً"
     ],
     matches: [
       { detectedName: "Panadol Extra 500mg Tabs", product: PRODUCTS_DB[0], confidence: "99%", quantity: 1, selected: true },
-      { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "97%", quantity: 1, selected: true }
+      { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "97%", quantity: 1, selected: true },
+      { detectedName: "Aspirin 81mg", product: null, confidence: "0%", quantity: 1, selected: false }
     ]
   },
   {
@@ -84,6 +86,21 @@ const PRESETS = [
     matches: [
       { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "98%", quantity: 1, selected: true }
     ]
+  },
+  {
+    id: "preset-4",
+    title: "روشتة غير متوفرة (بدون تطابق)",
+    doctor: "د. خالد منصور (أخصائي الغدد الصماء)",
+    date: "08-06-2026",
+    patient: "منى علي",
+    notes: [
+      "Euthyrox 50mcg - قرص يومياً على الريق",
+      "Glucophage 500mg - قرص بعد الغداء يومياً"
+    ],
+    matches: [
+      { detectedName: "Euthyrox 50mcg", product: null, confidence: "0%", quantity: 1, selected: false },
+      { detectedName: "Glucophage 500mg", product: null, confidence: "0%", quantity: 1, selected: false }
+    ]
   }
 ];
 
@@ -111,7 +128,6 @@ export default function Prescription() {
     }
   }, [location.state]);
 
-  // State Management
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activePreset, setActivePreset] = useState(null);
@@ -126,7 +142,6 @@ export default function Prescription() {
   const [apiProducts, setApiProducts] = useState([]);
   const fileInputRef = useRef(null);
 
-  // Fetch live products from backend
   useEffect(() => {
     const fetchApiProducts = async () => {
       try {
@@ -150,7 +165,6 @@ export default function Prescription() {
     fetchApiProducts();
   }, []);
 
-  // Combine live API products with local DB
   const allProducts = React.useMemo(() => {
     const combined = [...apiProducts];
     PRODUCTS_DB.forEach(localMed => {
@@ -203,7 +217,6 @@ export default function Prescription() {
     }
   };
 
-  // Simulated / Preset Scanning Steps
   const runPresetSimulation = () => {
     setIsScanning(true);
     setScanStep(0);
@@ -239,7 +252,6 @@ export default function Prescription() {
     });
   };
 
-  // OCR Processing and Matching against allProducts database
   const performOCRAndMatch = async (imageFile) => {
     setIsScanning(true);
     setScanStep(0);
@@ -320,6 +332,69 @@ export default function Prescription() {
     }
   };
 
+  const getProductEnglishAliases = (product) => {
+    const aliases = [];
+    const name = product.name.toLowerCase();
+    
+    if (name.includes("بانادول")) aliases.push("panadol");
+    if (name.includes("أموكسيل") || name.includes("اموكسيل")) aliases.push("amoxil");
+    if (name.includes("أوجمنتين") || name.includes("اوجمنتين")) aliases.push("augmentin");
+    if (name.includes("بروفين")) aliases.push("brufen");
+    if (name.includes("أسبرين") || name.includes("اسبرين")) aliases.push("aspirin");
+    if (name.includes("سنتروم")) aliases.push("centrum");
+    if (name.includes("أماريل") || name.includes("اماريل")) aliases.push("amaryl");
+    if (name.includes("تينول")) aliases.push("tenol");
+    if (name.includes("جافيسكون")) aliases.push("gaviscon");
+    if (name.includes("زيرتك") || name.includes("زيرتيك")) aliases.push("zyrtec");
+    if (name.includes("كومتركس") || name.includes("كوميتريكس") || name.includes("كونتركس") || name.includes("كونتريكس")) aliases.push("comtrex", "contrex");
+    if (name.includes("جاست ريج")) aliases.push("just reg");
+    if (name.includes("إيموديوم") || name.includes("ايموديوم")) aliases.push("imodium");
+    if (name.includes("كونجستال") || name.includes("كونجيستال")) aliases.push("congestal");
+    if (name.includes("كتافلام")) aliases.push("cataflam");
+    if (name.includes("بوديزونيد")) aliases.push("budesonide");
+    if (name.includes("نابروكسين")) aliases.push("naproxen");
+    if (name.includes("أزيثرومايسين") || name.includes("ازيثرومايسين")) aliases.push("azithromycin");
+    if (name.includes("سيتريزين")) aliases.push("cetirizine");
+    if (name.includes("ديسلوراتادين")) aliases.push("desloratadine");
+    if (name.includes("دومبيريدون")) aliases.push("domperidone");
+    if (name.includes("نوفاليس")) aliases.push("novalges");
+    if (name.includes("دسلين")) aliases.push("deceline");
+    if (name.includes("كابوتين")) aliases.push("capoten");
+    if (name.includes("ميتفورمين")) aliases.push("metformin");
+    if (name.includes("فينتولين")) aliases.push("ventolin");
+    if (name.includes("ديكلوفيناك")) aliases.push("diclofenac");
+    if (name.includes("إريثرومايسين") || name.includes("اريثرومايسين")) aliases.push("erythromycin");
+    if (name.includes("تيلفاست")) aliases.push("telfast");
+    if (name.includes("رينمارك")) aliases.push("renmark");
+    if (name.includes("دوميتل")) aliases.push("domitel");
+    if (name.includes("جليبنكلاميد")) aliases.push("glibenclamide");
+    if (name.includes("سيريتايد")) aliases.push("seretide");
+    if (name.includes("أوميبرازول") || name.includes("اوميبرازول")) aliases.push("omeprazole");
+    if (name.includes("يوتيروكس") || name.includes("ايوثيروكس")) aliases.push("euthyrox");
+    if (name.includes("جلوكوفاج")) aliases.push("glucophage");
+    
+    if (product.genericName) {
+      aliases.push(product.genericName.toLowerCase());
+      const genericWords = product.genericName.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !['acid', 'sodium', 'potassium', 'chloride', 'hydrate'].includes(w));
+      aliases.push(...genericWords);
+    }
+    
+    const englishWordMatches = name.match(/[a-z0-9]+/g);
+    if (englishWordMatches) {
+      aliases.push(...englishWordMatches.filter(w => w.length > 2));
+    }
+    
+    return Array.from(new Set(aliases));
+  };
+
+  const hasWord = (text, word) => {
+    const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    return new RegExp('\\b' + escaped + '\\b', 'i').test(text);
+  };
+
   const matchOcrTextToProducts = (ocrText) => {
     const ocrTextLower = ocrText.toLowerCase();
     const matched = [];
@@ -331,9 +406,58 @@ export default function Prescription() {
       
     allProducts.forEach(product => {
       const prodNameLower = product.name.toLowerCase();
-      const genericLower = (product.genericName || "").toLowerCase();
       
-      // 1. Direct name match
+      const aliases = getProductEnglishAliases(product);
+      let bestAlias = null;
+      let highestScore = 0;
+      let matchedLine = "";
+      
+      aliases.forEach(alias => {
+        if (hasWord(ocrTextLower, alias)) {
+          let score = 65;
+          
+          lines.forEach(line => {
+            const lineLower = line.toLowerCase();
+            if (hasWord(lineLower, alias)) {
+              let lineScore = 75;
+              
+              const numbersInName = product.name.match(/\d+/g);
+              if (numbersInName) {
+                let matchedNums = 0;
+                numbersInName.forEach(num => {
+                  if (lineLower.includes(num)) matchedNums++;
+                });
+                if (matchedNums > 0) {
+                  lineScore += 15;
+                }
+              }
+              
+              if (lineScore > score) {
+                score = lineScore;
+                matchedLine = line;
+              }
+            }
+          });
+          
+          if (score > highestScore) {
+            highestScore = score;
+            bestAlias = alias;
+          }
+        }
+      });
+      
+      if (highestScore >= 70) {
+        matched.push({
+          detectedName: matchedLine || product.name,
+          product: product,
+          confidence: `${Math.round(highestScore)}%`,
+          score: highestScore,
+          quantity: 1,
+          selected: true
+        });
+        return;
+      }
+      
       if (prodNameLower.length > 4 && ocrTextLower.includes(prodNameLower)) {
         matched.push({
           detectedName: product.name,
@@ -346,7 +470,6 @@ export default function Prescription() {
         return;
       }
       
-      // 2. Token overlap match
       const nameWords = prodNameLower
         .replace(/[^a-z0-9\s]/g, '')
         .split(/\s+/)
@@ -388,9 +511,8 @@ export default function Prescription() {
         }
       }
       
-      // 3. Generic name matching
-      if (genericLower) {
-        const genericWords = genericLower
+      if (product.genericName) {
+        const genericWords = product.genericName.toLowerCase()
           .replace(/[^a-z0-9\s]/g, '')
           .split(/\s+/)
           .filter(w => w.length > 3 && !['acid', 'sodium', 'potassium', 'chloride', 'hydrate'].includes(w));
@@ -437,33 +559,108 @@ export default function Prescription() {
     const uniqueMatches = [];
     const seenIds = new Set();
     matched.forEach(item => {
-      if (!seenIds.has(item.product.id)) {
+      if (item.product && !seenIds.has(item.product.id)) {
         seenIds.add(item.product.id);
         uniqueMatches.push(item);
       }
     });
     
-    if (uniqueMatches.length === 0) {
-      if (ocrTextLower.includes("headache") || ocrTextLower.includes("pain") || ocrTextLower.includes("fever") || ocrTextLower.includes("panadol")) {
-        uniqueMatches.push({
-          detectedName: "بانادول اكسترا (خافض حرارة مقترح)",
-          product: allProducts.find(p => p.id === "1") || allProducts[0],
-          confidence: "75%",
-          score: 75,
-          quantity: 1,
-          selected: true
+    const isDrugLine = (line) => {
+      const lower = line.toLowerCase().trim();
+      
+      // Must contain letters
+      if (!/[a-zA-Z]/.test(line)) return false;
+      
+      // Standard header markers to ignore completely
+      const headerWords = [
+        'dr', 'doctor', 'patient', 'date', 'rx', 'clinic', 'medical', 
+        'prescription', 'hospital', 'name', 'age', 'gender', 'tel', 'phone', 'address', 'ref',
+        'signature', 'stamp', 'years', 'yrs', 'weight', 'wt', 'diagnosis', 'history',
+        'clinics', 'consultant', 'specialist', 'b.sc', 'm.d', 'ph.d', 'care', 'note', 'notes',
+        'avoid', 'empty', 'stomach', 'course', 'sig'
+      ];
+      
+      if (headerWords.some(word => lower === word || lower.startsWith(word + ':') || lower.startsWith(word + ' '))) {
+        return false;
+      }
+      
+      // Split the line into alphanumeric words
+      const words = lower
+        .split(/\s+/)
+        .map(w => w.replace(/[^a-z0-9]/g, ''))
+        .filter(w => w.length > 0);
+        
+      // Ignore words that are common instruction details
+      const instructionWords = [
+        'tablet', 'tablets', 'capsule', 'capsules', 'daily', 'times', 'every', 'hours', 'day', 'week', 'month',
+        'sign', 'tab', 'tabs', 'caps', 'once', 'twice', 'three', 'hrs', 'dose', 'directions', 'instruction',
+        'instructions', 'take', 'with', 'after', 'before', 'food', 'meals', 'meal'
+      ];
+      
+      // Filter out header and instruction words
+      const candidateWords = words.filter(w => !headerWords.includes(w) && !instructionWords.includes(w));
+      
+      if (candidateWords.length === 0) return false;
+      
+      // Check if we have at least one valid word of length >= 4, or containing a number, or matching a known alias
+      const hasValidWord = candidateWords.some(word => {
+        // Is it a number? (e.g. 500, 400)
+        if (/^\d+$/.test(word)) return true;
+        // Is it length >= 4?
+        if (word.length >= 4) return true;
+        // Is it a known alias from our transliteration (even if short)?
+        const isKnown = allProducts.some(product => {
+          const aliases = getProductEnglishAliases(product);
+          return aliases.includes(word);
         });
-      } else {
+        if (isKnown) return true;
+        
+        return false;
+      });
+      
+      return hasValidWord;
+    };
+
+    lines.forEach(line => {
+      if (!isDrugLine(line)) return;
+
+      const lineLower = line.toLowerCase();
+      const isAlreadyMatched = uniqueMatches.some(item => {
+        if (!item.product) return false;
+        const prodNameLower = item.product.name.toLowerCase();
+        const detectedLower = item.detectedName.toLowerCase();
+        
+        if (lineLower.includes(prodNameLower) || prodNameLower.includes(lineLower) ||
+            lineLower.includes(detectedLower) || detectedLower.includes(lineLower)) {
+          return true;
+        }
+
+        const aliases = getProductEnglishAliases(item.product);
+        if (aliases.some(alias => lineLower.includes(alias))) {
+          return true;
+        }
+
+        const lineWords = lineLower.split(/\s+/).filter(w => w.length > 3);
+        const prodWords = prodNameLower.split(/\s+/).filter(w => w.length > 3);
+        const commonWords = lineWords.filter(w => prodWords.includes(w));
+        if (commonWords.length > 0 && commonWords.length >= Math.min(lineWords.length, prodWords.length) * 0.5) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (!isAlreadyMatched) {
         uniqueMatches.push({
-          detectedName: "Panadol Extra (افتراضي للروشتة)",
-          product: allProducts.find(p => p.id === "1") || allProducts[0],
-          confidence: "60%",
-          score: 60,
+          detectedName: line,
+          product: null,
+          confidence: "0%",
+          score: 0,
           quantity: 1,
           selected: false
         });
       }
-    }
+    });
     
     return uniqueMatches;
   };
@@ -506,7 +703,7 @@ export default function Prescription() {
       return;
     }
 
-    const selectedMatches = matches.filter(m => m.selected);
+    const selectedMatches = matches.filter(m => m.selected && m.product);
     if (selectedMatches.length === 0) {
       triggerToast('الرجاء تحديد منتج واحد على الأقل لإضافته للسلة!', 'error');
       return;
@@ -526,7 +723,6 @@ export default function Prescription() {
 
     triggerToast(`تم إضافة (${selectedMatches.length}) منتجات بنجاح إلى سلة المشتريات!`, 'success');
     
-    // Optional redirect after brief delay
     setTimeout(() => {
       navigate('/cart');
     }, 1500);
@@ -542,9 +738,9 @@ export default function Prescription() {
     setScanLogs([]);
   };
 
-  const selectedCount = matches.filter(m => m.selected).length;
+  const selectedCount = matches.filter(m => m.selected && m.product).length;
   const totalPrice = matches.reduce((acc, m) => {
-    if (m.selected) {
+    if (m.selected && m.product) {
       return acc + (m.product.price * m.quantity);
     }
     return acc;
@@ -554,7 +750,7 @@ export default function Prescription() {
     <div className="cart-page" style={{ background: '#f4f6f9', minHeight: '90vh', paddingBottom: '48px' }}>
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
         
-        {/* Navigation Breadcrumb */}
+        {}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -574,14 +770,13 @@ export default function Prescription() {
 
           <div className="grid grid-cols-12 gap-8">
             
-            {/* Right Panel: Upload area / Prescription View */}
+            {}
             <div className="col-span-12 lg:col-span-6 flex flex-col gap-5">
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                 1. حدد مستند الروشتة
               </h3>
 
               {!previewUrl && !activePreset ? (
-                /* File Dropzone Selector */
                 <div 
                   className="prescription-dropzone"
                   onDragOver={handleDragOver}
@@ -611,14 +806,12 @@ export default function Prescription() {
                   />
                 </div>
               ) : (
-                /* Document Preview Area */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div className="prescription-preview-wrapper" style={{ minHeight: '320px' }}>
-                    {/* Glowing Scan Line Animation */}
+                    {}
                     {isScanning && <div className="prescription-scan-line" />}
                     
                     {activePreset ? (
-                      /* Handwritten Styled RX Slip */
                       <div style={{
                         width: '100%',
                         background: '#fefef2',
@@ -632,19 +825,25 @@ export default function Prescription() {
                         backgroundSize: '16px 16px',
                         position: 'relative'
                       }}>
-                        {/* Doctor Pad Header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px double #3b82f6', paddingBottom: '12px', marginBottom: '16px' }}>
+                        {}
+                        <div 
+                          className="flex flex-col sm:flex-row justify-between gap-3"
+                          style={{ borderBottom: '2px double #3b82f6', paddingBottom: '12px', marginBottom: '16px' }}
+                        >
                           <div>
                             <h4 style={{ margin: 0, fontWeight: 900, color: '#1e3a8a', fontSize: '16px' }}>{activePreset.doctor}</h4>
                             <span style={{ fontSize: '11px', color: '#64748b' }}>عيادات الشفاء التخصصية - باطنة وقلب</span>
                           </div>
-                          <div style={{ textAlign: 'left', fontSize: '11px', color: '#64748b' }}>
+                          <div 
+                            className="text-right sm:text-left"
+                            style={{ fontSize: '11px', color: '#64748b' }}
+                          >
                             <div>التاريخ: {activePreset.date}</div>
                             <div>المريض: {activePreset.patient}</div>
                           </div>
                         </div>
 
-                        {/* Prescription body */}
+                        {}
                         <div style={{ minHeight: '180px', paddingTop: '10px' }}>
                           <span style={{ fontSize: '28px', color: '#1e3a8a', fontFamily: 'serif', fontWeight: 'bold', display: 'block', marginBottom: '12px' }}>Rx</span>
                           <div style={{ paddingRight: '20px' }}>
@@ -663,17 +862,19 @@ export default function Prescription() {
                           </div>
                         </div>
 
-                        {/* Signature footer */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '16px', fontSize: '11px', color: '#64748b' }}>
+                        {}
+                        <div 
+                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
+                          style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginTop: '16px', fontSize: '11px', color: '#64748b' }}
+                        >
                           <span>صرف من صيدليات دوايا المعتمدة</span>
-                          <div style={{ textAlign: 'center' }}>
+                          <div style={{ textAlign: 'center' }} className="self-center sm:self-auto">
                             <div style={{ fontStyle: 'italic', fontWeight: 'bold', fontSize: '13px', color: '#1e3a8a' }}>التوقيع والختم</div>
-                            <div style={{ borderTop: '1px solid #94a3b8', width: '80px', marginTop: '4px' }}></div>
+                            <div style={{ borderTop: '1px solid #94a3b8', width: '80px', marginTop: '4px', marginLeft: 'auto', marginRight: 'auto' }}></div>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      /* Uploaded Image Preview */
                       <img 
                         src={previewUrl} 
                         alt="Prescription preview" 
@@ -682,7 +883,7 @@ export default function Prescription() {
                     )}
                   </div>
 
-                  {/* Reset/change file action */}
+                  {}
                   {!isScanning && (
                     <button 
                       onClick={resetAll} 
@@ -696,7 +897,7 @@ export default function Prescription() {
                 </div>
               )}
 
-              {/* Preset prescription items selection */}
+              {}
               {!previewUrl && !isScanning && (
                 <div style={{ marginTop: '10px' }}>
                   <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', display: 'block', marginBottom: '10px', fontWeight: 700 }}>
@@ -730,13 +931,13 @@ export default function Prescription() {
               )}
             </div>
 
-            {/* Left Panel: Scanning & Match results */}
+            {}
             <div className="col-span-12 lg:col-span-6 border-t lg:border-t-0 lg:border-r border-slate-200 pt-8 lg:pt-0 lg:pr-8 flex flex-col gap-5">
               <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)' }}>
                 2. مسح وتحليل الروشتة
               </h3>
 
-              {/* Start Scan Button */}
+              {}
               {!isScanning && !scanFinished && (
                 <div style={{
                   background: '#f8fafc', border: '1px solid var(--color-border)',
@@ -769,7 +970,7 @@ export default function Prescription() {
                 </div>
               )}
 
-              {/* Scan in Progress Animation/Logs */}
+              {}
               {isScanning && (
                 <div style={{
                   background: '#ffffff', border: '1px solid var(--color-primary-light)',
@@ -789,7 +990,7 @@ export default function Prescription() {
                     </div>
                   </div>
 
-                  {/* Log console styling */}
+                  {}
                   <div style={{ background: '#0d1b2e', color: '#38bdf8', padding: '14px', borderRadius: '10px', fontFamily: 'monospace', fontSize: '12px', minHeight: '130px', display: 'flex', flexDirection: 'column', gap: '8px', direction: 'ltr' }}>
                     {scanLogs.map((log) => (
                       <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: log.completed ? '#4ade80' : '#38bdf8' }}>
@@ -804,100 +1005,168 @@ export default function Prescription() {
                 </div>
               )}
 
-              {/* Scan Finished Results view */}
+              {}
               {scanFinished && (
                 <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={{
-                    background: '#e8f7f0', color: '#10b981', border: '1px solid #a3e635',
-                    borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
-                    fontSize: '13px', fontWeight: 800
-                  }}>
-                    <ShieldCheck size={18} />
-                    <span>تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة.</span>
-                  </div>
+                   {matches.some(item => item.product !== null) ? (
+                    <div style={{
+                      background: '#e8f7f0', color: '#10b981', border: '1px solid #a3e635',
+                      borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
+                      fontSize: '13px', fontWeight: 800
+                    }}>
+                      <ShieldCheck size={18} />
+                      <span>تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة.</span>
+                    </div>
+                  ) : (
+                    <div style={{
+                      background: '#fef2f2', color: '#ef4444', border: '1px solid #fca5a5',
+                      borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
+                      fontSize: '13px', fontWeight: 800
+                    }}>
+                      <AlertCircle size={18} />
+                      <span>تم تحليل الروشتة بنجاح! لم يتم العثور على أدوية مطابقة.</span>
+                    </div>
+                  )}
 
-                  {/* List of matched items */}
+                  {}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والتطابقات المقترحة:</span>
-                    
-                    {matches.map((item, index) => (
-                      <div key={index} className="matched-item-row">
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={item.selected}
-                            onChange={() => toggleSelectMatch(index)}
-                            style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--color-primary)', marginTop: '4px' }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
-                                {item.detectedName}
-                              </span>
-                              <span className="match-badge">
-                                نسبة التطابق {item.confidence}
-                              </span>
-                            </div>
-
-                            {/* Catalog matched product summary layout */}
-                            <div 
-                              style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px' }}
-                              className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
-                            >
-                              <Link 
-                                to={`/product/${item.product.id}`}
-                                className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-inherit"
-                                style={{ textDecoration: 'none' }}
-                              >
-                                <img 
-                                  src={item.product.image} 
-                                  alt={item.product.name} 
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                    {matches.some(item => item.product !== null) ? (
+                      <>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والتطابقة المقترحة:</span>
+                        {matches.filter(item => item.product !== null).map((item) => {
+                          const originalIndex = matches.findIndex(m => m === item);
+                          return (
+                            <div key={originalIndex} className="matched-item-row">
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={item.selected}
+                                  onChange={() => toggleSelectMatch(originalIndex)}
+                                  disabled={!item.product}
+                                  style={{ 
+                                    width: '18px', 
+                                    height: '18px', 
+                                    cursor: item.product ? 'pointer' : 'not-allowed', 
+                                    accentColor: 'var(--color-primary)', 
+                                    marginTop: '4px',
+                                    opacity: item.product ? 1 : 0.3
                                   }}
-                                  style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
-                                  className="shrink-0"
                                 />
-                                <div className="min-w-0 flex-1">
-                                  <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {item.product.name}
-                                  </p>
-                                  <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 800 }}>
-                                    {item.product.price} جنيه
-                                  </span>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div 
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2"
+                                  >
+                                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-main)' }}>
+                                      {item.detectedName}
+                                    </span>
+                                    <span 
+                                      className="match-badge shrink-0 w-fit"
+                                    >
+                                      نسبة التطابق {item.confidence}
+                                    </span>
+                                  </div>
+
+                                  <div 
+                                    style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '8px', padding: '8px 12px' }}
+                                    className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
+                                  >
+                                    <Link 
+                                      to={`/product/${item.product.id}`}
+                                      className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity text-inherit"
+                                      style={{ textDecoration: 'none' }}
+                                    >
+                                      <img 
+                                        src={item.product.image} 
+                                        alt={item.product.name} 
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400';
+                                        }}
+                                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', background: '#fff' }}
+                                        className="shrink-0"
+                                      />
+                                      <div className="min-w-0 flex-1">
+                                        <p style={{ margin: 0, fontSize: '11px', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                          {item.product.name}
+                                        </p>
+                                        <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 800 }}>
+                                          {item.product.price} جنيه
+                                        </span>
+                                      </div>
+                                    </Link>
+
+                                    <div className="qty-stepper" style={{ height: '32px', borderRadius: '8px' }}>
+                                      <button 
+                                        className="qty-btn" 
+                                        style={{ width: '28px' }}
+                                        onClick={() => handleQtyChange(originalIndex, item.quantity - 1)}
+                                        disabled={item.quantity <= 1 || !item.selected}
+                                      >
+                                        -
+                                      </button>
+                                      <span className="qty-number" style={{ fontSize: '13px', minWidth: '20px' }}>{item.quantity}</span>
+                                      <button 
+                                        className="qty-btn" 
+                                        style={{ width: '28px' }}
+                                        onClick={() => handleQtyChange(originalIndex, item.quantity + 1)}
+                                        disabled={!item.selected}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+
+                                  </div>
+
                                 </div>
-                              </Link>
-
-                              {/* Quantity Stepper inside the item row */}
-                              <div className="qty-stepper" style={{ height: '32px', borderRadius: '8px' }}>
-                                <button 
-                                  className="qty-btn" 
-                                  style={{ width: '28px' }}
-                                  onClick={() => handleQtyChange(index, item.quantity - 1)}
-                                  disabled={item.quantity <= 1 || !item.selected}
-                                >
-                                  -
-                                </button>
-                                <span className="qty-number" style={{ fontSize: '13px', minWidth: '20px' }}>{item.quantity}</span>
-                                <button 
-                                  className="qty-btn" 
-                                  style={{ width: '28px' }}
-                                  onClick={() => handleQtyChange(index, item.quantity + 1)}
-                                  disabled={!item.selected}
-                                >
-                                  +
-                                </button>
                               </div>
-
                             </div>
+                          );
+                        })}
+
+                        {matches.some(item => item.product === null) && (
+                          <div style={{
+                            background: '#fee2e2',
+                            border: '1px solid #fca5a5',
+                            borderRadius: '12px',
+                            padding: '12px 16px',
+                            color: '#b91c1c',
+                            fontSize: '13px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                            marginTop: '4px'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <AlertCircle size={16} />
+                              <span>the rest dont match</span>
+                            </div>
+                            <ul style={{ margin: '0 0 0 24px', padding: 0, listStyleType: 'disc', fontSize: '12px', opacity: 0.9 }}>
+                              {matches.filter(item => item.product === null).map((item, idx) => (
+                                <li key={idx}>{item.detectedName}</li>
+                              ))}
+                            </ul>
                           </div>
-                        </div>
+                        )}
+                      </>
+                    ) : (
+                      <div style={{
+                        background: '#fee2e2',
+                        border: '1px solid #fca5a5',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        color: '#b91c1c',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        fontFamily: 'Cairo, sans-serif'
+                      }}>
+                        no match
                       </div>
-                    ))}
+                    )}
                   </div>
 
-                  {/* Summary card and Add to Cart CTA */}
+                  {}
                   <div style={{
                     background: '#f8fafc', border: '1px solid var(--color-border)',
                     borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px'
@@ -936,7 +1205,7 @@ export default function Prescription() {
 
       </div>
 
-      {/* Toast Feedback */}
+      {}
       {toast.show && (
         <div 
           className={`product-toast-notification ${toast.type} animate-fade-in`}

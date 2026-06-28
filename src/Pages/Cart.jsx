@@ -9,17 +9,16 @@ import { CartContext } from '../Context/CartContext';
 export default function Cart() {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
 
-  // Calculations
   const subtotal = Math.round((cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0) + Number.EPSILON) * 100) / 100;
   const deliveryFee = subtotal > 0 ? 15 : 0;
-  const tax = Math.round(subtotal * 0.05); // 5% tax
+  const tax = Math.round(subtotal * 0.05); 
   const total = Math.round((subtotal + deliveryFee + tax + Number.EPSILON) * 100) / 100;
 
   return (
     <div className="cart-page">
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
         
-        {/* Navigation Breadcrumb */}
+        {}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -27,7 +26,6 @@ export default function Cart() {
         </nav>
 
         {cartItems.length === 0 ? (
-          /* Empty State */
           <div className="cart-items-card animate-fade-in">
             <div className="cart-empty-state">
               <div className="empty-icon-wrapper">
@@ -44,10 +42,9 @@ export default function Cart() {
             </div>
           </div>
         ) : (
-          /* Cart Grid Layout */
           <div className="cart-grid animate-fade-in">
             
-            {/* Right: Items List */}
+            {}
             <div className="cart-items-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
                 <h1 className="cart-title" style={{ borderBottom: 'none', paddingBottom: 0, margin: 0 }}>
@@ -65,7 +62,7 @@ export default function Cart() {
                 {cartItems.map((item) => (
                   <div key={item.id} className="cart-item-row animate-fade-in">
                     
-                    {/* Image */}
+                    {}
                     <div className="cart-item-image">
                       <img 
                         src={item.image} 
@@ -77,7 +74,7 @@ export default function Cart() {
                       />
                     </div>
 
-                    {/* Details */}
+                    {}
                     <div className="cart-item-details">
                       <Link to={`/product/${item.id}`} className="cart-item-name">
                         {item.name}
@@ -86,7 +83,7 @@ export default function Cart() {
                       <span className="cart-item-price-unit">{item.price} جنيه للوحدة</span>
                     </div>
 
-                    {/* Stepper */}
+                    {}
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
                       <div className="qty-stepper" style={{ height: '36px' }}>
                         <button 
@@ -108,12 +105,12 @@ export default function Cart() {
                       </div>
                     </div>
 
-                    {/* Total Price */}
+                    {}
                     <div className="cart-item-price-total">
                       {item.price * item.quantity} جنيه
                     </div>
 
-                    {/* Actions */}
+                    {}
                     <div>
                       <button 
                         onClick={() => removeFromCart(item.id)}
@@ -128,7 +125,7 @@ export default function Cart() {
                 ))}
               </div>
 
-              {/* Bottom Actions Row */}
+              {}
               <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between' }}>
                 <Link to="/#products-section" className="continue-shopping-link">
                   <ArrowRight size={16} />
@@ -138,7 +135,7 @@ export default function Cart() {
 
             </div>
 
-            {/* Left: Summary Panel */}
+            {}
             <div className="cart-summary-card">
               <h2 className="summary-title">ملخص الطلب</h2>
 

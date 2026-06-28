@@ -8,15 +8,15 @@ import {
 const STATUS_OPTIONS = ['pending', 'approved', 'rejected'];
 
 const statusMeta = {
-  pending:  { label: 'قيد المراجعة', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  approved: { label: 'مقبول',        color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
-  rejected: { label: 'مرفوض',        color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
+  pending: { label: 'قيد المراجعة', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+  approved: { label: 'مقبول', color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+  rejected: { label: 'مرفوض', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
 };
 
 // ── helper: normalize any API shape to { list, total } ──
 const parseRequestsResponse = (res) => {
-  if (Array.isArray(res))             return { list: res,           total: res.length };
-  if (Array.isArray(res?.data))       return { list: res.data,      total: res.total ?? res.data.length };
+  if (Array.isArray(res)) return { list: res, total: res.length };
+  if (Array.isArray(res?.data)) return { list: res.data, total: res.total ?? res.data.length };
   if (Array.isArray(res?.data?.data)) return { list: res.data.data, total: res.data.total ?? res.data.data.length };
   return { list: [], total: 0 };
 };
@@ -32,16 +32,16 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function PharmacyRequests() {
-  const [requests, setRequests]       = useState([]);
-  const [total, setTotal]             = useState(0);
-  const [loading, setLoading]         = useState(true);
-  const [page, setPage]               = useState(1);
+  const [requests, setRequests] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
-  const [selected, setSelected]       = useState(null);
-  const [updatingId, setUpdatingId]   = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
 
-  const [noteModal, setNoteModal] = useState(null); 
-  const [noteText, setNoteText]   = useState('');
+  const [noteModal, setNoteModal] = useState(null);
+  const [noteText, setNoteText] = useState('');
 
   /*  fetch  */
   const fetchRequests = async () => {
@@ -174,7 +174,7 @@ export default function PharmacyRequests() {
               </td></tr>
             ) : requests.length === 0 ? (
               <tr><td colSpan={7} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-                مفيش طلبات
+                لا يوجد طلبات
               </td></tr>
             ) : requests.map((req, i) => (
               <tr key={req._id}
@@ -347,14 +347,14 @@ export default function PharmacyRequests() {
             {/* Info grid */}
             <div className="grid grid-cols-2 gap-3 mb-5">
               {[
-                { label: 'اسم الصيدلية',     value: selected.pharmacyName },
-                { label: 'تليفون الصيدلية',  value: selected.pharmacyPhone },
-                { label: 'منطقة التوصيل',    value: selected.deliveryArea },
-                { label: 'مواعيد العمل',     value: selected.workingHours },
-                { label: 'اسم المدير',       value: selected.managerName },
-                { label: 'تليفون المدير',    value: selected.managerPhone },
-                { label: 'إيميل المدير',     value: selected.managerEmail },
-                { label: 'تاريخ الطلب',      value: selected.createdAt ? new Date(selected.createdAt).toLocaleDateString('ar-EG') : '—' },
+                { label: 'اسم الصيدلية', value: selected.pharmacyName },
+                { label: 'تليفون الصيدلية', value: selected.pharmacyPhone },
+                { label: 'منطقة التوصيل', value: selected.deliveryArea },
+                { label: 'مواعيد العمل', value: selected.workingHours },
+                { label: 'اسم المدير', value: selected.managerName },
+                { label: 'تليفون المدير', value: selected.managerPhone },
+                { label: 'إيميل المدير', value: selected.managerEmail },
+                { label: 'تاريخ الطلب', value: selected.createdAt ? new Date(selected.createdAt).toLocaleDateString('ar-EG') : '—' },
               ].map(({ label, value }) => (
                 <div key={label} className="p-3 rounded-xl" style={{ background: 'var(--bg-primary)' }}>
                   <p className="text-xs font-bold mb-1" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
@@ -374,8 +374,8 @@ export default function PharmacyRequests() {
                 <div className="space-y-2">
                   {[
                     { key: 'commercialRegister', label: 'سجل تجاري' },
-                    { key: 'taxCard',             label: 'بطاقة ضريبية' },
-                    { key: 'pharmacyLicense',     label: 'رخصة صيدلية' },
+                    { key: 'taxCard', label: 'بطاقة ضريبية' },
+                    { key: 'pharmacyLicense', label: 'رخصة صيدلية' },
                   ].filter(d => selected.documents[d.key]).map(d => (
                     <div key={d.key} className="flex items-center gap-3 px-4 py-3 rounded-xl"
                       style={{ background: 'var(--bg-primary)', border: '1px solid var(--color-border)' }}>

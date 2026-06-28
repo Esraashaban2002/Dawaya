@@ -11,7 +11,13 @@ function getCookie(name) {
 
 function decodeToken(token) {
   try {
-    return JSON.parse(atob(token.split('.')[1]));
+    const payload = token.split('.')[1];
+    let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = base64.length % 4;
+    if (pad) {
+      base64 += '='.repeat(4 - pad);
+    }
+    return JSON.parse(atob(base64));
   } catch {
     return null;
   }

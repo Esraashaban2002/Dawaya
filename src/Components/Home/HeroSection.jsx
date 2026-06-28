@@ -9,22 +9,24 @@ const HeroSection = () => {
 
   const slides = [
     {
-      image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg",
+      image: "https://www.kin.es/wp-content/uploads/2025/04/Cabeceras_BlogFarmacias.jpg", 
       title: "نمكن الصيدليات من النمو الرقمي",
       subtitle: "حلول رقمية ذكية لزيادة المبيعات"
     },
     {
-      image: "/imges/HeroImage/DriveFast.png",
+      image: "/imges/HeroImage/DriveFast.png", 
       title: "توصيلات سريعة",
       subtitle: "وصل طلبك في أقل من ساعة"
     },
     {
-      image: "/imges/HeroImage/Medicine.png",
+      image: "/imges/HeroImage/Medicine.png", 
       title: "نوفر نواقص الأدوية",
       subtitle: "منصة ذكية لتأمين احتياجات صيدليتك"
     },
    
     {
+      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop", 
+      title: "صيدليتك الذكية",
       image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop",
       subtitle: "إدارة متكاملة للمخزون والطلبات"
     }
@@ -42,6 +44,7 @@ const HeroSection = () => {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8">
           
+          {}
           {/*  Small cards */}
           <div className="order-2 lg:order-1 lg:w-[38%] flex flex-col gap-6">
             <div 
@@ -75,7 +78,7 @@ const HeroSection = () => {
             </div>
 
             <div 
-              onClick={() => navigate('/reminders')}
+              onClick={() => navigate('/whatsapp')}
               className="bg-white rounded-[30px] p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer group"
             >
               <div className="flex flex-col items-center text-center">
@@ -87,7 +90,7 @@ const HeroSection = () => {
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate('/reminders');
+                    navigate('/whatsapp');
                   }}
                   className="px-6 py-3 bg-green-600 text-white rounded-full text-sm font-semibold hover:bg-green-700 transition-all duration-300 shadow-md"
                 >
@@ -97,11 +100,12 @@ const HeroSection = () => {
             </div>
           </div>
 
+          {}
           {/* Hero Banner */}
           <div className="order-1 lg:order-2 lg:w-[62%]">
             <div className="relative rounded-[30px] overflow-hidden shadow-2xl min-h-[300px] sm:min-h-[450px] lg:min-h-[560px] h-full">
               
-              {/* Background Image Slider */}
+              {}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
@@ -120,7 +124,7 @@ const HeroSection = () => {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Content */}
+              {}
               <div className="absolute inset-0 z-10 flex flex-col items-end justify-center px-8 md:px-12 lg:px-10">
                 <div className="max-w-md text-right w-full">
                   <AnimatePresence mode="wait">
@@ -157,7 +161,7 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              {/* Slide Indicators */}
+              {}
               <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 gap-3">
                 {slides.map((_, idx) => (
                   <button

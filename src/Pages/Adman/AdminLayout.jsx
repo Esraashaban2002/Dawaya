@@ -46,7 +46,6 @@ export default function AdminLayout() {
   const token = localStorage.getItem("userToken");
 
   const decoded = token ? jwtDecode(token) : null;
-
   const userId = decoded?._id;
 
   useEffect(() => {
@@ -64,19 +63,15 @@ export default function AdminLayout() {
     }
   }, [userId]);
 
-    function logout() {
-    localStorage.removeItem("userToken");
-    setUserLogin(null);
-    navigate("/");
-  }
-
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-primary)', fontFamily: 'Cairo, sans-serif' }}>
 
+      {/* Sidebar - accepted both layout configs */}
       <aside className={`${collapsed ? 'w-16' : 'w-60'} flex flex-col transition-all duration-300 flex-shrink-0`}
         style={{ background: 'var(--bg-card)', borderLeft: '1px solid var(--color-border)', boxShadow: 'var(--shadow-md)' }}>
+        
         <div className="flex items-center justify-between px-4 py-5" style={{ borderBottom: '1px solid var(--color-border)' }}>
-       
+          {/* Logo Option A */}
           <Link
             to="/"
             style={{
@@ -97,13 +92,24 @@ export default function AdminLayout() {
               }}
             />
           </Link>
+
+          {/* Logo Option B & Collapse Button */}
           {!collapsed && (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
-              style={{ color: 'var(--color-text-muted)', background: 'var(--bg-primary)' }}>
-              <ChevronRight size={18} />
-            </button>
+            <>
+              <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}>
+                <img
+                  src="/imges/logo.png"
+                  alt="Dawaa Logo"
+                  style={{ width: "80px", height: "50px" }}
+                />
+              </Link>
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+                style={{ color: 'var(--color-text-muted)', background: 'var(--bg-primary)' }}>
+                <ChevronRight size={18} />
+              </button>
+            </>
           )}
         </div>
 
@@ -170,6 +176,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
+      {/* Main Layout Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 py-4 flex items-center justify-between flex-shrink-0"
           style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--color-border)', boxShadow: 'var(--shadow-sm)' }}>

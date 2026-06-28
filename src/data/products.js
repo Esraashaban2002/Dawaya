@@ -1,4 +1,3 @@
-// src/data/products.js
 export const products = [
   {
     name: 'فيتامين C 1000mg',

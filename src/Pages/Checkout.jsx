@@ -13,7 +13,6 @@ export default function Checkout() {
   const { cartItems, clearCart } = useContext(CartContext);
   const { userLogin } = useContext(UserContext);
 
-  // Form states
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('القاهرة');
@@ -27,14 +26,12 @@ export default function Checkout() {
   const [receiptPreview, setReceiptPreview] = useState(null);
 
   // Copy status indicators
-  const [copiedField, setCopiedField] = useState(null); 
+  const [copiedField, setCopiedField] = useState(null);
 
-  // Loading & success modal states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
 
-  // Load user profile for prefilling
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -45,7 +42,6 @@ export default function Checkout() {
           setPhone(apiUser.phone || '');
         }
       } catch (err) {
-        // Fallback to local storage if API fails
         const localEmail = localStorage.getItem("dawaya_current_email") || '';
         const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");
         const localUser = users.find(u => u.email.toLowerCase() === localEmail.toLowerCase());
@@ -58,18 +54,16 @@ export default function Checkout() {
     loadProfile();
   }, [userLogin]);
 
-  // Calculations
   const subtotal = Math.round((cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0) + Number.EPSILON) * 100) / 100;
   const deliveryFee = subtotal > 0 ? 15 : 0;
-  const tax = Math.round(subtotal * 0.05); // 5% tax
+  const tax = Math.round(subtotal * 0.05);
   const total = Math.round((subtotal + deliveryFee + tax + Number.EPSILON) * 100) / 100;
 
-  // If cart is empty and success modal is not showing, redirect to products page
   useEffect(() => {
-    if (cartItems.length === 0 && !showSuccessModal && !isSubmitting) {
+    if (cartItems.length === 0 && !showSuccessModal && !isSubmitting && !createdOrder) {
       navigate('/cart');
     }
-  }, [cartItems, showSuccessModal, isSubmitting, navigate]);
+  }, [cartItems, showSuccessModal, isSubmitting, createdOrder, navigate]);
 
   const handleCopy = (text, fieldId) => {
     navigator.clipboard.writeText(text);
@@ -106,7 +100,6 @@ export default function Checkout() {
 
     setIsSubmitting(true);
 
-    // Simulate database / order placement delay
     setTimeout(() => {
       const orderId = `DWY-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
       const orderDate = new Date().toLocaleDateString('ar-EG', {
@@ -140,7 +133,6 @@ export default function Checkout() {
         status: paymentMethod === 'cod' ? 'preparing' : 'pending_verification'
       };
 
-      // Save to localStorage under current user's email
       const userEmail = localStorage.getItem("dawaya_current_email") || 'anonymous';
       const allOrders = JSON.parse(localStorage.getItem('dawaya_orders') || '[]');
       allOrders.unshift({ ...orderData, userEmail });
@@ -150,7 +142,6 @@ export default function Checkout() {
       setIsSubmitting(false);
       setShowSuccessModal(true);
 
-      // Clear the shopping cart
       clearCart();
     }, 2500);
   };
@@ -169,7 +160,7 @@ export default function Checkout() {
     <div className="checkout-page animate-fade-in" style={{ backgroundColor: 'var(--bg-primary)', minHeight: '90vh', padding: '32px 0' }}>
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
 
-        {/* Navigation Breadcrumb */}
+        { }
         <nav className="breadcrumbs" aria-label="breadcrumb" style={{ display: 'flex', gap: '8px', marginBottom: '24px', fontSize: '13px' }}>
           <Link to="/" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>الرئيسية</Link>
           <span className="separator" style={{ color: 'var(--color-text-light)' }}>/</span>
@@ -184,10 +175,10 @@ export default function Checkout() {
 
         <div className="checkout-grid grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* Right Column: Address and Payment */}
+          { }
           <form onSubmit={handleSubmit} className="col-span-12 lg:col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-            {/* Delivery Info Card */}
+            { }
             <div className="checkout-card" style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '28px', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(241,245,249,0.8)' }}>
               <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--color-text-main)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid var(--color-border)', paddingBottom: '14px' }}>
                 <Truck size={20} style={{ color: 'var(--color-brand)' }} />
@@ -272,17 +263,17 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Payment Info Card */}
+            { }
             <div className="checkout-card" style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '28px', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(241,245,249,0.8)' }}>
               <h2 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--color-text-main)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid var(--color-border)', paddingBottom: '14px' }}>
                 <CreditCard size={20} style={{ color: 'var(--color-brand)' }} />
                 <span>طريقة الدفع</span>
               </h2>
 
-              {/* Payment Methods selector tabs */}
+              { }
               <div className="payment-selectors-grid grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
 
-                {/* Vodafone Cash */}
+                { }
                 <button
                   type="button"
                   onClick={() => { setPaymentMethod('vodafone'); setSenderInfo(''); setReceiptFile(null); setReceiptPreview(null); }}
@@ -307,7 +298,7 @@ export default function Checkout() {
                   </div>
                 </button>
 
-                {/* Instapay */}
+                { }
                 <button
                   type="button"
                   onClick={() => { setPaymentMethod('instapay'); setSenderInfo(''); setReceiptFile(null); setReceiptPreview(null); }}
@@ -332,7 +323,7 @@ export default function Checkout() {
                   </div>
                 </button>
 
-                {/* Bank account */}
+                { }
                 <button
                   type="button"
                   onClick={() => { setPaymentMethod('bank'); setSenderInfo(''); setReceiptFile(null); setReceiptPreview(null); }}
@@ -357,7 +348,7 @@ export default function Checkout() {
                   </div>
                 </button>
 
-                {/* Cash on delivery */}
+                { }
                 <button
                   type="button"
                   onClick={() => { setPaymentMethod('cod'); setSenderInfo(''); setReceiptFile(null); setReceiptPreview(null); }}
@@ -384,7 +375,7 @@ export default function Checkout() {
 
               </div>
 
-              {/* Dynamic Payment Instruction Panel */}
+              { }
               <div style={{ padding: '20px', borderRadius: '16px', backgroundColor: '#f8fafc', border: '1px solid var(--color-border)' }}>
 
                 {paymentMethod === 'vodafone' && (
@@ -420,7 +411,7 @@ export default function Checkout() {
                         />
                       </div>
 
-                      {/* Mock File Uploader */}
+                      { }
                       <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ marginBottom: '6px' }}>صورة إيصال / لقطة شاشة التحويل (اختياري)</label>
                         <div style={{ position: 'relative', height: '42px', overflow: 'hidden' }}>
@@ -482,7 +473,7 @@ export default function Checkout() {
                         />
                       </div>
 
-                      {/* Mock File Uploader */}
+                      { }
                       <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ marginBottom: '6px' }}>إرفاق إيصال التحويل (اختياري)</label>
                         <div style={{ position: 'relative', height: '42px', overflow: 'hidden' }}>
@@ -573,7 +564,7 @@ export default function Checkout() {
                         />
                       </div>
 
-                      {/* Mock File Uploader */}
+                      { }
                       <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ marginBottom: '6px' }}>إرفاق صورة إيصال التحويل البنكي (اختياري)</label>
                         <div style={{ position: 'relative', height: '42px', overflow: 'hidden' }}>
@@ -621,7 +612,7 @@ export default function Checkout() {
 
           </form>
 
-          {/* Left Column: Order Summary */}
+          { }
           <div className="col-span-12 lg:col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             <div className="checkout-card" style={{ backgroundColor: '#ffffff', borderRadius: '20px', padding: '28px', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(241,245,249,0.8)' }}>
@@ -629,7 +620,7 @@ export default function Checkout() {
                 ملخص الطلب
               </h2>
 
-              {/* Items List */}
+              { }
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '200px', overflowY: 'auto', marginBottom: '20px', paddingLeft: '4px' }}>
                 {cartItems.map((item) => (
                   <div key={item.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -653,7 +644,7 @@ export default function Checkout() {
                 ))}
               </div>
 
-              {/* Price Calculation breakdown */}
+              { }
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '16px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--color-text-muted)' }}>
                   <span>المجموع الفرعي:</span>
@@ -673,13 +664,13 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Secure Checkout badge */}
+              { }
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '10px', backgroundColor: 'var(--color-primary-light)', color: 'var(--color-primary)', fontSize: '11px', fontWeight: '700', marginBottom: '20px' }}>
                 <ShieldCheck size={16} />
                 <span>جميع المعاملات تتم بطريقة آمنة ومحمية بالكامل</span>
               </div>
 
-              {/* Submit button */}
+              { }
               <button
                 type="button"
                 onClick={handleSubmit}
@@ -707,13 +698,13 @@ export default function Checkout() {
 
       </div >
 
-      {/* Premium Success Popup Modal */}
+      { }
       {
         showSuccessModal && createdOrder && (
           <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }} className="animate-fade-in">
             <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', width: '100%', maxWidth: '540px', padding: '32px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.8)', position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px', animation: 'scaleUp 0.3s ease-out' }}>
 
-              {/* Animated check circle */}
+              { }
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
                 <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: '#d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
                   <CheckCircle2 size={42} />
@@ -725,7 +716,7 @@ export default function Checkout() {
                 <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-muted)' }}>تم استلام تفاصيل الطلب والدفع، وجاري معالجة طلبك الآن.</p>
               </div>
 
-              {/* Receipt Summary Card */}
+              { }
               <div style={{ backgroundColor: '#f8fafc', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px' }}>
                   <span style={{ color: 'var(--color-text-muted)', fontWeight: '600' }}>رقم الطلب:</span>
@@ -749,14 +740,14 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Tracker Bar */}
+              { }
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--color-text-main)' }}>حالة الطلب:</span>
                 <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginTop: '8px', padding: '0 8px' }}>
-                  {/* Horizontal line background */}
+                  { }
                   <div style={{ position: 'absolute', top: '10px', left: '20px', right: '20px', height: '2px', backgroundColor: '#e2e8f0', zIndex: 1 }} />
 
-                  {/* Steps */}
+                  { }
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2, flex: 1 }}>
                     <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '10px', fontWeight: 'bold' }}>✓</div>
                     <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--color-text-main)' }}>تم الطلب</span>
@@ -783,13 +774,13 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Buttons */}
+              { }
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px', marginTop: '8px' }}>
                 <button
                   type="button"
                   onClick={() => {
                     setShowSuccessModal(false);
-                    navigate('/profile');
+                    navigate('/profile', { state: { activeTab: 'orders' } });
                   }}
                   className="checkout-btn"
                   style={{ width: '100%' }}

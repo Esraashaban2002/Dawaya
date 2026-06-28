@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
+    _id: { type: String, required: true },
     _id: { type: String, required: true }, // Store as string to support external JWT user IDs
     username: { type: String, default: "" },
     email: { type: String, default: "" },

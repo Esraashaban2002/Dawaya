@@ -26,7 +26,7 @@ export default function Layout() {
         </div>
         <Footer />
 
-        {/* Global Login Required Modal */}
+        { }
         {showLoginModal && (
             <div className="modal-overlay" style={{ zIndex: 10000 }}>
                 <div className="modal-content animate-fade-in" style={{ maxWidth: '440px', background: '#fff' }}>
@@ -41,37 +41,37 @@ export default function Layout() {
                             </div>
                             <span>مطلوب تسجيل الدخول</span>
                         </div>
-                        <button 
-                            type="button" 
-                            className="modal-close" 
+                        <button
+                            type="button"
+                            className="modal-close"
                             onClick={() => setShowLoginModal(false)}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}
                         >
                             <X size={18} />
                         </button>
                     </div>
-                    
+
                     <div className="modal-body" style={{ padding: '24px', textAlign: 'center' }}>
-                        <p style={{ 
-                            fontSize: '14px', 
-                            color: 'var(--color-text-main)', 
+                        <p style={{
+                            fontSize: '14px',
+                            color: 'var(--color-text-main)',
                             lineHeight: '1.7',
                             margin: '0 0 24px',
                             fontWeight: '600'
                         }}>
-                            عذراً، يجب عليك تسجيل الدخول أو إنشاء حساب جديد لتتمكن من إضافة المنتجات وإدارتها في سلة المشتريات.
+                            تحتاج إلى تسجيل الدخول أو إنشاء حساب جديد للمتابعة.
                         </p>
-                        
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <button 
-                                onClick={handleLoginRedirect} 
+                            <button
+                                onClick={handleLoginRedirect}
                                 className="btn btn-primary"
                                 style={{ width: '100%', padding: '12px 0', fontWeight: '800', borderRadius: '12px', cursor: 'pointer' }}
                             >
                                 تسجيل الدخول الآن
                             </button>
-                            <button 
-                                onClick={handleRegisterRedirect} 
+                            <button
+                                onClick={handleRegisterRedirect}
                                 className="btn btn-outline"
                                 style={{ width: '100%', padding: '12px 0', fontWeight: '800', borderRadius: '12px', cursor: 'pointer' }}
                             >

@@ -1,4 +1,3 @@
-// src/pages/Home/Home.jsx
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -24,7 +23,6 @@ const Home = () => {
   const token = getCookie('token');
   if (token) {
     localStorage.setItem('token', token);
-    // مسح الكوكي بعد القراءة
     document.cookie = 'token=; Max-Age=0; path=/';
 
     fetch("https://dawaya-back-end.vercel.app/api/auth/me", {
@@ -60,18 +58,18 @@ const Home = () => {
       <div style={{direction: "ltr"}}>
       <HeroSection />
       <StatsSection />
-      {/* <ServicesSection /> */}
+      {}
       <ProductsSection />
       <HowItWorksSection />
       
       <PharmacyLogosSection />
       <AppPromotionSection />
-      {/* <FeaturesSection /> */}
+      {}
        <ServicesSection />
-      {/* <TestimonialsSection /> */}
+      {}
      
       <FAQSection />
-      {/* <CTASection /> */}
+      {}
       </div>
     </motion.main>
   );

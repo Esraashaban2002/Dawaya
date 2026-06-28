@@ -1,4 +1,4 @@
-import React, { useState, useEffect ,useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
@@ -7,6 +7,7 @@ import { FaStar, FaShoppingCart, FaChevronRight, FaChevronLeft, FaHeart, FaTrash
 import { CartContext } from '../../Context/CartContext';
 import { FavoritesContext } from '../../Context/FavoritesContext';
 import { UserContext } from '../../Context/UserContext';
+import { cleanMedicineText } from '../../utils/textCleaner';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -140,7 +141,7 @@ const ProductsSection = () => {
                     <Link to={`/product/${product._id}`} className="hover:text-blue-600 transition-colors block mb-2">
                       <h3 className="font-bold text-gray-800 text-lg line-clamp-1">{product.name}</h3>
                     </Link>
-                    <p className="text-gray-500 text-sm line-clamp-2 mb-3 leading-relaxed">{product.description}</p>
+                    <p className="text-gray-500 text-sm line-clamp-2 mb-3 leading-relaxed">{cleanMedicineText(product.description)}</p>
                     
                     <div className="flex items-center gap-2 mb-3">
                       <div className="flex text-yellow-400">
@@ -190,7 +191,7 @@ const ProductsSection = () => {
           </button>
         </div>
 
-        {/* زر عرض جميع المنتجات */}
+        {}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

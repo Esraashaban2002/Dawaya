@@ -1,4 +1,3 @@
-// Server.js
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -12,7 +11,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Mongoose Connection
 if (!process.env.MONGODB_URI) {
     console.warn("WARNING: MONGODB_URI is not defined in the environment variables. Using default local MongoDB.");
 }
@@ -21,9 +19,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dawaya')
     .then(() => console.log("Local Server connected to MongoDB successfully"))
     .catch((err) => console.error("Local Server database connection error:", err));
 
-// Helper middleware to extract user info from Auth header or provide a fallback
 const getUserId = (req) => {
-    let userId = '660000000000000000000000'; // Default mock ObjectId for local testing
+    let userId = '660000000000000000000000'; 
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
@@ -36,7 +33,6 @@ const getUserId = (req) => {
                 }
             }
         } catch (e) {
-            // Log and ignore token parsing failures to allow fallback testing
             console.log("Token parsing failed, using default mock user ID");
         }
     }
@@ -45,11 +41,9 @@ const getUserId = (req) => {
 
 // REMINDERS API ROUTES 
 
-// 1. GET: Fetch all reminders
 app.get('/api/reminders', async (req, res) => {
     try {
         const userId = getUserId(req);
-        // Fetch reminders belonging to either the logged in user or the mock user
         const reminders = await Reminder.find({ userId });
         res.json({ success: true, data: reminders });
     } catch (error) {
@@ -58,7 +52,6 @@ app.get('/api/reminders', async (req, res) => {
     }
 });
 
-// 2. POST: Create a reminder
 app.post('/api/reminders', async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -84,7 +77,6 @@ app.post('/api/reminders', async (req, res) => {
     }
 });
 
-// 3. PUT: Update a reminder
 app.put('/api/reminders/:id', async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -101,7 +93,6 @@ app.put('/api/reminders/:id', async (req, res) => {
             active: req.body.active
         };
 
-        // Filter out undefined keys
         Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
         const updatedReminder = await Reminder.findOneAndUpdate(
@@ -122,7 +113,6 @@ app.put('/api/reminders/:id', async (req, res) => {
     }
 });
 
-// 4. DELETE: Remove a reminder
 app.delete('/api/reminders/:id', async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -141,7 +131,6 @@ app.delete('/api/reminders/:id', async (req, res) => {
     }
 });
 
-// Persistent profile update route
 app.put('/api/user/profile', async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -159,7 +148,6 @@ app.put('/api/user/profile', async (req, res) => {
         
         await user.save();
 
-        // Update user's profile reminders in the database
         if (phone) {
             await Reminder.updateMany(
                 { userId, phoneType: 'profile' },
@@ -179,7 +167,6 @@ app.put('/api/user/profile', async (req, res) => {
     }
 });
 
-// Persistent profile fetch route
 app.get('/api/user/profile', async (req, res) => {
     try {
         const userId = getUserId(req);

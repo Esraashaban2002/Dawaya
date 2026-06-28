@@ -49,12 +49,10 @@ export default function Reminders() {
     }
   }, [userLogin, navigate, setShowLoginModal]);
 
-  // State Management
   const [profilePhone, setProfilePhone] = useState("");
   const [reminders, setReminders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Form State
   const [medicineName, setMedicineName] = useState("");
   const [dosage, setDosage] = useState("قرص واحد");
   const [frequency, setFrequency] = useState("مرة واحدة يومياً");
@@ -69,7 +67,6 @@ export default function Reminders() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const alertedKeysRef = useRef(new Set());
  
-  // UI state
   const [validationError, setValidationError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [simulatedReminder, setSimulatedReminder] = useState(null);
@@ -82,14 +79,12 @@ export default function Reminders() {
     }, 4000);
   };
 
-  // Request Notification permission on mount
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
-  // Poll current time to alert on matching active reminders
   useEffect(() => {
     const checkReminders = () => {
       const now = new Date();
@@ -102,7 +97,6 @@ export default function Reminders() {
         if (rem.active && rem.useApp && times.includes(currentTimeStr)) {
           const alertKey = `${rem._id || rem.id}-${currentTimeStr}`;
           if (!alertedKeysRef.current.has(alertKey)) {
-            // Play notification sound
             try {
               const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
               const oscillator = audioCtx.createOscillator();
@@ -118,11 +112,9 @@ export default function Reminders() {
               console.log("Audio play blocked by browser policies.");
             }
 
-            // Show in-app alert modal
             setActiveInAppAlert(rem);
             alertedKeysRef.current.add(alertKey);
 
-            // Send desktop native notification if permitted
             if ('Notification' in window && Notification.permission === 'granted') {
               new Notification("تذكير موعد الدواء - دوايا", {
                 body: `حان الآن موعد جرعة: ${rem.medicineName} (${rem.dosage})`,
@@ -134,12 +126,10 @@ export default function Reminders() {
       });
     };
 
-    // Check every 10 seconds
     const interval = setInterval(checkReminders, 10000);
     return () => clearInterval(interval);
   }, [reminders]);
 
-  // Fetch profile phone number
   const fetchProfilePhone = async () => {
     const activeToken = userLogin || localStorage.getItem('userToken');
     if (!activeToken) {
@@ -167,20 +157,18 @@ export default function Reminders() {
 
     setProfilePhone(phone);
     if (!phone) {
-      setPhoneType("custom"); // Force custom if profile phone does not exist
+      setPhoneType("custom"); 
     } else {
       setPhoneType("profile");
     }
   };
 
-  // Sync route check
   useEffect(() => {
     if (location.pathname === '/whatsapp') {
       setUseWhatsapp(true);
     }
   }, [location.pathname]);
 
-  // Load reminders
   useEffect(() => {
     const loadReminders = async () => {
       fetchProfilePhone();
@@ -203,7 +191,6 @@ export default function Reminders() {
     loadReminders();
   }, [userLogin]);
 
-  // Sync profile-type reminders with the profilePhone state dynamically
   useEffect(() => {
     if (profilePhone && reminders.length > 0) {
       let hasChanged = false;
@@ -211,7 +198,6 @@ export default function Reminders() {
         if (r.phoneType === "profile" && r.phoneNumber !== profilePhone) {
           hasChanged = true;
           const updatedRem = { ...r, phoneNumber: profilePhone };
-          // Sync changes to reminders backend database
           api.updateReminder(r._id || r.id, updatedRem)
             .then(() => console.log(`Successfully synced reminder ${r._id || r.id} to new profile phone ${profilePhone}`))
             .catch(err => console.warn(`Failed to sync reminder ${r._id || r.id} to new profile phone:`, err));
@@ -248,7 +234,6 @@ export default function Reminders() {
     setValidationError("");
     setSuccessMsg("");
 
-    // Smooth scroll to the form panel
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -378,7 +363,6 @@ export default function Reminders() {
       setSuccessMsg("تم إضافة التذكير الطبي بنجاح وسيبدأ العمل فوراً!");
     }
 
-    // Reset Form
     setMedicineName("");
     setDosage("قرص واحد");
     setFrequency("مرة واحدة يومياً");
@@ -433,7 +417,7 @@ export default function Reminders() {
     <div className="cart-page" style={{ background: '#f4f6f9', minHeight: '90vh', paddingBottom: '48px' }}>
       <div className="container" style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 16px' }}>
 
-        {/* Navigation Breadcrumb */}
+        {}
         <nav className="breadcrumbs" aria-label="breadcrumb">
           <Link to="/">الرئيسية</Link>
           <span className="separator">/</span>
@@ -442,8 +426,8 @@ export default function Reminders() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* Right Panel: Add Reminder Form */}
-          <div className="col-span-12 lg:col-span-7 cart-items-card animate-fade-in" style={{ padding: '32px' }}>
+          {}
+          <div className="col-span-12 lg:col-span-7 cart-items-card animate-fade-in p-4 sm:p-8">
             <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Bell style={{ color: 'var(--color-primary)' }} />
@@ -494,7 +478,7 @@ export default function Reminders() {
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
-              {/* Medicine Name */}
+              {}
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ marginBottom: '8px' }}>اسم الدواء</label>
                 <input
@@ -507,7 +491,7 @@ export default function Reminders() {
                 />
               </div>
 
-              {/* Dosage & Frequency Row */}
+              {}
               <div className="form-row grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ margin: 0 }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label" style={{ marginBottom: '8px' }}>الجرعة المطلوبة</label>
@@ -540,7 +524,7 @@ export default function Reminders() {
                 </div>
               </div>
 
-              {/* Timing */}
+              {}
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ marginBottom: '8px' }}>
                   {frequency === "مرتين يومياً"
@@ -550,7 +534,7 @@ export default function Reminders() {
                     : "توقيت أخذ الجرعة"}
                 </label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {/* First Time Input */}
+                  {}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Clock size={16} style={{ color: 'var(--color-primary)' }} />
                     <span style={{ fontSize: '12px', minWidth: '70px', color: 'var(--color-text-muted)' }}>الجرعة الأولى:</span>
@@ -564,7 +548,7 @@ export default function Reminders() {
                     />
                   </div>
 
-                  {/* Second Time Input (if Twice or 3 Times) */}
+                  {}
                   {(frequency === "مرتين يومياً" || frequency === "3 مرات يومياً") && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="animate-fade-in">
                       <Clock size={16} style={{ color: 'var(--color-primary)' }} />
@@ -580,7 +564,7 @@ export default function Reminders() {
                     </div>
                   )}
 
-                  {/* Third Time Input (if 3 Times) */}
+                  {}
                   {frequency === "3 مرات يومياً" && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }} className="animate-fade-in">
                       <Clock size={16} style={{ color: 'var(--color-primary)' }} />
@@ -598,7 +582,7 @@ export default function Reminders() {
                 </div>
               </div>
 
-              {/* Channels (Alert Type Choice) */}
+              {}
               <div style={{
                 background: '#f8fafc', border: '1px solid var(--color-border)',
                 borderRadius: '16px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px'
@@ -629,7 +613,7 @@ export default function Reminders() {
                   </label>
                 </div>
 
-                {/* WhatsApp configuration overlay details */}
+                {}
                 {useWhatsapp && (
                   <div style={{
                     marginTop: '8px', borderTop: '1px solid #edf2f7', paddingTop: '12px',
@@ -640,7 +624,7 @@ export default function Reminders() {
                       حدد رقم الهاتف لاستقبال التنبيهات:
                     </span>
 
-                    {/* Options: Profile or Custom */}
+                    {}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12px' }}>
                         <input
@@ -675,7 +659,7 @@ export default function Reminders() {
                       </label>
                     </div>
 
-                    {/* Custom Phone Number input */}
+                    {}
                     {phoneType === "custom" && (
                       <div className="form-group animate-fade-in" style={{ margin: '4px 0 0 0' }}>
                         <input
@@ -696,7 +680,7 @@ export default function Reminders() {
                 )}
               </div>
 
-              {/* Submit CTA / Edit CTAs */}
+              {}
               {editingReminderId ? (
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
@@ -745,7 +729,7 @@ export default function Reminders() {
             </form>
           </div>
 
-          {/* Left Panel: Active Schedules Listing */}
+          {}
           <div className="col-span-12 lg:col-span-5" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-main)', margin: '4px 0 0' }}>
               التذكيرات النشطة حالياً ({reminders.length})
@@ -806,7 +790,7 @@ export default function Reminders() {
                     </div>
 
                     <div className="flex items-center gap-3 border-t border-slate-100 pt-3 sm:border-none sm:pt-0 justify-start sm:justify-end">
-                      {/* Toggle switch active/inactive */}
+                      {}
                       <label className="reminder-switch">
                         <input
                           type="checkbox"
@@ -816,7 +800,7 @@ export default function Reminders() {
                         <span className="reminder-slider" />
                       </label>
 
-                      {/* WhatsApp simulation trigger */}
+                      {}
                       {rem.useWhatsapp && rem.active && (
                         <button
                           onClick={() => triggerWhatsappSimulation(rem)}
@@ -832,7 +816,7 @@ export default function Reminders() {
                         </button>
                       )}
 
-                      {/* Edit */}
+                      {}
                       <button
                         onClick={() => handleEditClick(rem)}
                         className="action-icon-btn"
@@ -853,7 +837,7 @@ export default function Reminders() {
                         <Edit size={14} />
                       </button>
 
-                      {/* Delete */}
+                      {}
                       <button
                         onClick={() => handleDeleteReminder(rem.id || rem._id)}
                         className="action-icon-btn"
@@ -872,15 +856,15 @@ export default function Reminders() {
         </div>
       </div>
 
-      {/* Simulated Phone Mockup WhatsApp alert modal */}
+      {}
       {simulatedReminder && (
-        <div className="modal-overlay" style={{ zIndex: 10000 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }} className="animate-fade-in">
+        <div className="modal-overlay" style={{ zIndex: 10000, overflowY: 'auto', padding: '24px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', margin: 'auto' }} className="animate-fade-in">
 
-            {/* Phone Frame Mockup container */}
+            {}
             <div className="whatsapp-phone-mockup">
 
-              {/* WhatsApp header */}
+              {}
               <div className="whatsapp-chat-header">
                 <button
                   onClick={() => setSimulatedReminder(null)}
@@ -895,7 +879,7 @@ export default function Reminders() {
                 </div>
               </div>
 
-              {/* Chat history list */}
+              {}
               <div className="whatsapp-chat-body">
                 <div style={{
                   background: 'rgba(255, 255, 255, 0.8)',
@@ -930,7 +914,7 @@ export default function Reminders() {
               </div>
             </div>
 
-            {/* Info and exit button */}
+            {}
             <div style={{
               background: '#0d1b2e', color: '#38bdf8', padding: '12px 20px', borderRadius: '12px',
               textAlign: 'center', fontSize: '13px', border: '1px solid #1e293b', maxWidth: '320px'
@@ -950,7 +934,7 @@ export default function Reminders() {
         </div>
       )}
 
-      {/* In-App Notification Alert Modal */}
+      {}
       {activeInAppAlert && (
         <div className="modal-overlay" style={{ zIndex: 11000, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)' }}>
           <div className="animate-fade-in" style={{
@@ -1053,7 +1037,7 @@ export default function Reminders() {
         </div>
       )}
 
-      {/* Toast Feedback */}
+      {}
       {toast.show && (
         <div 
           className="animate-fade-in"

@@ -13,7 +13,7 @@ export default function NotFound() {
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="bg-white rounded-3xl p-8 md:p-12 shadow-xl shadow-slate-100 border border-slate-100 max-w-md w-full text-center flex flex-col items-center gap-6"
       >
-        {/* Animated Icon Circle */}
+        {}
         <div className="relative w-24 h-24 flex items-center justify-center">
           <div className="absolute inset-0 bg-rose-100/50 rounded-full animate-ping opacity-75 duration-1000" style={{ animationDuration: "3s" }} />
           <div className="relative w-20 h-20 bg-gradient-to-br from-rose-50 to-rose-100/80 text-rose-500 rounded-full flex items-center justify-center border border-rose-200 shadow-inner">
@@ -21,17 +21,25 @@ export default function NotFound() {
           </div>
         </div>
 
-        {/* 404 & Title */}
+        {}
         <div className="flex flex-col gap-2">
           <span className="text-4xl font-extrabold text-rose-500 tracking-wider">404</span>
           <h1 className="text-xl font-black text-slate-800">الصفحة غير موجودة</h1>
         </div>
 
-        {/* Description */}
+        {}
         <p className="text-xs md:text-sm text-slate-500 leading-relaxed">
           عذراً، الصفحة التي تبحث عنها غير متوفرة حالياً، ربما تم نقلها أو حذفها نهائياً. يرجى التحقق من الرابط أو العودة للرئيسية.
         </p>
 
+        {}
+        <Link
+          to="/"
+          className="w-full bg-[#10b981] hover:bg-[#059669] text-white font-extrabold py-3 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md shadow-[#10b981]/25 hover:shadow-lg active:scale-[0.98] text-xs md:text-sm cursor-pointer"
+        >
+          <Home className="w-4.5 h-4.5" />
+          <span>العودة إلى الصفحة الرئيسية</span>
+        </Link>
         <div className="flex flex-wrap gap-3 justify-center">
           <Link
             to="/"

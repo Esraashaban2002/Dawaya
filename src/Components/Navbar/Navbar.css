@@ -141,7 +141,6 @@
           gap: 6px;
         }
 
-     
         .nb-hamburger {
           display: none;
           width: 40px;
@@ -163,7 +162,6 @@
           height: 20px;
         }
 
-     
         .nb-mobile-menu {
           position: absolute;
           top: 80px;
@@ -252,6 +250,10 @@
   gap: 12px;
 }
 
+        @media (max-width: 768px) {
+          .nb-links, .nb-search, .nb-login, .nb-auth-links { display: none !important; }
+          .nb-hamburger { display: flex; }
+        }
 /* User Menu & Dropdown Styles */
 .nb-user-menu-container {
   position: relative;

@@ -20,7 +20,7 @@ export default function Footer() {
     >
       <div className="w-[90%] lg:w-[80%] mx-auto py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand Column */}
+          {}
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-white">دوايا</h2>
             <p className="text-white/50 text-sm leading-relaxed">
@@ -37,7 +37,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* خدماتنا */}
+          {}
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-white/90">خدماتنا</h3>
             <ul className="space-y-2">
@@ -59,7 +59,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* الشركة */}
+          {}
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-white/90">الشركة</h3>
             <ul className="space-y-2">
@@ -82,7 +82,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* الدعم */}
+          {}
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-white/90">الدعم</h3>
             <ul className="space-y-2">
@@ -106,7 +106,7 @@ export default function Footer() {
               ))}
             </ul>
 
-            {/* Email subscription */}
+            {}
             <div className="mt-4 bg-[#253361] rounded-xl p-3 flex flex-col gap-2">
               {subscribed ? (
                 <p className="text-teal-400 text-xs text-center py-1">
@@ -136,10 +136,10 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Divider */}
+      {}
       <div className="border-t border-white/10" />
 
-      {/* Bottom bar */}
+      {}
       <div className="w-[90%] lg:w-[80%] mx-auto py-4 flex items-center justify-center">
         <p className="text-white/40 text-xs text-center">
           © 2026 دوايا. رعاية طبية مميزة. جميع الحقوق محفوظة.

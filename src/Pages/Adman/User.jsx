@@ -48,7 +48,7 @@ export default function Users() {
 
   return (
     <div>
-      {/* Header */}
+      { }
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-extrabold" style={{ color: 'var(--color-text-main)' }}>
@@ -60,7 +60,7 @@ export default function Users() {
         </div>
       </div>
 
-      {/* Filters */}
+      { }
       <div className="flex gap-3 mb-6 flex-wrap">
         <input
           type="text"
@@ -83,7 +83,7 @@ export default function Users() {
         </select>
       </div>
 
-      {/* Table */}
+      { }
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="w-full text-sm">
           <thead>
@@ -103,13 +103,13 @@ export default function Users() {
               </td></tr>
             ) : filtered.length === 0 ? (
               <tr><td colSpan={5} className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-                مفيش مستخدمين
+                لا يوجد مستخدمين
               </td></tr>
             ) : filtered.map((user, i) => (
               <tr key={user._id}
                 style={{ borderBottom: '1px solid var(--color-border)', background: i % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-primary)' }}>
 
-                {/* Avatar + Name */}
+                { }
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white"
@@ -122,12 +122,12 @@ export default function Users() {
                   </div>
                 </td>
 
-                {/* Email */}
+                { }
                 <td className="px-4 py-3" style={{ color: 'var(--color-text-muted)' }}>
                   {user.email}
                 </td>
 
-                {/* Role Select */}
+                { }
                 <td className="px-4 py-3">
                   <select
                     value={user.role}
@@ -141,12 +141,12 @@ export default function Users() {
                   </select>
                 </td>
 
-                {/* Date */}
+                { }
                 <td className="px-4 py-3 text-xs" style={{ color: 'var(--color-text-light)' }}>
                   {new Date(user.createdAt).toLocaleDateString('ar-EG')}
                 </td>
 
-                {/* Delete */}
+                { }
                 <td className="px-4 py-3">
                   <button onClick={() => handleDelete(user._id)}
                     className="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all"
@@ -163,7 +163,7 @@ export default function Users() {
         </table>
       </div>
 
-      {/* Pagination */}
+      { }
       <div className="flex items-center justify-between mt-4">
         <p className="text-xs" style={{ color: 'var(--color-text-light)' }}>
           صفحة {page} من {Math.ceil(total / 10) || 1}

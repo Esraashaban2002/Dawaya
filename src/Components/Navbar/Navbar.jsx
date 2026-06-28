@@ -4,7 +4,6 @@ import {
   FaSearch,
   FaShoppingCart,
   FaUser,
-  FaGlobe,
   FaBars,
   FaTimes,
   FaHeart,
@@ -76,6 +75,7 @@ export default function Navbar() {
 
   function logout() {
     localStorage.removeItem("userToken");
+    localStorage.setItem("dawaya_logged_out", "true");
     setUserLogin(null);
     navigate("/");
   }
@@ -145,10 +145,6 @@ export default function Navbar() {
             </form>
 
             <div className="nb-actions">
-              <button className="nb-icon-btn">
-                <FaGlobe />
-              </button>
-
               <Link to="/favorites" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
                 <FaHeart style={{ color: "#000000" }} />
                 {favorites.length > 0 && <span className="nb-badge" style={{ backgroundColor: "#e53935" }}>{favorites.length}</span>}
@@ -160,6 +156,7 @@ export default function Navbar() {
               </Link>
             </div>
 
+            {}
             {userLogin == null ? (
               <div className="nb-auth-links">
                 <NavLink to="/AccountType" className="nb-link">
@@ -261,6 +258,7 @@ export default function Navbar() {
             </button>
           </div>
 
+          {}
           {menuOpen && (
             <div className="nb-mobile-menu">
               <Link to="/" className="nb-mobile-link" onClick={() => setMenuOpen(false)}>الرئيسية</Link>
