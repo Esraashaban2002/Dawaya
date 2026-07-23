@@ -29,20 +29,22 @@ export default function Orders() {
 
   const [selected, setSelected] = useState(null);
 
-  const fetchOrders = async () => {
+  useEffect(() => {
+    let isMounted = true;
     setLoading(true);
-    try {
-      const params = { page, limit: 10 };
-      if (statusFilter) params.status = statusFilter;
-      const data = await getOrders(params);
-      setOrders(data.data?.data || data.data || []);
-      setTotal(data.data?.total || 0);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchOrders(); }, [page, statusFilter]);
+    const params = { page, limit: 10 };
+    if (statusFilter) params.status = statusFilter;
+    getOrders(params)
+      .then((data) => {
+        if (!isMounted) return;
+        setOrders(data.data?.data || data.data || []);
+        setTotal(data.data?.total || 0);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => { isMounted = false; };
+  }, [page, statusFilter]);
 
   const handleStatusChange = async (id, newStatus) => {
     await updateOrderStatus(id, newStatus);

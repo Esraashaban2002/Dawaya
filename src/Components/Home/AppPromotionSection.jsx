@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { FaStore, FaChartLine, FaTruck, FaArrowLeft } from 'react-icons/fa';
+import { FaStore, FaChartLine, FaTruck } from 'react-icons/fa';
 
 const AppPromotionSection = () => {
   return (

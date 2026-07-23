@@ -1,10 +1,10 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FileQuestion, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaArrowRight, FaHome } from "react-icons/fa";
 
 export default function NotFound() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4 py-8" dir="rtl">
       <motion.div

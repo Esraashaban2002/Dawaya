@@ -1,13 +1,11 @@
 import React, { useState, useRef, useMemo } from "react";
 import {
   Search, SlidersHorizontal, ChevronLeft, ChevronRight, Star,
-  MapPin, Clock, Phone, MessageSquare, Info, X, Share2,
-  CheckCircle, Globe, Award, ShieldCheck, Check, Eye, Compass, ChevronDown
+  MapPin, Clock, Phone, MessageSquare, Info, X,
+  Award, ShieldCheck, Check, Eye, Compass, ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
-const GOOGLE_MAPS_API_KEY = "";
 
 const predefinedLocations = [
   { name: "الدقي، الجيزة", lat: 30.0384, lng: 31.2101 },
@@ -368,13 +366,7 @@ export function PharmacyTheirs() {
     }
   };
 
-  const scrollPartners = (direction) => {
-    const container = partnersCarouselRef.current;
-    if (container) {
-      const scrollAmount = direction === "left" ? -250 : 250;
-      container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
+
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#fcfdfe] text-slate-800 font-sans pb-24 selection:bg-[#1ab5ea]/20 selection:text-[#1ab5ea]">
@@ -1111,11 +1103,11 @@ export function MapModal({ initialLocation, onConfirm, onClose }) {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [leafletLoaded, handleCoordsChange]);
+  }, [leafletLoaded, handleCoordsChange, selectedLoc.lat, selectedLoc.lng]);
 
   React.useEffect(() => {
     if (!searchQuery || searchQuery.trim().length < 3) {
-      setSearchResults([]);
+      setSearchResults((prev) => (prev.length > 0 ? [] : prev));
       return;
     }
 

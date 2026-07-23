@@ -64,7 +64,6 @@ function getHeaders() {
       );
       localStorage.removeItem("userToken");
       window.dispatchEvent(new Event("storage"));
-      token = null;
     } else if (isJWTExpired(token)) {
       console.warn(
         "Expired token detected. Clearing from localStorage:",
@@ -72,7 +71,6 @@ function getHeaders() {
       );
       localStorage.removeItem("userToken");
       window.dispatchEvent(new Event("storage"));
-      token = null;
     } else {
       headers["Authorization"] = `Bearer ${token}`;
     }
@@ -120,11 +118,11 @@ export const api = {
     if (!response.ok) {
       console.warn(`Profile fetch failed with status: ${response.status}`);
 
-      let errorData = {};
+      let errorData;
       try {
         const errorText = await response.text();
         errorData = errorText ? JSON.parse(errorText) : {};
-      } catch (e) {
+      } catch {
         errorData = { message: `HTTP Error ${response.status}` };
       }
 
@@ -177,11 +175,11 @@ export const api = {
     if (!response.ok) {
       console.warn(`Profile update failed with status: ${response.status}`);
       let errorText = "";
-      let errorData = {};
+      let errorData;
       try {
         errorText = await response.text();
         errorData = JSON.parse(errorText);
-      } catch (e) {
+      } catch {
         errorData = { message: errorText || `HTTP Error ${response.status}` };
       }
 
@@ -209,11 +207,11 @@ export const api = {
     if (!response.ok) {
       console.warn(`Password change failed with status: ${response.status}`);
       let errorText = "";
-      let errorData = {};
+      let errorData;
       try {
         errorText = await response.text();
         errorData = JSON.parse(errorText);
-      } catch (e) {
+      } catch {
         errorData = { message: errorText || `HTTP Error ${response.status}` };
       }
 
@@ -336,7 +334,9 @@ async function authFetch(url, options = {}) {
     try {
       const err = await res.json();
       msg = err.message || err.error || msg;
-    } catch (_) { }
+    } catch {
+      msg = `HTTP ${res.status}`;
+    }
     console.error(`[API] ${options.method || 'GET'} ${url} → ${res.status}:`, msg);
     throw new Error(msg);
   }

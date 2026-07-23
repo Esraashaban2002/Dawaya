@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function PharmacistRegister() {
   const navigate = useNavigate();
-  const [apiError, setApiError] = useState("");
+  const [_apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handelRegister(formValues) {

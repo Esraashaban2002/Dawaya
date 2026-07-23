@@ -117,17 +117,6 @@ export default function Prescription() {
     }
   }, [userLogin, navigate, setShowLoginModal]);
 
-  useEffect(() => {
-    if (location.state?.file) {
-      const file = location.state.file;
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setScanFinished(false);
-      setMatches([]);
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [activePreset, setActivePreset] = useState(null);
@@ -141,6 +130,17 @@ export default function Prescription() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [apiProducts, setApiProducts] = useState([]);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (location.state?.file) {
+      const file = location.state.file;
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setScanFinished(false);
+      setMatches([]);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchApiProducts = async () => {
@@ -391,7 +391,7 @@ export default function Prescription() {
   };
 
   const hasWord = (text, word) => {
-    const escaped = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const escaped = word.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
     return new RegExp('\\b' + escaped + '\\b', 'i').test(text);
   };
 

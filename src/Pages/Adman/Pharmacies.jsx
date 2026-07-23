@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     getPharmacies,
     createPharmacy,
@@ -43,7 +43,7 @@ export default function Pharmacies() {
     const [formError, setFormError] = useState('');
 
     /*  fetch  */
-    const fetchPharmacies = async () => {
+    const fetchPharmacies = useCallback(async () => {
         setLoading(true);
         try {
             const res = await getPharmacies({ page, limit: 10 });
@@ -56,9 +56,11 @@ export default function Pharmacies() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page]);
 
-    useEffect(() => { fetchPharmacies(); }, [page]);
+    useEffect(() => {
+        fetchPharmacies();
+    }, [fetchPharmacies]);
 
     /*  modal helpers  */
     const openCreate = () => {

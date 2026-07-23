@@ -2,8 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import hexPainImg from '../../assets/موفليكس-كريم-مساج-300x300.webp';
 import {
-  Clock, Store, ShieldCheck, Plus, Minus,
-  Share2, Heart, ShoppingCart, Check, ChevronLeft, Trash2
+  Plus, Minus,
+  Share2, Heart, ShoppingCart, Check, Trash2
 } from 'lucide-react';
 import { CartContext } from '../../Context/CartContext';
 import { FavoritesContext } from '../../Context/FavoritesContext';
@@ -146,7 +146,7 @@ export default function ProductDetails() {
 
   useEffect(() => {
     if (PRODUCTS_DB[id]) {
-      setProductData(PRODUCTS_DB[id]);
+      setProductData((prev) => (prev !== PRODUCTS_DB[id] ? PRODUCTS_DB[id] : prev));
       setLoading(false);
     } else {
       setLoading(true);
@@ -158,11 +158,10 @@ export default function ProductDetails() {
         .then((data) => {
           if (data.success && data.data) {
             const apiProd = data.data;
-            const cleanedDescription = cleanMedicineText(apiProd.description);
-            setProductData({
+            const cleanedDescription = cleanMedicineText(apiProd.description || "");
+            const formatted = {
               id: apiProd._id,
-              name: apiProd.name,
-              brand: apiProd.manufacturer || apiProd.genericName || 'عام',
+              name: cleanMedicineText(apiProd.arabicName || apiProd.englishName || "منتج بدون اسم"),
               price: apiProd.price,
               deliveryTime: "خلال 30-60 دقيقة",
               sellerName: "أقرب صيدلية",
@@ -182,7 +181,8 @@ export default function ProductDetails() {
                 { key: "الفئة", value: apiProd.subCategory || "غير محدد" },
                 { key: "يتطلب وصفة طبية", value: apiProd.requiresPrescription ? "نعم" : "لا" }
               ]
-            });
+            };
+            setProductData(formatted);
           } else {
             setProductData(PRODUCTS_DB["1"]);
           }

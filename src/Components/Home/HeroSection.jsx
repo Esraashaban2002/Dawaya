@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaCloudUploadAlt, FaWhatsapp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +27,6 @@ const HeroSection = () => {
     {
       image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop", 
       title: "صيدليتك الذكية",
-      image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&h=600&fit=crop",
       subtitle: "إدارة متكاملة للمخزون والطلبات"
     }
   ];
@@ -37,7 +36,7 @@ const HeroSection = () => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [slides.length]);
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50/50 to-white">

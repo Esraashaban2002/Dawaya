@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {
-  User, Shield, Lock, MoreVertical, Plus,
-  Home, Briefcase, Mail, Phone, Cake, CheckCircle,
-  Edit3, Trash2, ShoppingBag, Calendar, MapPin, CreditCard, Clock, ExternalLink
+  User, Shield, Lock,
+  Mail, Phone, Cake,
+  Edit3, ShoppingBag, MapPin, CreditCard, Clock
 } from 'lucide-react';
 
 import { UserContext } from '../../Context/UserContext';
@@ -13,6 +13,25 @@ import {
   ChangePasswordModal
 } from './Modals';
 import { Link, useLocation } from 'react-router-dom';
+
+const CheckCircleIcon = ({ checked }) => (
+  <div style={{
+    width: '14px',
+    height: '14px',
+    borderRadius: '50%',
+    border: checked ? 'none' : '1px solid #cbd5e1',
+    backgroundColor: checked ? 'var(--color-brand)' : 'transparent',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#ffffff',
+    fontSize: '8px',
+    fontWeight: 'bold',
+    lineHeight: 1
+  }}>
+    {checked && '✓'}
+  </div>
+);
 
 const INITIAL_PROFILE = {
   fullName: '',
@@ -49,7 +68,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab);
+      setActiveTab((prev) => (prev !== location.state.activeTab ? location.state.activeTab : prev));
     }
   }, [location.state]);
 
@@ -331,25 +350,6 @@ export default function UserProfile() {
       }, 1500);
     }
   };
-
-  const CheckCircleIcon = ({ checked }) => (
-    <div style={{
-      width: '14px',
-      height: '14px',
-      borderRadius: '50%',
-      border: checked ? 'none' : '1px solid #cbd5e1',
-      backgroundColor: checked ? 'var(--color-brand)' : 'transparent',
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#ffffff',
-      fontSize: '8px',
-      fontWeight: 'bold',
-      lineHeight: 1
-    }}>
-      {checked && '✓'}
-    </div>
-  );
 
   return (
     <div style={{ minHeight: '80vh', padding: '24px 0' }}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
@@ -16,7 +16,7 @@ const ProductsSection = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const pathname = useLocation().pathname;
-  const [toastMessage, setToastMessage] = useState(null);
+  const [_toastMessage, setToastMessage] = useState(null);
 
   const { cartItems, addToCart, removeFromCart, setShowLoginModal } = useContext(CartContext);
   const { toggleFavorite, isFavorite } = useContext(FavoritesContext);

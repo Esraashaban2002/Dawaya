@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getPharmacyProfile, updatePharmacyProfile } from '../../services/api';
 
 export default function PharmacyProfile() {
@@ -6,18 +6,13 @@ export default function PharmacyProfile() {
     name: '',
     address: '',
     phone: '',
-
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getPharmacyProfile();
@@ -38,7 +33,11 @@ export default function PharmacyProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });

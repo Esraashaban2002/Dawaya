@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Lock, MapPin, X } from 'lucide-react';
+import { User, Lock, MapPin, X } from 'lucide-react';
 
 export function EditProfileModal({ profile, onSave, onClose }) {
   const [formData, setFormData] = useState({ ...profile });
@@ -14,19 +14,19 @@ export function EditProfileModal({ profile, onSave, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    formData.fullName = formData.username;
+    const updated = { ...formData, fullName: formData.username };
 
-    if (formData.username.trim().length < 2) {
+    if (updated.username.trim().length < 2) {
       setValidationError('اسم المستخدم يجب ألا يقل عن حرفين');
       return;
     }
-    if (formData.username.trim().length > 12) {
+    if (updated.username.trim().length > 12) {
       setValidationError('اسم المستخدم يجب ألا يزيد عن 12 حرفاً');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
+    if (!emailRegex.test(updated.email)) {
       setValidationError('البريد الإلكتروني غير صحيح');
       return;
     }

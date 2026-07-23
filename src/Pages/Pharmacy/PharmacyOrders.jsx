@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   getPharmacyOrders,
   updatePharmacyOrderStatus,
@@ -17,11 +17,7 @@ export default function PharmacyOrders() {
   const [sortBy, setSortBy] = useState("date");
   const [sortOrder, setSortOrder] = useState("desc");
 
-  useEffect(() => {
-    fetchOrders();
-  }, [currentPage, statusFilter]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const params = { page: currentPage, limit };
@@ -39,7 +35,11 @@ export default function PharmacyOrders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit, statusFilter]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const updateStatus = async (orderId, newStatus) => {
     setUpdatingId(orderId);

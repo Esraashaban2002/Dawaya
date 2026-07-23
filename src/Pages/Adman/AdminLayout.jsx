@@ -22,7 +22,6 @@ const navItems = [
 ];
 
 export default function AdminLayout() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
@@ -154,7 +153,6 @@ export default function AdminLayout() {
         <div className="px-2 py-4" style={{ borderTop: '1px solid var(--color-border)' }}>
           <button
             onClick={() => {
-              setMenuOpen(false);
               handleLogout();
             }}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm w-full transition-all"

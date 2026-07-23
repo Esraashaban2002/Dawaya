@@ -1,5 +1,5 @@
 // src/pages/Contact.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const Contact = () => {
@@ -29,7 +29,7 @@ const Contact = () => {
       } else {
         setError(data.message || 'حدث خطأ، حاول مرة أخرى');
       }
-    } catch (err) {
+    } catch {
       setError('فشل الاتصال بالخادم');
     } finally {
       setIsLoading(false);

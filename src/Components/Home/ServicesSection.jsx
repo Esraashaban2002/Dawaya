@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { FaTruck, FaPills, FaClipboardList, FaHeadset } from 'react-icons/fa';

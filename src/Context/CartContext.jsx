@@ -17,7 +17,7 @@ export default function CartContextProvider({ children }) {
 
   useEffect(() => {
     if (!userLogin) {
-      setCartItems([]);
+      setCartItems((prev) => (prev.length > 0 ? [] : prev));
       localStorage.removeItem("cartItems");
     }
   }, [userLogin]);
@@ -27,7 +27,7 @@ export default function CartContextProvider({ children }) {
       localStorage.setItem("cartItems", JSON.stringify(cartItems));
     }
     const totalCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-    setCartCount(totalCount);
+    setCartCount((prev) => (prev !== totalCount ? totalCount : prev));
   }, [cartItems, userLogin]);
 
   const addToCart = (product, quantity) => {

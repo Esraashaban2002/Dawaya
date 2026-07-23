@@ -14,7 +14,7 @@ export default function Register() {
   async function handleRegister(formValues) {
     setIsLoading(true);
 
-    let { rePassword, age, ...dataToSend } = formValues;
+    let { rePassword: _rePassword, age: _age, ...dataToSend } = formValues;
 
     try {
       let { data } = await axios.post(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getPharmacyStats, getPharmacyOrders } from "../../services/api";
 import {
   LineChart,
@@ -10,6 +10,14 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import {
+  ShoppingBag,
+  Clock,
+  PackageCheck,
+  AlertTriangle,
+  TrendingUp,
+  Award,
+} from "lucide-react";
 
 export default function PharmacyDashboard() {
   const [stats, setStats] = useState({
@@ -18,31 +26,16 @@ export default function PharmacyDashboard() {
     totalStock: 0,
     lowStock: 0,
   });
+
   const [loadingStats, setLoadingStats] = useState(true);
-
-  const [allOrders, setAllOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
-
-  const [chartPeriod, setChartPeriod] = useState("week");
+  const [allOrders, setAllOrders] = useState([]);
   const [chartData, setChartData] = useState([]);
-
   const [topMedicines, setTopMedicines] = useState([]);
-
+  const [chartPeriod, setChartPeriod] = useState("month");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchStats();
-    fetchAllOrders();
-  }, []);
-
-  useEffect(() => {
-    if (allOrders.length > 0) {
-      generateChartData(chartPeriod);
-      generateTopMedicines();
-    }
-  }, [chartPeriod, allOrders]);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoadingStats(true);
       const response = await getPharmacyStats();
@@ -59,9 +52,9 @@ export default function PharmacyDashboard() {
     } finally {
       setLoadingStats(false);
     }
-  };
+  }, []);
 
-  const fetchAllOrders = async () => {
+  const fetchAllOrders = useCallback(async () => {
     try {
       setLoadingOrders(true);
 
@@ -85,20 +78,20 @@ export default function PharmacyDashboard() {
     } finally {
       setLoadingOrders(false);
     }
-  };
+  }, []);
 
-  const generateChartData = (period) => {
+  const generateChartData = useCallback((period) => {
     if (allOrders.length === 0) {
       setChartData([]);
       return;
     }
 
     const now = new Date();
-    let filteredOrders = [];
+    let filteredOrders;
     let groupBy;
 
     switch (period) {
-      case "week":
+      case "week": {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(now.getDate() - 7);
         filteredOrders = allOrders.filter(
@@ -106,7 +99,8 @@ export default function PharmacyDashboard() {
         );
         groupBy = "day";
         break;
-      case "month":
+      }
+      case "month": {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(now.getDate() - 30);
         filteredOrders = allOrders.filter(
@@ -114,7 +108,8 @@ export default function PharmacyDashboard() {
         );
         groupBy = "day";
         break;
-      case "6months":
+      }
+      case "6months": {
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(now.getMonth() - 6);
         filteredOrders = allOrders.filter(
@@ -122,7 +117,8 @@ export default function PharmacyDashboard() {
         );
         groupBy = "month";
         break;
-      case "year":
+      }
+      case "year": {
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(now.getFullYear() - 1);
         filteredOrders = allOrders.filter(
@@ -130,9 +126,12 @@ export default function PharmacyDashboard() {
         );
         groupBy = "month";
         break;
-      default:
+      }
+      default: {
         filteredOrders = allOrders;
         groupBy = "day";
+        break;
+      }
     }
 
     const salesMap = new Map();
@@ -159,9 +158,9 @@ export default function PharmacyDashboard() {
 
     chartArray.sort((a, b) => new Date(a.name) - new Date(b.name));
     setChartData(chartArray);
-  };
+  }, [allOrders]);
 
-  const generateTopMedicines = () => {
+  const generateTopMedicines = useCallback(() => {
     const medicineSales = new Map();
 
     allOrders.forEach((order) => {
@@ -186,7 +185,19 @@ export default function PharmacyDashboard() {
       .sort((a, b) => b.salesCount - a.salesCount)
       .slice(0, 10);
     setTopMedicines(sorted);
-  };
+  }, [allOrders]);
+
+  useEffect(() => {
+    fetchStats();
+    fetchAllOrders();
+  }, [fetchStats, fetchAllOrders]);
+
+  useEffect(() => {
+    if (allOrders.length > 0) {
+      generateChartData(chartPeriod);
+      generateTopMedicines();
+    }
+  }, [chartPeriod, allOrders, generateChartData, generateTopMedicines]);
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {

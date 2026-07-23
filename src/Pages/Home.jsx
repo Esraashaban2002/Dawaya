@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect, useContext } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import HeroSection from '../Components/Home/HeroSection';
@@ -8,32 +8,36 @@ import HowItWorksSection from '../Components/Home/HowItWorksSection';
 import ProductsSection from '../Components/Home/ProductsSection';
 import PharmacyLogosSection from '../Components/Home/PharmacyLogosSection';
 import AppPromotionSection from '../Components/Home/AppPromotionSection';
-import FeaturesSection from '../Components/Home/FeaturesSection';
 import FAQSection from '../Components/Home/FAQSection';
+import { UserContext } from '../Context/UserContext';
 
 const Home = () => {
   const { hash } = useLocation();
+  const { setUserLogin } = useContext(UserContext);
 
   useEffect(() => {
-  const getCookie = (name) => {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
-  };
+    const getCookie = (name) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : null;
+    };
 
-  const token = getCookie('token');
-  if (token) {
-    localStorage.setItem('token', token);
-    document.cookie = 'token=; Max-Age=0; path=/';
+    const token = getCookie('token');
+    if (token) {
+      localStorage.setItem('userToken', token);
+      document.cookie = 'token=; Max-Age=0; path=/';
 
-    fetch("https://dawaya-back-end.vercel.app/api/auth/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setUser(data.user);
-      });
-  }
-}, []);
+      fetch("https://dawaya-back-end.vercel.app/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.user) {
+            setUserLogin(token);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [setUserLogin]);
 
   useEffect(() => {
     if (hash) {

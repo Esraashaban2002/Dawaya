@@ -32,7 +32,7 @@ const getUserId = (req) => {
                     userId = payload.id || payload._id || payload.userId;
                 }
             }
-        } catch (e) {
+        } catch {
             console.log("Token parsing failed, using default mock user ID");
         }
     }

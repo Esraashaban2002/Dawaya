@@ -216,7 +216,7 @@ export default function Dashboard() {
                 align="center"
                 iconType="circle"
                 wrapperStyle={{ paddingTop: '10px' }}
-                formatter={(value, entry) => {
+                formatter={(value) => {
                   const item = roleData.find(d => d.name === value);
                   let labelName = value;
                   if (value === 'Users') labelName = 'عملاء';
@@ -289,7 +289,7 @@ export default function Dashboard() {
                 align="center"
                 iconType="circle"
                 wrapperStyle={{ paddingTop: '10px' }}
-                formatter={(value, entry) => {
+                formatter={(value) => {
                   const item = roleData.find(d => d.name === value);
                   let labelName = value;
                   if (value === 'Users') labelName = 'عملاء';

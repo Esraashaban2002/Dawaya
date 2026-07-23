@@ -30,7 +30,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const query = new URLSearchParams(urlSearch).get("search") || "";
-    setSearch(query);
+    setSearch((prev) => (prev !== query ? query : prev));
   }, [urlSearch]);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setImgError(false);
+    setImgError((prev) => (prev !== false ? false : prev));
     if (userLogin) {
       const email = localStorage.getItem("dawaya_current_email") || "";
       const users = JSON.parse(localStorage.getItem("dawaya_users") || "[]");

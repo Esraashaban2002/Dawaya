@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   getPharmacyStock,
   addPharmacyStockItem,
@@ -27,11 +27,7 @@ export default function PharmacyStock() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    fetchStock();
-  }, []);
-
-  const fetchStock = async () => {
+  const fetchStock = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getPharmacyStock();
@@ -49,7 +45,11 @@ export default function PharmacyStock() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchStock();
+  }, [fetchStock]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
