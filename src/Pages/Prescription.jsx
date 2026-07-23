@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { CartContext } from '../Context/CartContext';
 import { UserContext } from '../Context/UserContext';
+import { savePrescription } from '../services/api';
 import axios from 'axios';
 import Tesseract from 'tesseract.js';
 import hexPainImg from '../assets/موفليكس-كريم-مساج-300x300.webp';
@@ -244,8 +245,24 @@ export default function Prescription() {
           setTimeout(() => {
             setIsScanning(false);
             setScanFinished(true);
-            setMatches(activePreset.matches.map(m => ({ ...m })));
+            const matchesToSet = activePreset.matches.map(m => ({ ...m }));
+            setMatches(matchesToSet);
             triggerToast('اكتمل مسح الروشتة بنجاح وتمت مطابقة الأدوية!', 'success');
+
+            // Save to Prescription History
+            savePrescription({
+              scannedImageUrl: activePreset.imageUrl || "",
+              doctorName: activePreset.doctor || "د. أحمد كمال",
+              patientName: activePreset.patient || "مريض Dawaya",
+              dateIssued: activePreset.date ? new Date(activePreset.date) : new Date(),
+              medications: matchesToSet.map(m => ({
+                productId: m.product ? (m.product._id || m.product.id) : null,
+                name: m.detectedName || m.product?.name || "دواء غير مسمى",
+                matchedName: m.product ? m.product.name : (m.detectedName || ""),
+                dosageInstructions: "حسب إرشادات الطبيب",
+                quantity: m.quantity || 1
+              }))
+            }).catch(e => console.error("Failed to save prescription history:", e));
           }, 400);
         }
       }, cumulativeTime);
@@ -322,6 +339,21 @@ export default function Prescription() {
         setScanFinished(true);
         setMatches(matchedResults);
         triggerToast('اكتمل مسح الروشتة بنجاح وتمت مطابقة الأدوية!', 'success');
+
+        // Save to Prescription History
+        savePrescription({
+          scannedImageUrl: previewUrl || "",
+          doctorName: "د. أحمد كمال",
+          patientName: "مريض Dawaya",
+          dateIssued: new Date(),
+          medications: matchedResults.map(m => ({
+            productId: m.product ? (m.product._id || m.product.id) : null,
+            name: m.detectedName || m.product?.name || "دواء غير مسمى",
+            matchedName: m.product ? m.product.name : (m.detectedName || ""),
+            dosageInstructions: "حسب إرشادات الطبيب",
+            quantity: m.quantity || 1
+          }))
+        }).catch(e => console.error("Failed to save prescription history:", e));
       }, 800);
 
     } catch (error) {
@@ -395,6 +427,16 @@ export default function Prescription() {
     return new RegExp('\\b' + escaped + '\\b', 'i').test(text);
   };
 
+  const cleanDetectedName = (rawLine, fallbackProductName) => {
+    if (!rawLine) return fallbackProductName;
+    let mainName = rawLine.split(/[-:(]/)[0].trim();
+    mainName = mainName.replace(/[^\w\s\u0600-\u06FF.]/gi, '').trim();
+    if (mainName.length < 3) {
+      return fallbackProductName;
+    }
+    return mainName;
+  };
+
   const matchOcrTextToProducts = (ocrText) => {
     const ocrTextLower = ocrText.toLowerCase();
     const matched = [];
@@ -448,7 +490,7 @@ export default function Prescription() {
       
       if (highestScore >= 70) {
         matched.push({
-          detectedName: matchedLine || product.name,
+          detectedName: cleanDetectedName(matchedLine, product.name),
           product: product,
           confidence: `${Math.round(highestScore)}%`,
           score: highestScore,
@@ -500,7 +542,7 @@ export default function Prescription() {
           });
           
           matched.push({
-            detectedName: bestLine || product.name,
+            detectedName: cleanDetectedName(bestLine, product.name),
             product: product,
             confidence: `${Math.round(score)}%`,
             score: score,
@@ -542,7 +584,7 @@ export default function Prescription() {
             });
             
             matched.push({
-              detectedName: bestLine ? `مستخلص من: ${bestLine}` : `بديل فعال: ${product.name}`,
+              detectedName: cleanDetectedName(bestLine, product.name),
               product: product,
               confidence: `${Math.round(score)}%`,
               score: score,
@@ -758,14 +800,24 @@ export default function Prescription() {
         </nav>
 
         <div className="cart-items-card animate-fade-in p-4 sm:p-8">
-          <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '28px' }}>
-            <h1 className="cart-title" style={{ fontSize: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Sparkles style={{ color: 'var(--color-primary)' }} />
-              مسح الروشتة الطبية وتوفير العلاج
-            </h1>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '6px' }}>
-              ارفع صورة روشتة طبيبك، وسيقوم نظامنا الذكي بقراءة المكونات ومطابقتها فوراً مع الأدوية في صيدليتنا لتطلبها بضغطة زر واحدة.
-            </p>
+          <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '28px' }} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="cart-title" style={{ fontSize: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Sparkles style={{ color: 'var(--color-primary)' }} />
+                مسح الروشتة الطبية وتوفير العلاج
+              </h1>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '6px' }}>
+                ارفع صورة روشتة طبيبك، وسيقوم نظامنا الذكي بقراءة المكونات ومطابقتها فوراً مع الأدوية في صيدليتنا لتطلبها بضغطة زر واحدة.
+              </p>
+            </div>
+
+            <Link
+              to="/prescriptions-history"
+              className="inline-flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-[#10b981] border border-emerald-200 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm transition-all whitespace-nowrap self-start sm:self-auto"
+            >
+              <FileText className="w-4 h-4" />
+              <span>روشتاتي السابقة</span>
+            </Link>
           </div>
 
           <div className="grid grid-cols-12 gap-8">

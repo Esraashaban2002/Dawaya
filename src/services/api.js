@@ -543,3 +543,108 @@ export const getTopMedicines = async (limit = 10) => {
   const json = await res.json();
   return json.data;
 };
+
+// PRESCRIPTIONS API CLIENT
+
+export const savePrescription = async (prescriptionData) => {
+  try {
+    const res = await fetch(`${BASE_URL}/prescriptions`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(prescriptionData),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json.data;
+    }
+  } catch (err) {
+    console.warn("API savePrescription failed, saving locally:", err);
+  }
+  const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+  const newItem = {
+    _id: `local_${Date.now()}`,
+    ...prescriptionData,
+    createdAt: new Date().toISOString()
+  };
+  localItems.unshift(newItem);
+  localStorage.setItem('dawaya_prescriptions', JSON.stringify(localItems));
+  return newItem;
+};
+
+export const getUserPrescriptions = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/prescriptions`, {
+      headers: getHeaders(),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json.data || [];
+    }
+  } catch (err) {
+    console.warn("API getUserPrescriptions failed, loading local items:", err);
+  }
+  const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+  return localItems;
+};
+
+export const getPrescriptionById = async (id) => {
+  try {
+    const res = await fetch(`${BASE_URL}/prescriptions/${id}`, {
+      headers: getHeaders(),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      return json.data;
+    }
+  } catch (err) {
+    console.warn("API getPrescriptionById failed:", err);
+  }
+  const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+  return localItems.find(p => p._id === id) || null;
+};
+
+export const reorderPrescription = async (id) => {
+  try {
+    const res = await fetch(`${BASE_URL}/prescriptions/${id}/reorder`, {
+      method: "POST",
+      headers: getHeaders(),
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn("API reorderPrescription failed, performing local fallback:", err);
+  }
+
+  const prescription = await getPrescriptionById(id);
+  if (!prescription) throw new Error("الروشتة غير موجودة");
+
+  const addedToCart = [];
+  const outOfStock = [];
+
+  (prescription.medications || []).forEach((med, idx) => {
+    if (med.quantity <= 0 || (med.name && med.name.includes("غير متوفر"))) {
+      outOfStock.push({
+        productId: med.productId || null,
+        name: med.matchedName || med.name,
+        reason: "المنتج غير متوفر في المخزون حالياً"
+      });
+    } else {
+      addedToCart.push({
+        id: med.productId || `med_${idx}_${Date.now()}`,
+        productId: med.productId || null,
+        name: med.matchedName || med.name,
+        quantity: med.quantity || 1,
+        dosageInstructions: med.dosageInstructions || "",
+        price: med.price || 45
+      });
+    }
+  });
+
+  return {
+    success: true,
+    addedToCart,
+    outOfStock,
+    message: `تم إضافة ${addedToCart.length} منتجات إلى السلة`
+  };
+};

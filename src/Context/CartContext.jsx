@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useContext } from "react";
 import { UserContext } from "./UserContext";
 
 export const CartContext = createContext();
+export const useCart = () => useContext(CartContext);
 
 export default function CartContextProvider({ children }) {
   const { userLogin } = useContext(UserContext);

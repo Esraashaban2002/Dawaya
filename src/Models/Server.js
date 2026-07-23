@@ -4,6 +4,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import Reminder from './Reminder.js';
 import User from './User.js';
+import Prescription from './Prescription.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -188,6 +189,103 @@ app.get('/api/user/profile', async (req, res) => {
         });
     } catch (error) {
         console.error("GET /api/user/profile failed:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PRESCRIPTION API ROUTES
+
+app.post('/api/prescriptions', async (req, res) => {
+    try {
+        const userId = getUserId(req);
+        const { scannedImageUrl, doctorName, patientName, dateIssued, medications } = req.body;
+
+        const newPrescription = new Prescription({
+            userId,
+            scannedImageUrl: scannedImageUrl || "",
+            doctorName: doctorName || "دكتور غير محدد",
+            patientName: patientName || "مريض غير محدد",
+            dateIssued: dateIssued ? new Date(dateIssued) : new Date(),
+            medications: Array.isArray(medications) ? medications : [],
+            createdAt: new Date()
+        });
+
+        await newPrescription.save();
+        console.log("Saved new prescription to database:", newPrescription._id);
+        res.status(201).json({ success: true, data: newPrescription });
+    } catch (error) {
+        console.error("POST /api/prescriptions failed:", error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/prescriptions', async (req, res) => {
+    try {
+        const userId = getUserId(req);
+        const prescriptions = await Prescription.find({ userId }).sort({ createdAt: -1 });
+        res.json({ success: true, data: prescriptions });
+    } catch (error) {
+        console.error("GET /api/prescriptions failed:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/prescriptions/:id', async (req, res) => {
+    try {
+        const userId = getUserId(req);
+        const { id } = req.params;
+        const prescription = await Prescription.findOne({ _id: id, userId });
+        if (!prescription) {
+            return res.status(404).json({ success: false, message: "Prescription not found" });
+        }
+        res.json({ success: true, data: prescription });
+    } catch (error) {
+        console.error("GET /api/prescriptions/:id failed:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/prescriptions/:id/reorder', async (req, res) => {
+    try {
+        const userId = getUserId(req);
+        const { id } = req.params;
+        const prescription = await Prescription.findOne({ _id: id, userId });
+        if (!prescription) {
+            return res.status(404).json({ success: false, message: "Prescription not found" });
+        }
+
+        const addedToCart = [];
+        const outOfStock = [];
+
+        for (const med of prescription.medications) {
+            // Check stock and status of item
+            const isOutOfStock = med.quantity <= 0 || med.name.includes("غير متوفر");
+            if (isOutOfStock) {
+                outOfStock.push({
+                    productId: med.productId || null,
+                    name: med.matchedName || med.name,
+                    reason: "المنتج غير متوفر في المخزون حالياً"
+                });
+            } else {
+                addedToCart.push({
+                    id: med.productId ? med.productId.toString() : String(med._id || Math.random()),
+                    productId: med.productId || null,
+                    name: med.matchedName || med.name,
+                    quantity: med.quantity || 1,
+                    dosageInstructions: med.dosageInstructions || "",
+                    price: 45 // Default/mock price if not specified
+                });
+            }
+        }
+
+        res.json({
+            success: true,
+            addedToCart,
+            outOfStock,
+            message: `تم إضافة ${addedToCart.length} منتجات إلى السلة`
+        });
+    } catch (error) {
+        console.error("POST /api/prescriptions/:id/reorder failed:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 });

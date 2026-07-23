@@ -33,6 +33,7 @@ import PharmacyProfile from "./Pages/Pharmacy/PharmacyProfile";
 import PharmacyStock from "./Pages/Pharmacy/PharmacyStock";
 import PharmacyOrders from "./Pages/Pharmacy/PharmacyOrders";
 import Prescription from './Pages/Prescription';
+import PrescriptionHistory from './Pages/PrescriptionHistory';
 import Reminders from './Pages/Reminders';
 import AdminLayout from './Pages/Adman/AdminLayout';
 import AuthCallback from "./Pages/AuthCallback";
@@ -79,6 +80,14 @@ function App() {
         {
           path: "/prescription",
           element: <Prescription />
+        },
+        {
+          path: "/prescriptions-history",
+          element: <PrescriptionHistory />
+        },
+        {
+          path: "/prescriptions",
+          element: <PrescriptionHistory />
         },
         {
           path: "/reminders",
