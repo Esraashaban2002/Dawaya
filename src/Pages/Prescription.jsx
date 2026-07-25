@@ -218,6 +218,40 @@ export default function Prescription() {
     }
   };
 
+const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none"><rect width="400" height="300" rx="16" fill="%23f8fafc"/><rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="%23e2e8f0" stroke-width="2"/><path d="M50 60h120M50 90h260M50 120h220M50 150h240M50 180h180" stroke="%23cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="50" y="230" fill="%231ab5ea" font-family="sans-serif" font-size="28" font-weight="bold">Rx</text></svg>`;
+
+const compressImageToBase64 = (file, maxWidth = 800, quality = 0.7) => {
+  return new Promise((resolve) => {
+    if (!file) return resolve("");
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve("");
+  });
+};
+
   const runPresetSimulation = () => {
     setIsScanning(true);
     setScanStep(0);
@@ -251,7 +285,7 @@ export default function Prescription() {
 
             // Save to Prescription History
             savePrescription({
-              scannedImageUrl: activePreset.imageUrl || "",
+              scannedImageUrl: activePreset.imageUrl || DEFAULT_PRESCRIPTION_IMAGE,
               doctorName: activePreset.doctor || "د. أحمد كمال",
               patientName: activePreset.patient || "مريض Dawaya",
               dateIssued: activePreset.date ? new Date(activePreset.date) : new Date(),
@@ -333,27 +367,29 @@ export default function Prescription() {
       setScanStep(4);
 
       const matchedResults = matchOcrTextToProducts(ocrText);
+      const persistentImage = await compressImageToBase64(imageFile);
+
+      // Save to Prescription History immediately
+      savePrescription({
+        scannedImageUrl: persistentImage || previewUrl || DEFAULT_PRESCRIPTION_IMAGE,
+        doctorName: "د. أحمد كمال",
+        patientName: "مريض Dawaya",
+        dateIssued: new Date().toISOString(),
+        medications: matchedResults.map(m => ({
+          productId: m.product ? (m.product._id || m.product.id) : null,
+          name: m.detectedName || m.product?.name || "دواء غير مسمى",
+          matchedName: m.product ? m.product.name : (m.detectedName || ""),
+          dosageInstructions: "حسب إرشادات الطبيب",
+          quantity: m.quantity || 1,
+          price: m.product?.price || 45
+        }))
+      }).catch(e => console.error("Failed to save prescription history:", e));
 
       setTimeout(() => {
         setIsScanning(false);
         setScanFinished(true);
         setMatches(matchedResults);
-        triggerToast('اكتمل مسح الروشتة بنجاح وتمت مطابقة الأدوية!', 'success');
-
-        // Save to Prescription History
-        savePrescription({
-          scannedImageUrl: previewUrl || "",
-          doctorName: "د. أحمد كمال",
-          patientName: "مريض Dawaya",
-          dateIssued: new Date(),
-          medications: matchedResults.map(m => ({
-            productId: m.product ? (m.product._id || m.product.id) : null,
-            name: m.detectedName || m.product?.name || "دواء غير مسمى",
-            matchedName: m.product ? m.product.name : (m.detectedName || ""),
-            dosageInstructions: "حسب إرشادات الطبيب",
-            quantity: m.quantity || 1
-          }))
-        }).catch(e => console.error("Failed to save prescription history:", e));
+        triggerToast('اكتمل مسح الروشتة بنجاح وحفظها في السجل!', 'success');
       }, 800);
 
     } catch (error) {
@@ -427,13 +463,62 @@ export default function Prescription() {
     return new RegExp('\\b' + escaped + '\\b', 'i').test(text);
   };
 
-  const cleanDetectedName = (rawLine, fallbackProductName) => {
-    if (!rawLine) return fallbackProductName;
+  const cleanDetectedName = (rawLine, fallbackProductName, matchedProduct) => {
+    const prod = matchedProduct || {};
+    const prodName = prod.name || fallbackProductName || "";
+    
+    if (!rawLine) return prodName;
+
+    // Check for common English brand names in rawLine or genericName
+    const brandPatterns = [
+      { regex: /panadol(?:\s*extra|\s*actifast|\s*advance)?/i, name: "Panadol Extra" },
+      { regex: /augmentin/i, name: "Augmentin" },
+      { regex: /brufen/i, name: "Brufen" },
+      { regex: /zyrtec/i, name: "Zyrtec" },
+      { regex: /aspirin/i, name: "Aspirin" },
+      { regex: /vitamin\s*c/i, name: "Vitamin C" },
+      { regex: /amoxil/i, name: "Amoxil" },
+      { regex: /cataflam/i, name: "Cataflam" },
+      { regex: /congestal/i, name: "Congestal" },
+      { regex: /comtrex|contrex/i, name: "Comtrex" },
+      { regex: /euthyrox/i, name: "Euthyrox" },
+      { regex: /glucophage/i, name: "Glucophage" }
+    ];
+
+    const matchedBrand = brandPatterns.find(p => p.regex.test(rawLine));
+    
+    // Extract dosage if present (e.g. 500mg, 1g, 400mg, 10mg)
+    const dosageMatch = rawLine.match(/(\d+\s*(?:mg|g|mcg|ml|iu|gm)\b)/i) || (prodName.match(/(\d+\s*(?:مجم|جم|جرام|ملجم|ميكروجرام)\b)/i));
+    let dosage = dosageMatch ? dosageMatch[1].replace(/\s+/, '') : '';
+    if (dosage === '1جم' || dosage === '1جرام') dosage = '1g';
+    if (dosage === '500مجم' || dosage === '500ملجم') dosage = '500mg';
+    if (dosage === '400مجم') dosage = '400mg';
+    if (dosage === '10مجم') dosage = '10mg';
+
+    if (matchedBrand) {
+      let cleanTitle = matchedBrand.name;
+      if (dosage && !cleanTitle.toLowerCase().includes(dosage.toLowerCase())) {
+        cleanTitle += ` ${dosage}`;
+      }
+      return cleanTitle;
+    }
+
+    // Check if matchedProduct name has English equivalent or brand
+    if (prodName.includes("بانادول")) return dosage ? `Panadol Extra ${dosage}` : "Panadol Extra 500mg";
+    if (prodName.includes("أوجمنتين") || prodName.includes("اوجمنتين")) return dosage ? `Augmentin ${dosage}` : "Augmentin 1g";
+    if (prodName.includes("بروفين")) return dosage ? `Brufen ${dosage}` : "Brufen 400mg";
+    if (prodName.includes("زيرتك") || prodName.includes("زيرتيك")) return dosage ? `Zyrtec ${dosage}` : "Zyrtec 10mg";
+
     let mainName = rawLine.split(/[-:(]/)[0].trim();
     mainName = mainName.replace(/[^\w\s\u0600-\u06FF.]/gi, '').trim();
-    if (mainName.length < 3) {
-      return fallbackProductName;
+
+    const words = mainName.split(/\s+/);
+    const isGarbage = words.some(w => w.length > 10 && !/^\d+$/.test(w)) || words.length > 5;
+
+    if (mainName.length < 3 || isGarbage) {
+      return prodName;
     }
+
     return mainName;
   };
 
@@ -490,7 +575,7 @@ export default function Prescription() {
       
       if (highestScore >= 70) {
         matched.push({
-          detectedName: cleanDetectedName(matchedLine, product.name),
+          detectedName: cleanDetectedName(matchedLine, product.name, product),
           product: product,
           confidence: `${Math.round(highestScore)}%`,
           score: highestScore,
@@ -502,7 +587,7 @@ export default function Prescription() {
       
       if (prodNameLower.length > 4 && ocrTextLower.includes(prodNameLower)) {
         matched.push({
-          detectedName: product.name,
+          detectedName: cleanDetectedName(product.name, product.name, product),
           product: product,
           confidence: "99%",
           score: 100,
@@ -542,7 +627,7 @@ export default function Prescription() {
           });
           
           matched.push({
-            detectedName: cleanDetectedName(bestLine, product.name),
+            detectedName: cleanDetectedName(bestLine, product.name, product),
             product: product,
             confidence: `${Math.round(score)}%`,
             score: score,
@@ -584,7 +669,7 @@ export default function Prescription() {
             });
             
             matched.push({
-              detectedName: cleanDetectedName(bestLine, product.name),
+              detectedName: cleanDetectedName(bestLine, product.name, product),
               product: product,
               confidence: `${Math.round(score)}%`,
               score: score,
@@ -663,47 +748,6 @@ export default function Prescription() {
       return hasValidWord;
     };
 
-    lines.forEach(line => {
-      if (!isDrugLine(line)) return;
-
-      const lineLower = line.toLowerCase();
-      const isAlreadyMatched = uniqueMatches.some(item => {
-        if (!item.product) return false;
-        const prodNameLower = item.product.name.toLowerCase();
-        const detectedLower = item.detectedName.toLowerCase();
-        
-        if (lineLower.includes(prodNameLower) || prodNameLower.includes(lineLower) ||
-            lineLower.includes(detectedLower) || detectedLower.includes(lineLower)) {
-          return true;
-        }
-
-        const aliases = getProductEnglishAliases(item.product);
-        if (aliases.some(alias => lineLower.includes(alias))) {
-          return true;
-        }
-
-        const lineWords = lineLower.split(/\s+/).filter(w => w.length > 3);
-        const prodWords = prodNameLower.split(/\s+/).filter(w => w.length > 3);
-        const commonWords = lineWords.filter(w => prodWords.includes(w));
-        if (commonWords.length > 0 && commonWords.length >= Math.min(lineWords.length, prodWords.length) * 0.5) {
-          return true;
-        }
-
-        return false;
-      });
-
-      if (!isAlreadyMatched) {
-        uniqueMatches.push({
-          detectedName: line,
-          product: null,
-          confidence: "0%",
-          score: 0,
-          quantity: 1,
-          selected: false
-        });
-      }
-    });
-    
     return uniqueMatches;
   };
 
@@ -813,9 +857,9 @@ export default function Prescription() {
 
             <Link
               to="/prescriptions-history"
-              className="inline-flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-[#10b981] border border-emerald-200 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm transition-all whitespace-nowrap self-start sm:self-auto"
+              className="inline-flex items-center gap-2 bg-[#e0f7ff] hover:bg-[#cceeff] text-[#1ab5ea] border border-[#1ab5ea]/30 px-4 py-2.5 rounded-2xl font-bold text-xs shadow-sm transition-all whitespace-nowrap self-start sm:self-auto"
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-4 h-4 text-[#1ab5ea]" />
               <span>روشتاتي السابقة</span>
             </Link>
           </div>
@@ -1174,46 +1218,21 @@ export default function Prescription() {
                             </div>
                           );
                         })}
-
-                        {matches.some(item => item.product === null) && (
-                          <div style={{
-                            background: '#fee2e2',
-                            border: '1px solid #fca5a5',
-                            borderRadius: '12px',
-                            padding: '12px 16px',
-                            color: '#b91c1c',
-                            fontSize: '13px',
-                            fontWeight: 'bold',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px',
-                            marginTop: '4px'
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <AlertCircle size={16} />
-                              <span>the rest dont match</span>
-                            </div>
-                            <ul style={{ margin: '0 0 0 24px', padding: 0, listStyleType: 'disc', fontSize: '12px', opacity: 0.9 }}>
-                              {matches.filter(item => item.product === null).map((item, idx) => (
-                                <li key={idx}>{item.detectedName}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
                       </>
                     ) : (
-                      <div style={{
-                        background: '#fee2e2',
-                        border: '1px solid #fca5a5',
-                        borderRadius: '12px',
-                        padding: '16px',
-                        color: '#b91c1c',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        fontFamily: 'Cairo, sans-serif'
-                      }}>
-                        no match
+                      <div 
+                        className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-6 text-center space-y-3 text-rose-900 shadow-sm"
+                        dir="rtl"
+                      >
+                        <div className="w-12 h-12 bg-rose-100 rounded-2xl flex items-center justify-center text-rose-600 mx-auto">
+                          <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <h4 className="font-black text-sm text-rose-950">لم يتم العثور على أدوية مطابقة في قاعدة البيانات</h4>
+                          <p className="text-xs text-rose-700 font-semibold leading-relaxed max-w-md mx-auto">
+                            تأكد من وضوح صورة الروشتة ومقروئية الخط، أو يسعدنا مساعدتك عند التواصل المباشر مع الصيدلي.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>

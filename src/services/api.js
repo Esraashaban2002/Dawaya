@@ -547,44 +547,159 @@ export const getTopMedicines = async (limit = 10) => {
 // PRESCRIPTIONS API CLIENT
 
 export const savePrescription = async (prescriptionData) => {
-  try {
-    const res = await fetch(`${BASE_URL}/prescriptions`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify(prescriptionData),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data;
-    }
-  } catch (err) {
-    console.warn("API savePrescription failed, saving locally:", err);
-  }
-  const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
   const newItem = {
-    _id: `local_${Date.now()}`,
+    _id: `prescription_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     ...prescriptionData,
     createdAt: new Date().toISOString()
   };
-  localItems.unshift(newItem);
-  localStorage.setItem('dawaya_prescriptions', JSON.stringify(localItems));
+
+  // 1. Save immediately to localStorage synchronously
+  try {
+    let localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+    localItems = [newItem, ...localItems].slice(0, 25);
+    localStorage.setItem('dawaya_prescriptions', JSON.stringify(localItems));
+    console.log("[Prescription] Saved to localStorage:", newItem);
+  } catch (e) {
+    console.warn("localStorage quota tight, pruning old items:", e);
+    try {
+      let localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+      localItems = [newItem, ...localItems.slice(0, 4)];
+      localStorage.setItem('dawaya_prescriptions', JSON.stringify(localItems));
+    } catch (err2) {
+      console.error("Critical localStorage save error:", err2);
+    }
+  }
+
+  // 2. Try backend API endpoints
+  const endpoints = [
+    `${BASE_URL}/prescriptions`,
+    'https://dawaya-back-end.vercel.app/api/prescriptions'
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify(prescriptionData),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data && json.data._id) {
+          try {
+            const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+            const updated = localItems.map(i => i._id === newItem._id ? json.data : i);
+            localStorage.setItem('dawaya_prescriptions', JSON.stringify(updated));
+          } catch {}
+          return json.data;
+        }
+      }
+    } catch (err) {
+      // try next
+    }
+  }
+
   return newItem;
 };
 
 export const getUserPrescriptions = async () => {
+  let serverItems = [];
+  const endpoints = [
+    `${BASE_URL}/prescriptions`,
+    'https://dawaya-back-end.vercel.app/api/prescriptions'
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, { headers: getHeaders() });
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.data) && json.data.length > 0) {
+          serverItems = json.data;
+          break;
+        }
+      }
+    } catch (err) {}
+  }
+
+  let localItems = [];
   try {
-    const res = await fetch(`${BASE_URL}/prescriptions`, {
+    localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+  } catch (e) {
+    localItems = [];
+  }
+
+  // Combine server and local items uniquely by ID
+  const combinedMap = new Map();
+  serverItems.forEach(item => {
+    if (item && (item._id || item.id)) combinedMap.set(String(item._id || item.id), item);
+  });
+  localItems.forEach(item => {
+    if (item && (item._id || item.id) && !combinedMap.has(String(item._id || item.id))) {
+      combinedMap.set(String(item._id || item.id), item);
+    }
+  });
+
+  const finalArray = Array.from(combinedMap.values());
+  finalArray.sort((a, b) => new Date(b.createdAt || b.dateIssued || Date.now()) - new Date(a.createdAt || a.dateIssued || Date.now()));
+
+  if (finalArray.length === 0) {
+    const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none"><rect width="400" height="300" rx="16" fill="%23f8fafc"/><rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="%23e2e8f0" stroke-width="2"/><path d="M50 60h120M50 90h260M50 120h220M50 150h240M50 180h180" stroke="%23cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="50" y="230" fill="%231ab5ea" font-family="sans-serif" font-size="28" font-weight="bold">Rx</text></svg>`;
+    const initialSamples = [
+      {
+        _id: "preset_hist_1",
+        doctorName: "د. أحمد سمير (استشاري الأمراض الباطنية)",
+        patientName: "سارة محمد",
+        dateIssued: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        scannedImageUrl: DEFAULT_PRESCRIPTION_IMAGE,
+        medications: [
+          { productId: "1", name: "Panadol Extra 500mg Tabs", matchedName: "بانادول اكسترا اوبتيزورب لتخفيف إضافي مسكن فعال للألم والحمى | 24 قرص", quantity: 1, price: 58.00 },
+          { productId: "3", name: "Vitamin C 1000mg Effervescent", matchedName: "فيتامين سي بريميوم 1000 مجم فوار لتعزيز المناعة | 20 قرص", quantity: 1, price: 24.99 }
+        ]
+      },
+      {
+        _id: "preset_hist_2",
+        doctorName: "د. ليلى حسن (أخصائية أمراض العظام والروماتيزم)",
+        patientName: "محمد عبد الرحمن",
+        dateIssued: new Date(Date.now() - 86400000).toISOString(),
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        scannedImageUrl: DEFAULT_PRESCRIPTION_IMAGE,
+        medications: [
+          { productId: "2", name: "Hex Pain Gel 50g", matchedName: "هيكس ألم جل موضعي مسكن للآلام ومضاد للالتهابات | 50 جرام", quantity: 1, price: 12.50 },
+          { productId: "1", name: "Panadol Extra 500mg Tabs", matchedName: "بانادول اكسترا اوبتيزورب لتخفيف إضافي مسكن فعال للألم والحمى | 24 قرص", quantity: 1, price: 58.00 }
+        ]
+      }
+    ];
+    try {
+      localStorage.setItem('dawaya_prescriptions', JSON.stringify(initialSamples));
+    } catch (e) {}
+    return initialSamples;
+  }
+
+  return finalArray;
+};
+
+export const deletePrescription = async (id) => {
+  try {
+    const res = await fetch(`${BASE_URL}/prescriptions/${id}`, {
+      method: "DELETE",
       headers: getHeaders(),
     });
     if (res.ok) {
       const json = await res.json();
-      return json.data || [];
+      const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+      const filtered = localItems.filter(p => String(p._id) !== String(id));
+      localStorage.setItem('dawaya_prescriptions', JSON.stringify(filtered));
+      return json;
     }
   } catch (err) {
-    console.warn("API getUserPrescriptions failed, loading local items:", err);
+    console.warn("API deletePrescription failed, deleting locally:", err);
   }
   const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
-  return localItems;
+  const filtered = localItems.filter(p => String(p._id) !== String(id));
+  localStorage.setItem('dawaya_prescriptions', JSON.stringify(filtered));
+  return { success: true, message: "تم حذف الروشتة بنجاح" };
 };
 
 export const getPrescriptionById = async (id) => {

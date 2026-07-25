@@ -22,6 +22,8 @@ export default function Checkout() {
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('vodafone');
   const [senderInfo, setSenderInfo] = useState('');
+  const [insuranceCompany, setInsuranceCompany] = useState('bupa');
+  const [nationalId, setNationalId] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
 
@@ -93,8 +95,15 @@ export default function Checkout() {
           ? 'يرجى إدخال رقم الهاتف المحول منه.'
           : paymentMethod === 'instapay'
             ? 'يرجى إدخال اسم الحساب المحول منه.'
-            : 'يرجى إدخال اسم صاحب الحساب المحول منه.'
+            : paymentMethod === 'insurance'
+              ? 'يرجى إدخال رقم الكارت / الوثيقة التأمينية.'
+              : 'يرجى إدخال اسم صاحب الحساب المحول منه.'
       );
+      return;
+    }
+
+    if (paymentMethod === 'insurance' && !receiptFile) {
+      alert('يرجى إرفاق صورة بطاقة التأمين الصحي للاستفادة من الخصم المباشر.');
       return;
     }
 
@@ -127,6 +136,8 @@ export default function Checkout() {
         },
         payment: {
           method: paymentMethod,
+          insuranceCompany: paymentMethod === 'insurance' ? insuranceCompany : null,
+          nationalId: paymentMethod === 'insurance' ? nationalId : null,
           senderInfo: paymentMethod === 'cod' ? null : senderInfo,
           receiptAttached: !!receiptFile
         },
@@ -152,6 +163,7 @@ export default function Checkout() {
       case 'instapay': return 'إنستا باي (Instapay)';
       case 'bank': return 'تحويل بنكي';
       case 'cod': return 'الدفع عند الاستلام';
+      case 'insurance': return 'التأمين الطبي (خصم مباشر)';
       default: return '';
     }
   };
@@ -348,7 +360,32 @@ export default function Checkout() {
                   </div>
                 </button>
 
-                { }
+                {/* Medical Insurance Option */}
+                <button
+                  type="button"
+                  onClick={() => { setPaymentMethod('insurance'); setSenderInfo(''); setReceiptFile(null); setReceiptPreview(null); }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    border: paymentMethod === 'insurance' ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                    backgroundColor: paymentMethod === 'insurance' ? 'var(--color-primary-light)' : '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    textAlign: 'right'
+                  }}
+                >
+                  <ShieldCheck size={22} style={{ color: paymentMethod === 'insurance' ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text-main)' }}>التأمين الطبي</span>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>خصم مباشر عبر شركات التأمين</span>
+                  </div>
+                </button>
+
+                {/* Cash on Delivery Option */}
                 <button
                   type="button"
                   onClick={() => { setPaymentMethod('cod'); setSenderInfo(''); setReceiptFile(null); setReceiptPreview(null); }}
@@ -590,6 +627,93 @@ export default function Checkout() {
                         <img src={receiptPreview} alt="Receipt Preview" style={{ width: '100%', height: '80px', objectFit: 'contain', borderRadius: '8px' }} />
                       </div>
                     )}
+                  </div>
+                )}
+
+                {paymentMethod === 'insurance' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ backgroundColor: '#e0f7ff', color: '#1ab5ea', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: '800' }}>تأمين مباشر</span>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: '700', color: 'var(--color-text-main)' }}>أدخل بيانات بطاقة التأمين الصحي للمطالبة والخصم المباشر:</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ marginBottom: '6px' }}>شركة التأمين الطبي *</label>
+                        <select
+                          className="form-input"
+                          style={{ borderRadius: '12px', padding: '10px', height: '44px', appearance: 'none', background: 'url("data:image/svg+xml;utf8,<svg fill=\'%2364748b\' height=\'24\' viewBox=\'0 0 24 24\' width=\'24\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/></svg>") no-repeat left 12px center #ffffff' }}
+                          value={insuranceCompany}
+                          onChange={(e) => setInsuranceCompany(e.target.value)}
+                          required
+                        >
+                          <option value="bupa">بوبا للتأمين الطبي (Bupa Egypt)</option>
+                          <option value="axa">أكسا للتأمين الطبي (AXA Egypt)</option>
+                          <option value="metlife">ميتلايف ش.م.م (MetLife Medical)</option>
+                          <option value="mednet">ميدنت مصر (MedNet)</option>
+                          <option value="gig">جي أي جي مصر (GIG Insurance)</option>
+                          <option value="medgulf">ميد جلف (MedGulf)</option>
+                          <option value="alahly">الأهلي للتأمين الطبي (Al Ahly Medical)</option>
+                          <option value="other">شركة تأمين أخرى</option>
+                        </select>
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ marginBottom: '6px' }}>رقم الكارت / الوثيقة التأمينية *</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          style={{ direction: 'ltr', textAlign: 'left', borderRadius: '12px', padding: '10px' }}
+                          value={senderInfo}
+                          onChange={(e) => setSenderInfo(e.target.value)}
+                          placeholder="مثال: 0012-3456-7890"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ marginBottom: '6px' }}>صورة بطاقة التأمين الصحي *</label>
+                        <div style={{ position: 'relative', height: '42px', overflow: 'hidden' }}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 2 }}
+                          />
+                          <button
+                            type="button"
+                            style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', border: '1px dashed var(--color-primary)', backgroundColor: '#ffffff', borderRadius: '12px', color: 'var(--color-primary)', fontSize: '12px', fontWeight: '700' }}
+                          >
+                            <Upload size={14} />
+                            <span>{receiptFile ? receiptFile.name.substring(0, 15) + '...' : 'إرفاق صورة كارت التأمين'}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ marginBottom: '6px' }}>الرقم القومي (اختياري)</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          style={{ direction: 'ltr', textAlign: 'left', borderRadius: '12px', padding: '10px' }}
+                          value={nationalId}
+                          onChange={(e) => setNationalId(e.target.value)}
+                          placeholder="14 رقم قومي للمؤمن عليه"
+                        />
+                      </div>
+                    </div>
+
+                    {receiptPreview && (
+                      <div style={{ marginTop: '8px', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '6px', backgroundColor: '#ffffff', width: '120px' }}>
+                        <img src={receiptPreview} alt="Insurance Card Preview" style={{ width: '100%', height: '80px', objectFit: 'contain', borderRadius: '8px' }} />
+                      </div>
+                    )}
+
+                    <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', fontSize: '12px', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
+                      💡 <strong style={{ color: 'var(--color-text-main)' }}>معلومات التغطية التأمينية:</strong> سيقوم الصيدلي بمراجعة التغطية التأمينية والخصم المباشر مع شركة التأمين فور استلام طلبك، وسيتم التواصل معك هاتفياً في حال وجود أي نسبة تحمل شخصية.
+                    </div>
                   </div>
                 )}
 

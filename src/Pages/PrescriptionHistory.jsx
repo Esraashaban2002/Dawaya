@@ -13,10 +13,43 @@ import {
   Plus,
   Stethoscope,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from "lucide-react";
-import { getUserPrescriptions, reorderPrescription } from "../services/api";
+import { getUserPrescriptions, reorderPrescription, deletePrescription } from "../services/api";
 import { useCart } from "../Context/CartContext";
+
+const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none"><rect width="400" height="300" rx="16" fill="%23f8fafc"/><rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="%23e2e8f0" stroke-width="2"/><path d="M50 60h120M50 90h260M50 120h220M50 150h240M50 180h180" stroke="%23cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="50" y="230" fill="%231ab5ea" font-family="sans-serif" font-size="28" font-weight="bold">Rx</text></svg>`;
+
+function PrescriptionThumbnail({ src, alt }) {
+  const [imgError, setImgError] = useState(false);
+  const activeSrc = imgError || !src ? DEFAULT_PRESCRIPTION_IMAGE : src;
+
+  return (
+    <img
+      src={activeSrc}
+      alt={alt || "روشتة"}
+      onError={() => setImgError(true)}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+    />
+  );
+}
+
+function PrescriptionModalImage({ src }) {
+  const [imgError, setImgError] = useState(false);
+  const activeSrc = imgError || !src ? DEFAULT_PRESCRIPTION_IMAGE : src;
+
+  return (
+    <div className="rounded-2xl border border-slate-200 overflow-hidden max-h-60 bg-slate-100 flex items-center justify-center">
+      <img
+        src={activeSrc}
+        alt="الروشتة الممسوحة"
+        onError={() => setImgError(true)}
+        className="max-h-60 w-auto object-contain"
+      />
+    </div>
+  );
+}
 
 export default function PrescriptionHistory() {
   const navigate = useNavigate();
@@ -33,9 +66,30 @@ export default function PrescriptionHistory() {
   const [outOfStockItems, setOutOfStockItems] = useState([]);
   const [showOutOfStockModal, setShowOutOfStockModal] = useState(false);
 
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
   const triggerToast = (message, type = "success") => {
     setToast({ show: true, message, type });
     setTimeout(() => setToast({ show: false, message: "", type: "success" }), 4000);
+  };
+
+  const handleDeletePrescription = async (prescriptionId) => {
+    try {
+      setDeletingId(prescriptionId);
+      await deletePrescription(prescriptionId);
+      setPrescriptions((prev) => prev.filter((p) => String(p._id) !== String(prescriptionId)));
+      if (selectedPrescription && String(selectedPrescription._id) === String(prescriptionId)) {
+        setSelectedPrescription(null);
+      }
+      setShowDeleteConfirmModal(null);
+      triggerToast("تم حذف الروشتة من السجل بنجاح", "success");
+    } catch (err) {
+      console.error("Error deleting prescription:", err);
+      triggerToast("حدث خطأ أثناء حذف الروشتة", "error");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const fetchHistory = useCallback(async () => {
@@ -209,15 +263,7 @@ export default function PrescriptionHistory() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                          {item.scannedImageUrl ? (
-                            <img
-                              src={item.scannedImageUrl}
-                              alt="روشتة"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            />
-                          ) : (
-                            <FileText className="w-7 h-7 text-slate-400" />
-                          )}
+                          <PrescriptionThumbnail src={item.scannedImageUrl} alt="روشتة" />
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5 text-slate-800 font-black text-base group-hover:text-[#1ab5ea] transition-colors">
@@ -282,6 +328,17 @@ export default function PrescriptionHistory() {
                     >
                       <Eye className="w-4 h-4" />
                     </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowDeleteConfirmModal(item);
+                      }}
+                      className="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2.5 rounded-xl transition-colors border border-rose-100"
+                      title="حذف الروشتة"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               );
@@ -335,18 +392,10 @@ export default function PrescriptionHistory() {
               </div>
 
               {/* Scanned Image Preview */}
-              {selectedPrescription.scannedImageUrl && (
-                <div>
-                  <h4 className="font-bold text-xs text-slate-700 mb-2">صورة الروشتة الممسوحة:</h4>
-                  <div className="rounded-2xl border border-slate-200 overflow-hidden max-h-60 bg-slate-100 flex items-center justify-center">
-                    <img
-                      src={selectedPrescription.scannedImageUrl}
-                      alt="الروشتة الممسوحة"
-                      className="max-h-60 w-auto object-contain"
-                    />
-                  </div>
-                </div>
-              )}
+              <div>
+                <h4 className="font-bold text-xs text-slate-700 mb-2">صورة الروشتة الممسوحة:</h4>
+                <PrescriptionModalImage src={selectedPrescription.scannedImageUrl} />
+              </div>
 
               {/* Medications List Table */}
               <div>
@@ -383,13 +432,22 @@ export default function PrescriptionHistory() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex items-center justify-between gap-3">
-              <button
-                onClick={() => setSelectedPrescription(null)}
-                className="bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-100 transition-colors"
-              >
-                إغلاق
-              </button>
+            <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedPrescription(null)}
+                  className="bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-100 transition-colors"
+                >
+                  إغلاق
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirmModal(selectedPrescription)}
+                  className="bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>حذف الروشتة</span>
+                </button>
+              </div>
 
               <button
                 onClick={(e) => {
@@ -446,6 +504,46 @@ export default function PrescriptionHistory() {
               <button
                 onClick={() => setShowOutOfStockModal(false)}
                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-xs transition-colors"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200" dir="rtl">
+            <div className="w-12 h-12 bg-rose-50 rounded-2xl text-rose-600 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="font-black text-lg text-slate-800">حذف الروشتة الطبية</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                هل أنت تأكد من رغبتك في حذف هذه الروشتة من السجل؟ لا يمكن التراجع عن هذا الإجراء لاحقاً.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => handleDeletePrescription(showDeleteConfirmModal._id)}
+                disabled={deletingId === showDeleteConfirmModal._id}
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl font-black text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deletingId === showDeleteConfirmModal._id ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span>تأكيد الحذف</span>
+              </button>
+
+              <button
+                onClick={() => setShowDeleteConfirmModal(null)}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-xs transition-colors"
               >
                 إغلاق
               </button>
