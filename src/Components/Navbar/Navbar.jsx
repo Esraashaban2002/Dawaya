@@ -6,7 +6,7 @@ import {
   FaUser,
   FaBars,
   FaTimes,
-  FaHeart,
+  FaHeart
 } from "react-icons/fa";
 import "./Navbar.css";
 import { UserContext } from "../../Context/UserContext";
@@ -85,7 +85,7 @@ export default function Navbar() {
   return (
     <>
       <div className="nb">
-        <div className="nb-top">احنا معاك ف بيتك احنا دواك..</div>
+        <div className="nb-top">احنا معاك ف بيتك احنا دواك.. دوايا</div>
 
         <nav className="nb-main">
           <div className="nb-inner">
@@ -128,7 +128,7 @@ export default function Navbar() {
               className="nb-search"
             >
               <input
-                placeholder="إبحث باسم الدواء"
+                placeholder="إبحث باسم الدواء..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -144,14 +144,14 @@ export default function Navbar() {
               </span>
             </form>
 
-            <div className="nb-actions">
+            <div className="nb-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Link to="/favorites" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
-                <FaHeart style={{ color: "#000000" }} />
+                <FaHeart style={{ color: "var(--color-text-main)" }} />
                 {favorites.length > 0 && <span className="nb-badge" style={{ backgroundColor: "#e53935" }}>{favorites.length}</span>}
               </Link>
 
               <Link to="/cart" className="nb-icon-btn" style={{ position: "relative", textDecoration: "none" }}>
-                <FaShoppingCart />
+                <FaShoppingCart style={{ color: "var(--color-text-main)" }} />
                 {cartCount > 0 && <span className="nb-badge">{cartCount}</span>}
               </Link>
             </div>

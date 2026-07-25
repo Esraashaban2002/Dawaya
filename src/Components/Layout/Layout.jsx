@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
+import ChatbotWidget from "../Chatbot/ChatbotWidget";
 import { CartContext } from "../../Context/CartContext";
 import { Lock, X } from "lucide-react";
 
@@ -25,6 +26,7 @@ export default function Layout() {
             <Outlet></Outlet>
         </div>
         <Footer />
+        <ChatbotWidget />
 
         { }
         {showLoginModal && (

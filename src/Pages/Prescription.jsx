@@ -42,6 +42,27 @@ const PRODUCTS_DB = [
   }
 ];
 
+const createPrescriptionSvgUrl = (doctor, patient, date, notes = []) => {
+  const notesText = (notes || []).map((n, i) =>
+    `<text x="450" y="${140 + i * 26}" fill="%23334155" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="end">• ${String(n).replace(/</g, '').replace(/>/g, '').replace(/"/g, "'")}</text>`
+  ).join("");
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="340" viewBox="0 0 500 340" fill="none">
+    <rect width="500" height="340" rx="16" fill="%23f8fafc"/>
+    <rect x="15" y="15" width="470" height="310" rx="12" fill="white" stroke="%23cbd5e1" stroke-width="2"/>
+    <text x="450" y="48" fill="%230f172a" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="end">${String(doctor).replace(/"/g, "'")}</text>
+    <text x="450" y="68" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">العيادة التخصصية - باطنة وقلب</text>
+    <line x1="30" y1="80" x2="470" y2="80" stroke="%23e2e8f0" stroke-width="2"/>
+    <text x="450" y="102" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">المريض: ${String(patient).replace(/"/g, "'")} | التاريخ: ${date}</text>
+    <text x="40" y="125" fill="%231ab5ea" font-family="sans-serif" font-size="26" font-weight="black">Rx</text>
+    ${notesText}
+    <line x1="30" y1="275" x2="470" y2="275" stroke="%23e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+    <text x="40" y="300" fill="%2394a3b8" font-family="sans-serif" font-size="10">التوقيع والخاتم الطبي المعترف به</text>
+    <text x="450" y="300" fill="%231ab5ea" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="end">صرف من صيدليات دوايا المعتمدة</text>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
 const PRESETS = [
   {
     id: "preset-1",
@@ -54,6 +75,12 @@ const PRESETS = [
       "Vitamin C 1000mg effervescent - قرص فوار يومياً صباحاً",
       "Aspirin 81mg - قرص بعد الغداء يومياً"
     ],
+    imageUrl: createPrescriptionSvgUrl(
+      "د. أحمد سمير (استشاري الأمراض الباطنية)",
+      "سارة محمد",
+      "11-06-2026",
+      ["Panadol Extra tabs - قرص 3 مرات يومياً بعد الأكل", "Vitamin C 1000mg effervescent - قرص فوار يومياً", "Aspirin 81mg - قرص بعد الغداء يومياً"]
+    ),
     matches: [
       { detectedName: "Panadol Extra 500mg Tabs", product: PRODUCTS_DB[0], confidence: "99%", quantity: 1, selected: true },
       { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "97%", quantity: 1, selected: true },
@@ -70,6 +97,12 @@ const PRESETS = [
       "Hex Pain Gel - دهان موضعي للمفصل 3 مرات يومياً",
       "Panadol Extra tabs - قرص عند اللزوم لتسكين الألم"
     ],
+    imageUrl: createPrescriptionSvgUrl(
+      "د. ليلى حسن (أخصائية أمراض العظام والروماتيزم)",
+      "محمد عبد الرحمن",
+      "10-06-2026",
+      ["Hex Pain Gel - دهان موضعي للمفصل 3 مرات يومياً", "Panadol Extra tabs - قرص عند اللزوم لتسكين الألم"]
+    ),
     matches: [
       { detectedName: "Hex Pain Gel 50g", product: PRODUCTS_DB[1], confidence: "96%", quantity: 1, selected: true },
       { detectedName: "Panadol Extra 500mg Tabs", product: PRODUCTS_DB[0], confidence: "94%", quantity: 1, selected: true }
@@ -84,6 +117,12 @@ const PRESETS = [
     notes: [
       "Vitamin C 1000mg effervescent - قرص فوار في نصف كوب ماء يومياً"
     ],
+    imageUrl: createPrescriptionSvgUrl(
+      "د. مريم خالد (أخصائية طب الأسرة)",
+      "يوسف كريم",
+      "09-06-2026",
+      ["Vitamin C 1000mg effervescent - قرص فوار في نصف كوب ماء يومياً"]
+    ),
     matches: [
       { detectedName: "Vitamin C 1000mg Effervescent", product: PRODUCTS_DB[2], confidence: "98%", quantity: 1, selected: true }
     ]
@@ -98,6 +137,12 @@ const PRESETS = [
       "Euthyrox 50mcg - قرص يومياً على الريق",
       "Glucophage 500mg - قرص بعد الغداء يومياً"
     ],
+    imageUrl: createPrescriptionSvgUrl(
+      "د. خالد منصور (أخصائي الغدد الصماء)",
+      "منى علي",
+      "08-06-2026",
+      ["Euthyrox 50mcg - قرص يومياً على الريق", "Glucophage 500mg - قرص بعد الغداء يومياً"]
+    ),
     matches: [
       { detectedName: "Euthyrox 50mcg", product: null, confidence: "0%", quantity: 1, selected: false },
       { detectedName: "Glucophage 500mg", product: null, confidence: "0%", quantity: 1, selected: false }

@@ -349,43 +349,43 @@ export default function PrescriptionHistory() {
 
       {/* Prescription Detail Modal */}
       {selectedPrescription && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] sm:max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200 my-auto">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white rounded-t-3xl">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#e0f7ff] text-[#1ab5ea] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#e0f7ff] text-[#1ab5ea] flex items-center justify-center shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-slate-800">تفاصيل الروشتة الطبية</h3>
+                  <h3 className="font-black text-base sm:text-lg text-slate-800">تفاصيل الروشتة الطبية</h3>
                   <p className="text-xs text-slate-400">تاريخ الإصدار: {formatDate(selectedPrescription.dateIssued || selectedPrescription.createdAt)}</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelectedPrescription(null)}
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1">
               {/* Doctor & Patient Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl text-xs border border-slate-100">
                 <div>
                   <span className="text-slate-400 block font-bold mb-1">اسم الطبيب:</span>
                   <span className="font-black text-slate-800 text-sm flex items-center gap-1.5">
-                    <Stethoscope className="w-4 h-4 text-[#1ab5ea]" />
+                    <Stethoscope className="w-4 h-4 text-[#1ab5ea] shrink-0" />
                     {selectedPrescription.doctorName || "غير محدد"}
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-400 block font-bold mb-1">اسم المريض:</span>
                   <span className="font-black text-slate-800 text-sm flex items-center gap-1.5">
-                    <User className="w-4 h-4 text-blue-500" />
+                    <User className="w-4 h-4 text-blue-500 shrink-0" />
                     {selectedPrescription.patientName || "غير محدد"}
                   </span>
                 </div>
@@ -406,8 +406,8 @@ export default function PrescriptionHistory() {
                   </span>
                 </h4>
 
-                <div className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                  <table className="w-full text-right text-xs">
+                <div className="border border-slate-100 rounded-2xl overflow-x-auto shadow-sm">
+                  <table className="w-full text-right text-xs min-w-[480px]">
                     <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                       <tr>
                         <th className="p-3">اسم الدواء</th>
@@ -432,8 +432,8 @@ export default function PrescriptionHistory() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
-              <div className="flex items-center gap-2">
+            <div className="p-4 sm:p-6 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap shrink-0">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
                 <button
                   onClick={() => setSelectedPrescription(null)}
                   className="bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-100 transition-colors"
@@ -455,7 +455,7 @@ export default function PrescriptionHistory() {
                   setSelectedPrescription(null);
                   handleReorder(e, pid);
                 }}
-                className="bg-[#1ab5ea] hover:bg-[#159ccb] text-white px-6 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 shadow-md transition-all"
+                className="w-full sm:w-auto bg-[#1ab5ea] hover:bg-[#159ccb] text-white px-6 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>إعادة طلب هذه الروشتة</span>

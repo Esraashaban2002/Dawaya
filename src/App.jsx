@@ -41,6 +41,9 @@ import Pharmacies from './Pages/Adman/Pharmacies';
 
 import Contact from './Pages/Adman/Contact';
 import PharmacyRequests from "./Pages/Adman/pharnacyRequests";
+import ThemeContextProvider from "./Context/ThemeContext";
+import LanguageContextProvider from "./Context/LanguageContext";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -210,19 +213,17 @@ function App() {
   ]);
 
   return (
-
     <QueryClientProvider client={queryClient}>
       <UserContextProvider>
         <CartContextProvider>
           <FavoritesContextProvider>
-            <div dir="rtl">
+            <div>
               <RouterProvider router={router} />
             </div>
           </FavoritesContextProvider>
         </CartContextProvider>
       </UserContextProvider>
     </QueryClientProvider>
-
   );
 }
 

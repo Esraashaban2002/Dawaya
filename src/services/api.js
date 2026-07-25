@@ -644,7 +644,27 @@ export const getUserPrescriptions = async () => {
   finalArray.sort((a, b) => new Date(b.createdAt || b.dateIssued || Date.now()) - new Date(a.createdAt || a.dateIssued || Date.now()));
 
   if (finalArray.length === 0) {
-    const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none"><rect width="400" height="300" rx="16" fill="%23f8fafc"/><rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="%23e2e8f0" stroke-width="2"/><path d="M50 60h120M50 90h260M50 120h220M50 150h240M50 180h180" stroke="%23cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="50" y="230" fill="%231ab5ea" font-family="sans-serif" font-size="28" font-weight="bold">Rx</text></svg>`;
+    const createPrescriptionSvgUrl = (doctor, patient, date, notes = []) => {
+      const notesText = (notes || []).map((n, i) =>
+        `<text x="450" y="${140 + i * 26}" fill="%23334155" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="end">• ${String(n).replace(/</g, '').replace(/>/g, '').replace(/"/g, "'")}</text>`
+      ).join("");
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="340" viewBox="0 0 500 340" fill="none">
+        <rect width="500" height="340" rx="16" fill="%23f8fafc"/>
+        <rect x="15" y="15" width="470" height="310" rx="12" fill="white" stroke="%23cbd5e1" stroke-width="2"/>
+        <text x="450" y="48" fill="%230f172a" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="end">${String(doctor).replace(/"/g, "'")}</text>
+        <text x="450" y="68" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">العيادة التخصصية - باطنة وقلب</text>
+        <line x1="30" y1="80" x2="470" y2="80" stroke="%23e2e8f0" stroke-width="2"/>
+        <text x="450" y="102" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">المريض: ${String(patient).replace(/"/g, "'")} | التاريخ: ${date}</text>
+        <text x="40" y="125" fill="%231ab5ea" font-family="sans-serif" font-size="26" font-weight="black">Rx</text>
+        ${notesText}
+        <line x1="30" y1="275" x2="470" y2="275" stroke="%23e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+        <text x="40" y="300" fill="%2394a3b8" font-family="sans-serif" font-size="10">التوقيع والخاتم الطبي المعترف به</text>
+        <text x="450" y="300" fill="%231ab5ea" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="end">صرف من صيدليات دوايا المعتمدة</text>
+      </svg>`;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    };
+
     const initialSamples = [
       {
         _id: "preset_hist_1",
@@ -652,7 +672,12 @@ export const getUserPrescriptions = async () => {
         patientName: "سارة محمد",
         dateIssued: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-        scannedImageUrl: DEFAULT_PRESCRIPTION_IMAGE,
+        scannedImageUrl: createPrescriptionSvgUrl(
+          "د. أحمد سمير (استشاري الأمراض الباطنية)",
+          "سارة محمد",
+          "11-06-2026",
+          ["Panadol Extra 500mg - قرص 3 مرات يومياً", "Vitamin C 1000mg - قرص فوار صباحاً", "Aspirin 81mg - قرص بعد الغداء يومياً"]
+        ),
         medications: [
           { productId: "1", name: "Panadol Extra 500mg Tabs", matchedName: "بانادول اكسترا اوبتيزورب لتخفيف إضافي مسكن فعال للألم والحمى | 24 قرص", quantity: 1, price: 58.00 },
           { productId: "3", name: "Vitamin C 1000mg Effervescent", matchedName: "فيتامين سي بريميوم 1000 مجم فوار لتعزيز المناعة | 20 قرص", quantity: 1, price: 24.99 }
@@ -664,7 +689,12 @@ export const getUserPrescriptions = async () => {
         patientName: "محمد عبد الرحمن",
         dateIssued: new Date(Date.now() - 86400000).toISOString(),
         createdAt: new Date(Date.now() - 86400000).toISOString(),
-        scannedImageUrl: DEFAULT_PRESCRIPTION_IMAGE,
+        scannedImageUrl: createPrescriptionSvgUrl(
+          "د. ليلى حسن (أخصائية أمراض العظام)",
+          "محمد عبد الرحمن",
+          "10-06-2026",
+          ["Hex Pain Gel - دهان موضعي 3 مرات يومياً", "Panadol Extra tabs - قرص عند اللزوم"]
+        ),
         medications: [
           { productId: "2", name: "Hex Pain Gel 50g", matchedName: "هيكس ألم جل موضعي مسكن للآلام ومضاد للالتهابات | 50 جرام", quantity: 1, price: 12.50 },
           { productId: "1", name: "Panadol Extra 500mg Tabs", matchedName: "بانادول اكسترا اوبتيزورب لتخفيف إضافي مسكن فعال للألم والحمى | 24 قرص", quantity: 1, price: 58.00 }

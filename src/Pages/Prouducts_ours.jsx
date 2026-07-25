@@ -1281,14 +1281,6 @@ export function ProuductsOurs() {
         )}
       </AnimatePresence>
 
-      {}
-      <button
-        onClick={() => triggerToast("خدمة الاستشارات الطبية الفورية متاحة على مدار الساعة عبر واتساب.")}
-        className="fixed bottom-16 right-6 z-40 w-12 h-12 bg-[#009eb6] hover:bg-[#008fa0] text-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer"
-        title="استشر الصيدلي"
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
 
       {}
       <AnimatePresence>
