@@ -41,8 +41,6 @@ import Pharmacies from './Pages/Adman/Pharmacies';
 
 import Contact from './Pages/Adman/Contact';
 import PharmacyRequests from "./Pages/Adman/pharnacyRequests";
-import ThemeContextProvider from "./Context/ThemeContext";
-import LanguageContextProvider from "./Context/LanguageContext";
 
 const queryClient = new QueryClient();
 
