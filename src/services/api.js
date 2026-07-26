@@ -544,9 +544,86 @@ export const getTopMedicines = async (limit = 10) => {
   return json.data;
 };
 
-// PRESCRIPTIONS API CLIENT
+export const createPrescriptionSvgUrl = (doctor, patient, date, notes = []) => {
+  const doctorName = doctor || "د. طبيب دوايا";
+  const patientName = patient || "مريض Dawaya";
+  let formattedDate = "";
+  if (date) {
+    try {
+      const d = new Date(date);
+      if (!isNaN(d.getTime())) {
+        formattedDate = d.toLocaleDateString('ar-EG', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      } else {
+        formattedDate = String(date);
+      }
+    } catch (e) {
+      formattedDate = String(date);
+    }
+  } else {
+    formattedDate = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
+
+  const notesList = Array.isArray(notes) ? notes : [];
+  const notesText = notesList.slice(0, 5).map((n, i) => {
+    const textStr = typeof n === 'string' ? n : (n.name || n.matchedName || String(n));
+    const safeStr = String(textStr)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+    return `<text x="450" y="${145 + i * 26}" fill="#334155" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="bold" text-anchor="end">• ${safeStr}</text>`;
+  }).join("");
+
+  const safeDoctor = String(doctorName).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const safePatient = String(patientName).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const safeDate = String(formattedDate).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="340" viewBox="0 0 500 340" fill="none">
+    <rect width="500" height="340" rx="16" fill="#f8fafc"/>
+    <rect x="15" y="15" width="470" height="310" rx="12" fill="white" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="450" y="48" fill="#0f172a" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="bold" text-anchor="end">${safeDoctor}</text>
+    <text x="450" y="68" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="11" text-anchor="end">العيادة التخصصية المعتمدة</text>
+    <line x1="30" y1="80" x2="470" y2="80" stroke="#e2e8f0" stroke-width="2"/>
+    <text x="450" y="102" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="11" text-anchor="end">المريض: ${safePatient} | التاريخ: ${safeDate}</text>
+    <text x="40" y="125" fill="#1ab5ea" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="black">Rx</text>
+    ${notesText}
+    <line x1="30" y1="275" x2="470" y2="275" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+    <text x="40" y="300" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="10">التوقيع والخاتم الطبي المعترف به</text>
+    <text x="450" y="300" fill="#1ab5ea" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="bold" text-anchor="end">صرف من صيدليات دوايا المعتمدة</text>
+  </svg>`;
+
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+};
+
+const defaultSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="340" viewBox="0 0 500 340" fill="none">
+  <rect width="500" height="340" rx="16" fill="#f8fafc"/>
+  <rect x="15" y="15" width="470" height="310" rx="12" fill="white" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="450" y="48" fill="#0f172a" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="bold" text-anchor="end">روشتة طبية معتمدة</text>
+  <text x="450" y="68" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="11" text-anchor="end">صيدليات دوايا DAWAYA</text>
+  <line x1="30" y1="80" x2="470" y2="80" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="40" y="125" fill="#1ab5ea" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="black">Rx</text>
+  <line x1="100" y1="130" x2="450" y2="130" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+  <line x1="100" y1="160" x2="400" y2="160" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+  <line x1="100" y1="190" x2="430" y2="190" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+  <line x1="100" y1="220" x2="350" y2="220" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+  <line x1="30" y1="275" x2="470" y2="275" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+  <text x="40" y="300" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="10">التوقيع والخاتم الطبي المعترف به</text>
+  <text x="450" y="300" fill="#1ab5ea" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="bold" text-anchor="end">صرف من صيدليات دوايا المعتمدة</text>
+</svg>`;
+
+export const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(defaultSvg)}`;
 
 export const savePrescription = async (prescriptionData) => {
+  if (!prescriptionData.scannedImageUrl || prescriptionData.scannedImageUrl.includes('data:image/svg+xml;utf8') || prescriptionData.scannedImageUrl.includes('%2523')) {
+    const notes = (prescriptionData.medications || []).map(m => m.name || m.matchedName);
+    prescriptionData.scannedImageUrl = createPrescriptionSvgUrl(
+      prescriptionData.doctorName,
+      prescriptionData.patientName,
+      prescriptionData.dateIssued,
+      notes
+    );
+  }
+
   const newItem = {
     _id: `prescription_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     ...prescriptionData,
@@ -640,31 +717,9 @@ export const getUserPrescriptions = async () => {
     }
   });
 
-  const finalArray = Array.from(combinedMap.values());
-  finalArray.sort((a, b) => new Date(b.createdAt || b.dateIssued || Date.now()) - new Date(a.createdAt || a.dateIssued || Date.now()));
+  let finalArray = Array.from(combinedMap.values());
 
   if (finalArray.length === 0) {
-    const createPrescriptionSvgUrl = (doctor, patient, date, notes = []) => {
-      const notesText = (notes || []).map((n, i) =>
-        `<text x="450" y="${140 + i * 26}" fill="%23334155" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="end">• ${String(n).replace(/</g, '').replace(/>/g, '').replace(/"/g, "'")}</text>`
-      ).join("");
-
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="340" viewBox="0 0 500 340" fill="none">
-        <rect width="500" height="340" rx="16" fill="%23f8fafc"/>
-        <rect x="15" y="15" width="470" height="310" rx="12" fill="white" stroke="%23cbd5e1" stroke-width="2"/>
-        <text x="450" y="48" fill="%230f172a" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="end">${String(doctor).replace(/"/g, "'")}</text>
-        <text x="450" y="68" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">العيادة التخصصية - باطنة وقلب</text>
-        <line x1="30" y1="80" x2="470" y2="80" stroke="%23e2e8f0" stroke-width="2"/>
-        <text x="450" y="102" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">المريض: ${String(patient).replace(/"/g, "'")} | التاريخ: ${date}</text>
-        <text x="40" y="125" fill="%231ab5ea" font-family="sans-serif" font-size="26" font-weight="black">Rx</text>
-        ${notesText}
-        <line x1="30" y1="275" x2="470" y2="275" stroke="%23e2e8f0" stroke-width="1" stroke-dasharray="4"/>
-        <text x="40" y="300" fill="%2394a3b8" font-family="sans-serif" font-size="10">التوقيع والخاتم الطبي المعترف به</text>
-        <text x="450" y="300" fill="%231ab5ea" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="end">صرف من صيدليات دوايا المعتمدة</text>
-      </svg>`;
-      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-    };
-
     const initialSamples = [
       {
         _id: "preset_hist_1",
@@ -701,12 +756,26 @@ export const getUserPrescriptions = async () => {
         ]
       }
     ];
-    try {
-      localStorage.setItem('dawaya_prescriptions', JSON.stringify(initialSamples));
-    } catch (e) {}
-    return initialSamples;
+    finalArray = initialSamples;
   }
 
+  finalArray.forEach(item => {
+    if (!item.scannedImageUrl || item.scannedImageUrl.includes('data:image/svg+xml;utf8') || item.scannedImageUrl.includes('%2523')) {
+      const notes = (item.medications || []).map(m => m.name || m.matchedName);
+      item.scannedImageUrl = createPrescriptionSvgUrl(
+        item.doctorName,
+        item.patientName,
+        item.dateIssued || item.createdAt,
+        notes
+      );
+    }
+  });
+
+  try {
+    localStorage.setItem('dawaya_prescriptions', JSON.stringify(finalArray));
+  } catch (e) {}
+
+  finalArray.sort((a, b) => new Date(b.createdAt || b.dateIssued || Date.now()) - new Date(a.createdAt || a.dateIssued || Date.now()));
   return finalArray;
 };
 

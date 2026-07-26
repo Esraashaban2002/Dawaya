@@ -16,14 +16,36 @@ import {
   ArrowRight,
   Trash2
 } from "lucide-react";
-import { getUserPrescriptions, reorderPrescription, deletePrescription } from "../services/api";
+import {
+  getUserPrescriptions,
+  reorderPrescription,
+  deletePrescription,
+  createPrescriptionSvgUrl,
+  DEFAULT_PRESCRIPTION_IMAGE
+} from "../services/api";
 import { useCart } from "../Context/CartContext";
 
-const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none"><rect width="400" height="300" rx="16" fill="%23f8fafc"/><rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="%23e2e8f0" stroke-width="2"/><path d="M50 60h120M50 90h260M50 120h220M50 150h240M50 180h180" stroke="%23cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="50" y="230" fill="%231ab5ea" font-family="sans-serif" font-size="28" font-weight="bold">Rx</text></svg>`;
+function getValidPrescriptionImage(item, src) {
+  const targetSrc = src || item?.scannedImageUrl;
+  if (
+    targetSrc &&
+    typeof targetSrc === "string" &&
+    !targetSrc.includes("data:image/svg+xml;utf8") &&
+    !targetSrc.includes("%2523") &&
+    targetSrc.trim().length > 0
+  ) {
+    return targetSrc;
+  }
+  const doctor = item?.doctorName || "د. طبيب دوايا";
+  const patient = item?.patientName || "مريض Dawaya";
+  const date = item?.dateIssued || item?.createdAt;
+  const notes = (item?.medications || []).map((m) => m.name || m.matchedName);
+  return createPrescriptionSvgUrl(doctor, patient, date, notes);
+}
 
-function PrescriptionThumbnail({ src, alt }) {
+function PrescriptionThumbnail({ item, src, alt }) {
   const [imgError, setImgError] = useState(false);
-  const activeSrc = imgError || !src ? DEFAULT_PRESCRIPTION_IMAGE : src;
+  const activeSrc = imgError ? getValidPrescriptionImage(item, null) : getValidPrescriptionImage(item, src);
 
   return (
     <img
@@ -35,17 +57,17 @@ function PrescriptionThumbnail({ src, alt }) {
   );
 }
 
-function PrescriptionModalImage({ src }) {
+function PrescriptionModalImage({ item, src }) {
   const [imgError, setImgError] = useState(false);
-  const activeSrc = imgError || !src ? DEFAULT_PRESCRIPTION_IMAGE : src;
+  const activeSrc = imgError ? getValidPrescriptionImage(item, null) : getValidPrescriptionImage(item, src);
 
   return (
-    <div className="rounded-2xl border border-slate-200 overflow-hidden max-h-60 bg-slate-100 flex items-center justify-center">
+    <div className="rounded-2xl border border-slate-200 overflow-hidden max-h-64 bg-slate-50 flex items-center justify-center p-3">
       <img
         src={activeSrc}
         alt="الروشتة الممسوحة"
         onError={() => setImgError(true)}
-        className="max-h-60 w-auto object-contain"
+        className="max-h-60 w-auto object-contain rounded-xl shadow-sm border border-slate-100"
       />
     </div>
   );
@@ -394,7 +416,7 @@ export default function PrescriptionHistory() {
               {/* Scanned Image Preview */}
               <div>
                 <h4 className="font-bold text-xs text-slate-700 mb-2">صورة الروشتة الممسوحة:</h4>
-                <PrescriptionModalImage src={selectedPrescription.scannedImageUrl} />
+                <PrescriptionModalImage item={selectedPrescription} src={selectedPrescription.scannedImageUrl} />
               </div>
 
               {/* Medications List Table */}

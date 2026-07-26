@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { CartContext } from '../Context/CartContext';
 import { UserContext } from '../Context/UserContext';
-import { savePrescription } from '../services/api';
+import { savePrescription, createPrescriptionSvgUrl, DEFAULT_PRESCRIPTION_IMAGE } from '../services/api';
 import axios from 'axios';
 import Tesseract from 'tesseract.js';
 import hexPainImg from '../assets/موفليكس-كريم-مساج-300x300.webp';
@@ -42,26 +42,7 @@ const PRODUCTS_DB = [
   }
 ];
 
-const createPrescriptionSvgUrl = (doctor, patient, date, notes = []) => {
-  const notesText = (notes || []).map((n, i) =>
-    `<text x="450" y="${140 + i * 26}" fill="%23334155" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="end">• ${String(n).replace(/</g, '').replace(/>/g, '').replace(/"/g, "'")}</text>`
-  ).join("");
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="340" viewBox="0 0 500 340" fill="none">
-    <rect width="500" height="340" rx="16" fill="%23f8fafc"/>
-    <rect x="15" y="15" width="470" height="310" rx="12" fill="white" stroke="%23cbd5e1" stroke-width="2"/>
-    <text x="450" y="48" fill="%230f172a" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="end">${String(doctor).replace(/"/g, "'")}</text>
-    <text x="450" y="68" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">العيادة التخصصية - باطنة وقلب</text>
-    <line x1="30" y1="80" x2="470" y2="80" stroke="%23e2e8f0" stroke-width="2"/>
-    <text x="450" y="102" fill="%2364748b" font-family="sans-serif" font-size="11" text-anchor="end">المريض: ${String(patient).replace(/"/g, "'")} | التاريخ: ${date}</text>
-    <text x="40" y="125" fill="%231ab5ea" font-family="sans-serif" font-size="26" font-weight="black">Rx</text>
-    ${notesText}
-    <line x1="30" y1="275" x2="470" y2="275" stroke="%23e2e8f0" stroke-width="1" stroke-dasharray="4"/>
-    <text x="40" y="300" fill="%2394a3b8" font-family="sans-serif" font-size="10">التوقيع والخاتم الطبي المعترف به</text>
-    <text x="450" y="300" fill="%231ab5ea" font-family="sans-serif" font-size="10" font-weight="bold" text-anchor="end">صرف من صيدليات دوايا المعتمدة</text>
-  </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
 
 const PRESETS = [
   {
@@ -263,7 +244,7 @@ export default function Prescription() {
     }
   };
 
-const DEFAULT_PRESCRIPTION_IMAGE = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none"><rect width="400" height="300" rx="16" fill="%23f8fafc"/><rect x="20" y="20" width="360" height="260" rx="12" fill="white" stroke="%23e2e8f0" stroke-width="2"/><path d="M50 60h120M50 90h260M50 120h220M50 150h240M50 180h180" stroke="%23cbd5e1" stroke-width="6" stroke-linecap="round"/><text x="50" y="230" fill="%231ab5ea" font-family="sans-serif" font-size="28" font-weight="bold">Rx</text></svg>`;
+
 
 const compressImageToBase64 = (file, maxWidth = 800, quality = 0.7) => {
   return new Promise((resolve) => {
@@ -1151,12 +1132,16 @@ const compressImageToBase64 = (file, maxWidth = 800, quality = 0.7) => {
                 <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                    {matches.some(item => item.product !== null) ? (
                     <div style={{
-                      background: '#e8f7f0', color: '#10b981', border: '1px solid #a3e635',
+                      background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0',
                       borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
                       fontSize: '13px', fontWeight: 800
                     }}>
-                      <ShieldCheck size={18} />
-                      <span>تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة.</span>
+                      <Check size={18} />
+                      <span>
+                        {matches.some(item => item.product === null)
+                          ? "تم تحليل الروشتة بنجاح! تم العثور على أدوية مطابقة وأخرى غير متوفرة."
+                          : "تم تحليل الروشتة بنجاح! تم العثور على جميع الأدوية المطابقة."}
+                      </span>
                     </div>
                   ) : (
                     <div style={{
@@ -1165,15 +1150,15 @@ const compressImageToBase64 = (file, maxWidth = 800, quality = 0.7) => {
                       fontSize: '13px', fontWeight: 800
                     }}>
                       <AlertCircle size={18} />
-                      <span>تم تحليل الروشتة بنجاح! لم يتم العثور على أدوية مطابقة.</span>
+                      <span>تم تحليل الروشتة بنجاح! لم يتم العثور على أدوية مطابقة في الصيدلية.</span>
                     </div>
                   )}
 
                   {}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {matches.some(item => item.product !== null) ? (
+                    {matches.some(item => item.product !== null) && (
                       <>
-                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والتطابقة المقترحة:</span>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontWeight: 700 }}>الأدوية المستخرجة والمطابقة المقترحة:</span>
                         {matches.filter(item => item.product !== null).map((item) => {
                           const originalIndex = matches.findIndex(m => m === item);
                           return (
@@ -1264,7 +1249,32 @@ const compressImageToBase64 = (file, maxWidth = 800, quality = 0.7) => {
                           );
                         })}
                       </>
-                    ) : (
+                    )}
+
+                    {}
+                    {matches.some(item => item.product === null) && (
+                      <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 space-y-3 shadow-xs mt-1" dir="rtl">
+                        <div className="flex items-center gap-2 text-amber-900 font-black text-xs">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                          <span>أدوية مكتوبة في الروشتة وغير متوفرة حالياً بالصيدلية:</span>
+                        </div>
+                        <div className="space-y-2">
+                          {matches.filter(item => item.product === null).map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-white border border-amber-200/60 rounded-xl p-3 text-xs shadow-2xs">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                <span className="font-extrabold text-slate-800">{item.detectedName}</span>
+                              </div>
+                              <span className="bg-amber-100/80 text-amber-800 font-black text-[11px] px-2.5 py-1 rounded-lg border border-amber-200/50">
+                                غير متوفر حالياً
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!matches.some(item => item.product !== null) && !matches.some(item => item.product === null) && (
                       <div 
                         className="bg-rose-50/80 border border-rose-200/80 rounded-2xl p-6 text-center space-y-3 text-rose-900 shadow-sm"
                         dir="rtl"
