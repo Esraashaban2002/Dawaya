@@ -82,6 +82,8 @@ export default function ChatbotWidget() {
   ]);
   const [inputMsg, setInputMsg] = useState('');
 
+  const msgCounterRef = useRef(100);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isOpen]);
@@ -90,8 +92,9 @@ export default function ChatbotWidget() {
     const query = overrideText || inputMsg.trim();
     if (!query) return;
 
+    msgCounterRef.current += 1;
     const userMsgObj = {
-      id: Date.now(),
+      id: `usr_${msgCounterRef.current}`,
       sender: 'user',
       text: query,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -101,8 +104,9 @@ export default function ChatbotWidget() {
 
     setTimeout(() => {
       const replyData = generateBotReply(query);
+      msgCounterRef.current += 1;
       const botMsgObj = {
-        id: Date.now() + 1,
+        id: `bot_${msgCounterRef.current}`,
         sender: 'bot',
         text: replyData.text,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),

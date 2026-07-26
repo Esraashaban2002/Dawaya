@@ -547,7 +547,7 @@ export const getTopMedicines = async (limit = 10) => {
 export const createPrescriptionSvgUrl = (doctor, patient, date, notes = []) => {
   const doctorName = doctor || "د. طبيب دوايا";
   const patientName = patient || "مريض Dawaya";
-  let formattedDate = "";
+  let formattedDate;
   if (date) {
     try {
       const d = new Date(date);
@@ -667,7 +667,9 @@ export const savePrescription = async (prescriptionData) => {
             const localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
             const updated = localItems.map(i => i._id === newItem._id ? json.data : i);
             localStorage.setItem('dawaya_prescriptions', JSON.stringify(updated));
-          } catch {}
+          } catch (e) {
+            console.warn("Could not update local prescription:", e);
+          }
           return json.data;
         }
       }
@@ -696,12 +698,17 @@ export const getUserPrescriptions = async () => {
           break;
         }
       }
-    } catch (err) {}
+    } catch (err) {
+      console.warn("Prescriptions endpoint unavailable:", err);
+    }
   }
 
   let localItems = [];
   try {
-    localItems = JSON.parse(localStorage.getItem('dawaya_prescriptions') || '[]');
+    const rawLocal = localStorage.getItem('dawaya_prescriptions');
+    if (rawLocal) {
+      localItems = JSON.parse(rawLocal);
+    }
   } catch (e) {
     localItems = [];
   }
@@ -773,7 +780,9 @@ export const getUserPrescriptions = async () => {
 
   try {
     localStorage.setItem('dawaya_prescriptions', JSON.stringify(finalArray));
-  } catch (e) {}
+  } catch (e) {
+    console.warn("LocalStorage save error:", e);
+  }
 
   finalArray.sort((a, b) => new Date(b.createdAt || b.dateIssued || Date.now()) - new Date(a.createdAt || a.dateIssued || Date.now()));
   return finalArray;

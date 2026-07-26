@@ -38,7 +38,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50/50 to-white">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-linear-to-br from-blue-50/50 to-white">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-8">
 
@@ -99,7 +99,7 @@ const HeroSection = () => {
 
           {/* Hero Banner */}
           <div className="order-1 lg:order-2 lg:w-[62%]">
-            <div className="relative rounded-[30px] overflow-hidden shadow-2xl min-h-[300px] sm:min-h-[450px] lg:min-h-[560px] h-full">
+            <div className="relative rounded-[30px] overflow-hidden shadow-2xl min-h-75 sm:min-h-112.5 lg:min-h-140 h-full">
 
               <AnimatePresence mode="wait">
                 <motion.div
@@ -115,7 +115,7 @@ const HeroSection = () => {
                     alt={slides[currentIndex].title}
                     className="w-full h-full object-cover object-center"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-l from-black/70 via-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-l from-black/70 via-black/40 to-transparent" />
                 </motion.div>
               </AnimatePresence>
 
@@ -139,7 +139,7 @@ const HeroSection = () => {
                       <div className="flex flex-wrap gap-4 justify-end pt-6">
                         <button
                           onClick={() => navigate('/#products-section')}
-                          className="px-8 py-3.5 bg-gradient-to-l from-blue-600 to-blue-700 text-white rounded-full font-bold text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                          className="px-8 py-3.5 bg-linear-gradient-to-l from-blue-600 to-blue-700 text-white rounded-full font-bold text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
                         >
                           اطلب الآن
                         </button>
@@ -161,11 +161,10 @@ const HeroSection = () => {
                   <button
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
-                    className={`transition-all duration-300 rounded-full ${
-                      idx === currentIndex
-                        ? 'w-10 h-2 bg-white'
-                        : 'w-2 h-2 bg-white/50 hover:bg-white/80'
-                    }`}
+                    className={`transition-all duration-300 rounded-full ${idx === currentIndex
+                      ? 'w-10 h-2 bg-white'
+                      : 'w-2 h-2 bg-white/50 hover:bg-white/80'
+                      }`}
                   />
                 ))}
               </div>
